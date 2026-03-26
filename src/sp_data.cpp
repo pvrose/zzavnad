@@ -75,6 +75,13 @@ void sp_data::load_settings() {
         dataset_settings.get("Thickness", entry->line_style_l.thickness, 2);
         datasets_.push_back(entry);
     }
+    if (datasets_.size() == 0) {
+        sp_data_entry* entry = new sp_data_entry;
+        entry->source = SP_DATA_SOURCE_VNA;
+        entry->valid_ports = 2;
+        entry->line_style_l = { FL_BLUE, 2, 0 };
+        datasets_.push_back(entry);
+    }
 }
 
 // Save current settings for future sessions.

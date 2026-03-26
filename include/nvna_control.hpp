@@ -82,10 +82,7 @@ public:
     Fl_Float_Input* ip_stop_freq_;  //!< Input for the stop frequency.
     Fl_Float_Input* ip_step_freq_;  //!< Input for the frequency step.
 
-    // Radio buttons for frequency units.
-    Fl_Radio_Round_Button* rb_hz_;   //!< Radio button for Hz.
-    Fl_Radio_Round_Button* rb_khz_;  //!< Radio button for kHz.
-    Fl_Radio_Round_Button* rb_mhz_;  //!< Radio button for MHz.
+    Fl_Choice* choice_f_unit_;      //!< Dropdown to set frequency unit
 
     Fl_Button* btn_acquire_; //!< Button to acquire data from the nanoVNA.
 

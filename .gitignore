@@ -2,38 +2,5 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/CMake Overview
-/.vs/ProjectSettings.json
-/.vs/slnx.sqlite
-/.vs/VSWorkspaceState.json
-/.vs/zzavnad.slnx/FileContentIndex/ecdc4f23-d4ed-42db-b33b-5d2afc8d1523.vsidx
-/.vs/zzavnad.slnx/v18/Browse.VC.db
-/.vs/zzavnad.slnx/v18/Browse.VC.db-shm
-/.vs/zzavnad.slnx/v18/Browse.VC.db-wal
-/.vs/zzavnad.slnx/v18/Browse.VC.opendb
-/out/build/x64-Debug/.cmake/api/v1/query/client-MicrosoftVS/query.json
-/out/build/x64-Debug/.cmake/api/v1/reply/error-2026-03-26T14-37-55-0417.json
-/out/build/x64-Debug/CMakeCache.txt
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeCCompiler.cmake
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeCXXCompiler.cmake
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeDetermineCompilerABI_C.bin
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeDetermineCompilerABI_CXX.bin
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeRCCompiler.cmake
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CMakeSystem.cmake
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdC/CMakeCCompilerId.c
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdC/CMakeCCompilerId.exe
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdC/CMakeCCompilerId.obj
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdCXX/CMakeCXXCompilerId.cpp
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdCXX/CMakeCXXCompilerId.exe
-/out/build/x64-Debug/CMakeFiles/4.2.3-msvc3/CompilerIdCXX/CMakeCXXCompilerId.obj
-/out/build/x64-Debug/CMakeFiles/cmake.check_cache
-/out/build/x64-Debug/CMakeFiles/CMakeConfigureLog.yaml
-/out/build/x64-Debug/CMakeFiles/ShowIncludes/foo.h
-/out/build/x64-Debug/CMakeFiles/ShowIncludes/main.c
-/out/build/x64-Debug/CMakeFiles/ShowIncludes/main.obj
-/out/build/x64-Debug/VSInheritEnvironments.txt
-/.vs/CMakeWorkspaceSettings.json
-/.vs/zzavnad.slnx/FileContentIndex/2abfa398-234a-4f22-a6d8-860e224a589a.vsidx
-/.vs/zzavnad.slnx/v18/.wsuo
-/.vs/zzavnad.slnx/FileContentIndex/cccb4382-0246-41f5-b4a4-801d2721e529.vsidx
-*.vsidx
+/.vs
+/out

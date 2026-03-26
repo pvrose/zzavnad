@@ -46,7 +46,7 @@ struct sp_data_entry;
 enum sp_data_source : uint8_t;
 
 //! \brief The main control panel for selecting data to view.
-class source_control : public Fl_Scroll {
+class source_control : public Fl_Group {
 public:
     //! Constructor for the source control panel.
     //! \param X The x-coordinate of the control panel.
@@ -104,7 +104,8 @@ public:
         }
 
         zc_filename_input* ip_filename_; //!< Widget to input the filename for this data source
-        Fl_Button* btn_line_; //!< Button to open line configuration dialog for this data.
+        Fl_Button* btn_line_l_; //!< Button to open line configuration dialog for left axis data.
+        Fl_Button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
         Fl_Check_Button* ckb_enable_; //!< Checkbox to enable/disable this data source
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
     

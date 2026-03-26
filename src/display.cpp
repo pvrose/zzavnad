@@ -26,6 +26,7 @@
 #include "zc_utils.h"
 
 // Include FLTK headers for the widgets used in the control panel.
+#include <FL/Enumerations.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Window.H>
@@ -76,9 +77,11 @@ display::~display() {
 // Create the widgets for the display window.
 void display::create_widgets() {
     int cx = x() + GAP;
-    int cy = y() + GAP;
+    int cy = y() + HTEXT;
     // Add the display mode selection dropdown.
-    ch_mode_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "Display Mode");
+	cx += WLABEL;
+    ch_mode_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "Mode");
+	ch_mode_->box(FL_BORDER_BOX);
     for (const auto& mode_param : DISPLAY_MODE_PARAMS) {
         ch_mode_->add(mode_param.second.label.c_str());
     }
@@ -91,7 +94,10 @@ void display::create_widgets() {
     graph_->box(FL_DOWN_FRAME);
     graph_->tooltip("Graph for plotting S-parameter data");
 
+	resizable(graph_);
+
     end();
+    show();
 }
 
 // Set the display mode for the graph.
@@ -209,7 +215,7 @@ void display::convert_sp_point_s11(const sp_point& point, const sp_data_entry& d
     point_l.x = point.frequency;
     point_l.y = std::abs(point.sparams.s11); // S11 magnitude
     point_r.x = point.frequency;
-    point_r.y = std::arg(point.sparams.s11) * 180.0 / M_PI; // S11 phase in degrees
+    point_r.y = std::arg(point.sparams.s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
 }
 
 // Convert sp_point into 2 coordinates for plotting S11 as resistance and reactance vs frequency.
