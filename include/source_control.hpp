@@ -29,6 +29,7 @@
 #include <FL/Fl_Scroll.H>
 
 // C++ standard library includes
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -41,9 +42,14 @@ class Fl_Choice;
 // Forward declaration of zzacommon widgets
 class zc_filename_input;
 
+// Temporary fix for line-style button
+using line_style_button = Fl_Button;
+
 // Forward declaration of the S-parameter data structures.
 struct sp_data_entry; 
 enum sp_data_source : uint8_t;
+
+const int NUM_FILE_SOURCES = 5; //!< Maximum number of file data sources that can be added to the control panel.
 
 //! \brief The main control panel for selecting data to view.
 class source_control : public Fl_Group {
@@ -61,7 +67,6 @@ public:
 
     protected:
     // Callback functions for the widgets in the control panel.
-    static void cb_file_add(Fl_Widget* widget, void* data);
     static void cb_file_input(Fl_Widget* widget, void* data);
     static void cb_file_enable(Fl_Widget* widget, void* data);
     static void cb_file_line(Fl_Widget* widget, void* data);
@@ -78,9 +83,6 @@ public:
     void save_current_settings();
     //! Configure the widgets based on the current settings.
     void configure_widgets();
-
-    //! Add a new file data source to the control panel with the given filename, colour, and thickness.
-    void add_file(sp_data_entry* entry);
 
     //! Configure a linestyle button based on the given colour and thickness.
     static void configure_line_button(Fl_Button* button, zc_graph_line_t line_style);
@@ -104,8 +106,8 @@ public:
         }
 
         zc_filename_input* ip_filename_; //!< Widget to input the filename for this data source
-        Fl_Button* btn_line_l_; //!< Button to open line configuration dialog for left axis data.
-        Fl_Button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
+        line_style_button* btn_line_l_; //!< Button to open line configuration dialog for left axis data.
+        line_style_button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
         Fl_Check_Button* ckb_enable_; //!< Checkbox to enable/disable this data source
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
     
@@ -124,10 +126,7 @@ public:
     file_source* nvna_source_; //!< Control for the nanoVNA data source
 
     Fl_Group* file_group_; //!< Group to contain the file data source controls
-
-    Fl_Button* btn_add_file_; //!< Button to add a new file data source
-    Fl_Button* btn_clear_files_; //!< Button to clear all file data sources
-    Fl_Button* btn_clear_undisplayed_files_; //!< Button to clear all undisplayed file data sources
+	std::array<file_source*, NUM_FILE_SOURCES> file_sources_; //!< Array to hold the file data source controls
 
 };
 

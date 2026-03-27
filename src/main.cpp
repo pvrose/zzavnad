@@ -32,6 +32,7 @@
 
 // Declare global pointers.
 display* display_;
+display_control* display_control_;
 nvna_control* nvna_control_;
 source_control* source_control_;
 sp_data* sp_data_;

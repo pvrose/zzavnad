@@ -27,6 +27,8 @@ endif()
 
 set(CPPFILES 
   ${ZZANVAD_SOURCE_DIR}/src/display.cpp
+  ${ZZANVAD_SOURCE_DIR}/src/display_control.cpp
+  ${ZZANVAD_SOURCE_DIR}/src/display_legend.cpp
   ${ZZANVAD_SOURCE_DIR}/src/main.cpp
   ${ZZANVAD_SOURCE_DIR}/src/nvna_control.cpp
   ${ZZANVAD_SOURCE_DIR}/src/source_control.cpp

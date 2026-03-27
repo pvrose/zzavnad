@@ -16,7 +16,8 @@
 */
 
 #include "display.hpp"
-
+#include "display_control.hpp"
+#include "display_legend.hpp"
 // Include the S-parameter data structures.
 #include "sp_data.hpp"
 
@@ -38,6 +39,42 @@
 #include <string>
 #include <vector>
 
+std::map<display_mode, dm_params_t> display_mode_params_ = {
+    { DM_SWR, {
+        "SWR",
+        "SWR vs frequency",
+        false,
+        { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
+        { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
+        display::convert_sp_point_swr
+    }},
+    { DM_S11, {
+        "S11 Raw",
+        "S11 Raw data",
+        true,
+        { 0.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
+        { -1.0F, 1.0F, "Si", zc_graph::axis_xier_t::NONE, 20 },
+        display::convert_sp_point_s11
+    }},
+    { DM_S11_RX, {
+        "S11 R+jX",
+        "S11 Resistance and Reactance vs frequency",
+        true,
+        { 0.0F, 1000.0F, "\xCE\xA9(R)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
+        {  -1000.0F, 1000.0F, "\xCE\xA9(X)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
+        display::convert_sp_point_s11_rx
+    }},
+    { DM_S11_MA, {
+        "S11 M+A",
+        "S11 Magnitude and angle vs frequency",
+        true,
+        { -1.0F, 1.0F, "M", zc_graph::axis_xier_t::NONE, 20 },
+        { -180.0F, 180.0F, "\xC2\xB0", zc_graph::axis_xier_t::NONE, 60 },
+        display::convert_sp_point_s11_ma
+    }}
+};
+
+
 // Structure combining paremeters required for specific display modes.
 struct display_mode_params_t {
     std::string label; //!< Label for the display mode.
@@ -45,21 +82,12 @@ struct display_mode_params_t {
     void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r); //!< Function pointer to the routine for converting sp_points to graph coordinates for this display mode.
 };
 
-const std::map<display_mode, display_mode_params_t> DISPLAY_MODE_PARAMS = {
-    {DM_SWR, {"S11 SWR", false, &display::convert_sp_point_swr}},
-    {DM_S11, {"S11 Raw data", true, &display::convert_sp_point_s11}},
-    {DM_S11_RX, {"S11 R/X", true, &display::convert_sp_point_s11_rx}},
-//    {DM_S11_RXPAR, {"S11 R||jX", true, &display::convert_sp_point_s11_rxpar}},
-//    {DM_S11_SMITH, {"S11 Smith chart", false, &display::convert_sp_point_s11_smith}}, 
-//    {DM_S11_MAG_PHASE, {"S11 Mag/Phase", true, &display::convert_sp_point_s11_mag_phase}},
-};
-
 // Constant complex 1.0+j0.0.
 const std::complex<double> ONE = 1.0;
 
 // Constructor for the display class.
 display::display(int X, int Y, int W, int H, const char* L)
-    : Fl_Window(X, Y, W, H, L) {
+    : Fl_Double_Window(X, Y, W, H, L) {
     box(FL_BORDER_BOX);
     align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     // Set the default display mode.
@@ -78,22 +106,27 @@ display::~display() {
 void display::create_widgets() {
     int cx = x() + GAP;
     int cy = y() + HTEXT;
-    // Add the display mode selection dropdown.
-	cx += WLABEL;
-    ch_mode_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "Mode");
-	ch_mode_->box(FL_BORDER_BOX);
-    for (const auto& mode_param : DISPLAY_MODE_PARAMS) {
-        ch_mode_->add(mode_param.second.label.c_str());
-    }
-    ch_mode_->callback(cb_display_mode, this);
-    ch_mode_->tooltip("Select the display mode for the graph");
-
-    cy += HBUTTON + GAP;   
     // Add the graph widget for plotting the data.
-    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - cy - GAP);
+    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT);
     graph_->box(FL_DOWN_FRAME);
     graph_->tooltip("Graph for plotting S-parameter data");
 
+    cy += graph_->h();
+
+	// Add the left axis legend.
+	legend_l_ = new display_legend(cx, cy, w() / 2 - GAP, HBUTTON * 7, "Left Axis Legend");
+    legend_l_->box(FL_BORDER_FRAME);
+	legend_l_->tooltip("Legend for the left Y-axis");
+    legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
+
+	// Add the right axis legend.
+    cx += legend_l_->w();
+	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HBUTTON * 7, "Right Axis Legend");
+	legend_r_->box(FL_BORDER_FRAME);
+    legend_r_->tooltip("Legend for the right Y-axis");
+    legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
+
+	size(w(), cy + legend_l_->h() + GAP);
 	resizable(graph_);
 
     end();
@@ -103,10 +136,8 @@ void display::create_widgets() {
 // Set the display mode for the graph.
 void display::set_display_mode(display_mode mode) {
     display_mode_ = mode;
-    // Set the conversion routine for converting sp_points to graph coordinates based on the selected display mode.
-    convert_sp_point_ = DISPLAY_MODE_PARAMS.at(mode).convert_sp_point;
     // Set whether we need dual axes based on the selected display mode.
-    dual_axes_ = DISPLAY_MODE_PARAMS.at(mode).dual_axes;
+    dual_axes_ = display_mode_params_.at(mode).dual_axes;
 }
 
 // Configure the graph data based on the current display mode and the S-parameter data in sp_data.
@@ -157,7 +188,8 @@ void display::update_graph() {
             for (const auto& sp_point : dataset->data) {
                 zc_graph::coord point_l;
                 zc_graph::coord point_r;
-                convert_sp_point_(sp_point, *dataset, point_l, point_r);
+				dm_params_t& params = display_mode_params_.at(display_mode_);
+                params.convert_sp_point(sp_point, *dataset, point_l, point_r);
                 graph_points_l->push_back(point_l);
                 if (dual_axes_) {
                     graph_points_r->push_back(point_r);
@@ -190,24 +222,25 @@ void display::configure_widgets() {
     // None at the moment.
 }
 
-// Callback function for when the display mode selection is changed.
-void display::cb_display_mode(Fl_Widget* widget, void* data) {
-    display* disp = static_cast<display*>(data);
-    int mode_index = disp->ch_mode_->value();
-    auto mode_it = DISPLAY_MODE_PARAMS.begin();
-    std::advance(mode_it, mode_index);
-    if (mode_it != DISPLAY_MODE_PARAMS.end()) {
-        disp->set_display_mode(mode_it->first);
-        disp->configure_graph();
-        disp->update_graph();
-    }
+// Convert sp_point into 2 coordinates for plotting S11 as resistance and reactance vs frequency.
+void display::convert_sp_point_s11_rx(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
+    point_l.x = point.frequency;
+    std::complex<double> s11 = point.sparams.s11;
+    // Get Z0 from the dataset.
+    std::complex<double> z0 = dataset.z0;
+    std::complex<double> z = z0 * (ONE + s11) / (ONE - s11); // Convert S11 to impedance.
+    point_l.y = z.real(); // Resistance
+    point_r.x = point.frequency;
+    point_r.y = z.imag(); // Reactance
 }
 
-// Convert sp_point into a single coordinate for plotting SWR vs frequency.
-void display::convert_sp_point_swr(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
+// Convert sp_point into 2 coordinates for plotting S11 as magnitude and phase vs frequency.
+void display::convert_sp_point_s11_ma(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
     point_l.x = point.frequency;
-    double s11_mag = std::abs(point.sparams.s11);
-    point_l.y = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
+    std::complex<double> s11 = point.sparams.s11;
+    point_l.y = std::abs(s11); // S11 magnitude
+    point_r.x = point.frequency;
+    point_r.y = std::arg(s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
 }
 
 // Convert sp_point into 2 coordinates for plotting S11 magnitude and phase vs frequency.
@@ -218,14 +251,9 @@ void display::convert_sp_point_s11(const sp_point& point, const sp_data_entry& d
     point_r.y = std::arg(point.sparams.s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
 }
 
-// Convert sp_point into 2 coordinates for plotting S11 as resistance and reactance vs frequency.
-void display::convert_sp_point_s11_rx(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
+// Convert sp_point into a single coordinate for plotting SWR vs frequency.
+void display::convert_sp_point_swr(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
     point_l.x = point.frequency;
-    std::complex<double> s11 = point.sparams.s11;
-    // Get Z0 from the dataset.
-    std::complex<double> z0 = dataset.z0; 
-    std::complex<double> z = z0 * (ONE + s11) / (ONE - s11); // Convert S11 to impedance.
-    point_l.y = z.real(); // Resistance
-    point_r.x = point.frequency;
-    point_r.y = z.imag(); // Reactance
+    double s11_mag = std::abs(point.sparams.s11);
+    point_l.y = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
 }

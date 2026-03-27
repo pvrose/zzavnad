@@ -22,13 +22,17 @@
 #include "zc_utils.h"
 
 // Include the main groups.
-#include "display.hpp"
+#include "display_control.hpp"
 #include "nvna_control.hpp"
 #include "source_control.hpp"
 #include "sp_data.hpp"
 
 // Include FLTK headers for the widgets used in the main window.
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Double_Window.H>
+
+// Include C++ standard library headers.
+#include <algorithm>
 
 // Constructor for the main application window.
 main_window::main_window(int W, int H, const char* L)
@@ -52,25 +56,24 @@ void main_window::create_widgets() {
     nvna_control_ = new nvna_control(cx, cy, 100, 100, "nanoVNA");
     // Calulate the total width of the control panels.
     cx += nvna_control_->w();
+    // Add the displa control beneath the source control panel.
+	cy += source_control_->h();
+	cx = x() + GAP;
+	display_control_ = new display_control(cx, cy, source_control_->w(), 100, "Displays");
 
-	// Using the larger of the two control panels - adjust both to have the same height.
-	int max_h = std::max(source_control_->h(), nvna_control_->h());
-	source_control_->size(source_control_->w(), max_h);
-	nvna_control_->size(nvna_control_->w(), max_h);
+	// Adjust the heights of the control panels to match each other.
+    int h1 = source_control_->h() + display_control_->h();
+	int h2 = nvna_control_->h();
+    if (h2 > h1) {
+		display_control_->size(display_control_->w(), h2 - source_control_->h());
+	}
+    else if (h1 > h2) {
+        nvna_control_->size(nvna_control_->w(), h1);
+    }
 
-    int max_w = cx - x() - GAP;
+	int total_width = source_control_->w() + nvna_control_->w() + 2 * GAP;
+	int total_height = std::max(h1, h2) + 2 * GAP;
 
-    // Add the display panel beneath both control panels with 16:9 aspect ratio.
-	int display_width = source_control_->w() + nvna_control_->w();
-    int display_height = display_width * 9 / 16;
-    cx = x() + GAP;
-    cy = source_control_->y() + source_control_->h();
-
-    display_ = new display(cx, cy, display_width, display_height, "Display");
-    // Calulate the total height of the window based on the control panels and display.
-    // Resize the main window to fit the control panels and display.
-	int total_height = source_control_->h() + display_->h() + 2 * GAP;
-	int total_width = display_width + 2 * GAP;
 	resizable(nullptr);
 	size(total_width, total_height);
     
@@ -81,6 +84,6 @@ void main_window::create_widgets() {
     // that they can be accessed by other parts of the application.
     ::source_control_ = source_control_;
     ::nvna_control_ = nvna_control_;   
-    ::display_ = display_;
+    ::display_control_ = display_control_;
 };
     

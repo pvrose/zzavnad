@@ -20,7 +20,7 @@
 #include <FL/Fl_Double_Window.H>
 
 // Forwrad declaration of main groups.
-class display;
+class display_control;
 class nvna_control;
 class source_control;
 // Forward declaration of FLTK widgets.
@@ -42,7 +42,7 @@ public:
     void create_widgets();
 
     // Widgets for the main window.
-    display* display_; //!< The main display for plotting the S-parameter data.
+    display_control* display_control_; //!< The main display control for managing the display windows.
     source_control* source_control_; //!< The control panel for selecting data sources and configuring their display settings.
     nvna_control* nvna_control_; //!< The control panel for configuring the nanoVNA data acquisition settings.
 

@@ -23,27 +23,42 @@
 #include "sp_data.hpp"
 #include "zc_graph.h"
 
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <cstdint>
+#include <map>
 
 //! Forward declarations.
 class Fl_Choice;
 class Fl_Group;
+class Fl_Widget;
 class zc_graph;
+class display;
+class display_legend;
+enum display_mode : uint8_t;
 
-enum display_mode : uint8_t {
-    DM_NONE,       //!< No display mode selected
-    DM_SWR,        //!< Display SWR vs frequency
-    DM_S11,        //!< Display Raw S11 values vs frequency
-    DM_S11_RX,     //!< Display S11 as resistance/reactance vs frequency
-//    DM_S11_RXPAR,  //!< Display S11 as resistance/reactance as R||jX vs frequency
-//    DM_S11_SMITH,  //!< Display S11 on a Smith chart
-//    DM_S11_MAG_PHASE, //!< Display S11 magnitude and phase vs frequency
+//! \brief Various parameters for the display modes.
+struct dm_params_t {
+    std::string serial_name = "";        //!< Name for use in serialisation.
+	std::string title = "";              //!< Title of the display window for this mode.
+    bool dual_axes = false;              //!< Has both left and right axes.
+    zc_graph::options_t axis_l_options;  //!< Options for left axis
+    zc_graph::options_t axis_r_options;  //!< Options for right axis
+    void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
+                                         //!< Function to convert sp_point into coordinates for plotting.
+	bool enabled = false;                //!< Whether this display mode is being shown.
+	int top = 0;                         //!< The top position of the display window for this mode.
+	int left = 0;                        //!< The left position of the display window for this mode.
+	int width = 800;                     //!< The width of the display window for this mode.
+	int height = 600;                    //!< The height of the display window for this mode.
+    display* window = nullptr;           //!< Pointer to the display window for this mode.
 };
 
+//! \brief Map of mode parameters - external declaration.
+extern std::map<display_mode, dm_params_t> display_mode_params_;
+
 //! \brief The display class manages the plotting of S-parameter data on the graph.
-class display : public Fl_Window {
+class display : public Fl_Double_Window {
 public:
     
     //! Constructor for the display class.
@@ -79,6 +94,7 @@ public:
     static void convert_sp_point_swr(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
     static void convert_sp_point_s11(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
     static void convert_sp_point_s11_rx(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
+    static void convert_sp_point_s11_ma(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
 
 
 private:
@@ -91,11 +107,8 @@ private:
     //! Configure the widgets based on the current settings.
     void configure_widgets();
 
-    //! Callback function for when the display mode selection is changed.
-    static void cb_display_mode(Fl_Widget* widget, void* data);
-
     //! The current display mode.
-    display_mode display_mode_ = DM_NONE;
+    display_mode display_mode_ = static_cast<display_mode>(0);
 
     //! The display has both a left and right Y-axis. 
     bool dual_axes_ = false;
@@ -108,16 +121,12 @@ private:
     //! Map sp_data datasets to graph data sets for plotting. 
     std::map<int, graph_datasets_t> dataset_to_graph_map_ = {};
 
-    //! Selected conversion routines for the current display mode.
-    void (*convert_sp_point_)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr;
-
     //! The graph widget for plotting the data.
     zc_graph* graph_ = nullptr;
-    //! The choice widget for selecting the display mode.
-    Fl_Choice* ch_mode_ = nullptr;
 
-
-
+	//! The legend widgets for the left and right axes.
+	display_legend* legend_l_ = nullptr;
+    display_legend* legend_r_ = nullptr;
 };
 
 extern display* display_;

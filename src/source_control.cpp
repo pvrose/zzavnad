@@ -40,6 +40,7 @@
 
 const int WCONTROL = 5 * HBUTTON + WEDIT; //!< Width of the controls for each data source
 
+using line_style_button = Fl_Button;
 
 // Constructor for the file source control panel.
 source_control::file_source::file_source(int X, int Y, int W, int H, const char* L)
@@ -65,12 +66,12 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
     ckb_enable_->tooltip("Enable/disable this data source");
 
     cx += HBUTTON;
-    btn_line_l_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
+    btn_line_l_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
     btn_line_l_->callback(cb_file_line, (void*)zc_graph::Y_LEFT);
     btn_line_l_->tooltip("Configure the line style for this data source");
 
     cx += HBUTTON;
-    btn_line_r_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
+    btn_line_r_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
     btn_line_r_->callback(cb_file_line, (void*)zc_graph::Y_RIGHT);
     btn_line_r_->tooltip("Configure the line style for this data source");
 
@@ -155,33 +156,6 @@ source_control::~source_control() {
 void source_control::create_widgets() {
     int cx = x() + GAP;
     int cy = y() + HTEXT;
-    int maxx = cx;
- 
-    // Add the "Add File" button to add new file data sources.
-    btn_add_file_ = new Fl_Button(cx, cy, WBUTTON, HBUTTON, "Add File");
-    btn_add_file_->callback(cb_file_add, this);
-    btn_add_file_->tooltip("Add a new file data source");
-
-    cx += WBUTTON;
-
-    // Add the "Clear Files" button to remove all file data sources.
-    btn_clear_files_ = new Fl_Button(cx, cy, WBUTTON, HBUTTON, "Clear Files");
-    btn_clear_files_->callback(cb_file_clear, this);
-    btn_clear_files_->tooltip("Remove all file data sources");
-
-    cx += WBUTTON;
-
-    // Add the "Clear Undisplayed Files" button to remove all file data sources that are currently not enabled for display.
-    btn_clear_undisplayed_files_ = new Fl_Button(cx, cy, WBUTTON, HBUTTON, "Clear Unused");
-    btn_clear_undisplayed_files_->callback(cb_file_clear_undisplayed, this);
-    btn_clear_undisplayed_files_->tooltip("Remove all file data sources that are not currently enabled for display");
-
-    cx += WBUTTON;
-
-    maxx = std::max(maxx, cx + GAP);
-
-    cy += HBUTTON + GAP;
-    cx = x() + GAP;
 
     // Add the nanoVNA controls.
     nvna_source_ = new file_source(cx, cy, WCONTROL, HBUTTON);
@@ -192,19 +166,27 @@ void source_control::create_widgets() {
 	nvna_source_->set_entry(nvna_entry); // The first dataset is reserved for the nanoVNA data source.
 
     cy += HBUTTON;
-    maxx = std::max(maxx, cx + WCONTROL + GAP);
 
     // Add the group to contain the file data source controls. The individual file source controls will be added to this group dynamically when the user adds file data sources.
-    file_group_ = new Fl_Group(cx, cy, WCONTROL, 6 * HBUTTON);
+    file_group_ = new Fl_Group(cx, cy, WCONTROL, (1 + NUM_FILE_SOURCES) * HBUTTON);
     file_group_->box(FL_FLAT_BOX);
-    // The file source controls will be added to this group dynamically 
-    // when the user adds file data sources.
+    // Add the individual file source controls to the file group.
+    for (int i = 0; i < NUM_FILE_SOURCES; i++) {
+        file_source* fs = new file_source(cx, cy, WCONTROL, HBUTTON);
+        fs->type(SP_DATA_SOURCE_FILE);
+        fs->set_entry(nullptr); // No data entry associated with this file source yet.
+		file_sources_[i] = fs;
+        cy += HBUTTON;
+    }
     file_group_->resizable(nullptr);
     file_group_->end();
 
+	cy += GAP;
+	cx += file_group_->w() + GAP;
+
     resizable(nullptr);
     // adjust width to fit 
-    size(maxx - x(), h());
+    size(cx - x(), cy - y());
 
     end();
 
@@ -223,26 +205,10 @@ void source_control::configure_widgets() {
     // Configure the nanoVNA line button based on the current colour and thickness settings.
     nvna_source_->configure_widgets();
     // Configure the file data source controls based on the current settings for each file data source.
-    for (int i = 0; i < file_group_->children(); i++) {
-        source_control::file_source* file_source = (source_control::file_source*)(file_group_->child(i));
+    for (int i = 0; i < NUM_FILE_SOURCES; i++) {
+        source_control::file_source* file_source = file_sources_[i];
         file_source->configure_widgets();
     }
-    if (file_group_->children() >= 5) {
-        btn_add_file_->deactivate();
-    }
-    else {
-        btn_add_file_->activate();
-    }
-};
-
-// Add a new file data source to the control panel with the given filename, colour, and thickness.
-void source_control::add_file(sp_data_entry* entry) {
-    file_group_->begin();
-    // Add a new file source control to the file group.
-    file_source* new_fs = new file_source(file_group_->x(), file_group_->y() + file_group_->children() * HBUTTON, WCONTROL, HBUTTON);
-    new_fs->type(SP_DATA_SOURCE_FILE);
-    new_fs->set_entry(entry);
-    file_group_->end();
 };
 
 // Configure a linestyle button based on the given colour and thickness.
@@ -267,20 +233,6 @@ void source_control::data_source_changed(file_source* source) {
     }
 }
  
-// Callback functions for the widgets in the control panel.
-void source_control::cb_file_add(Fl_Widget* widget, void* data) {
-    source_control* control = zc::ancestor_view<source_control>(widget);
-    int index = sp_data_->add_dataset();
-    sp_data_entry* entry = sp_data_->get_dataset(index);
-    entry->filename = "";
-    entry->line_style_l = zc_graph_line_t{FL_BLUE, 2, FL_SOLID};
-    entry->line_style_r = zc_graph_line_t{fl_lighter(FL_BLUE), 2, FL_SOLID};
-    entry->enabled = false;
-    control->add_file(entry);
-    control->configure_widgets();
-    control->redraw();
-}
-
 void source_control::cb_file_input(Fl_Widget* widget, void* data) {
     source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
     source_control* control = zc::ancestor_view<source_control>(file_source);
