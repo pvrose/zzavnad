@@ -119,7 +119,8 @@ public:
         static bool show_add_;  //!< Indicates whether to show the add button. 
 
     private:
-        sp_data_source source_; //!< The source type for this data source (e.g. file or nanoVNA)
+        sp_data_source source_ = static_cast<sp_data_source>(0); 
+             //!< The source type for this data source (e.g. file or nanoVNA)
 
         int file_index_ = -1; //!< The index into the list of file sources.
 

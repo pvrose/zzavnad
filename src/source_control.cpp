@@ -358,10 +358,10 @@ void source_control::cb_file_remove(Fl_Widget* widget, void* data) {
     if (file_source != nullptr && control != nullptr) {
         // Remove the dataset associated with this file source from the data manager.
         sp_data_->remove_dataset(file_source->data_entry_);
-        // Remove the file source control from the file group.
-        control->file_group_->remove(file_source);
-        // Resize the file group to account for the removed file source control.
-        control->file_group_->resize(control->file_group_->x(), control->file_group_->y(), control->file_group_->w(), control->file_group_->h() - HBUTTON); 
+		// Reset the file source control to have no data entry associated with it.
+		file_source->set_entry(nullptr, -1);
+		// Updatethe display to reflect the removed data source.
+		control->data_source_changed(file_source);
         // Update the control panel to reflect the removed data source.
         control->configure_widgets();
     }
