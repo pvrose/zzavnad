@@ -117,6 +117,9 @@ public:
     //! \param entry The dataset to remove.
     void remove_dataset(sp_data_entry* entry);
 
+	//! \brief Get overall frequency range across all datasets.
+	void get_frequency_range(double& min_freq, double& max_freq) const;
+
 private:
 
     //! \brief Load S-parameter data from the specified file.

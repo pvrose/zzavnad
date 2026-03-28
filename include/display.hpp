@@ -42,8 +42,9 @@ struct dm_params_t {
     std::string serial_name = "";        //!< Name for use in serialisation.
 	std::string title = "";              //!< Title of the display window for this mode.
     bool dual_axes = false;              //!< Has both left and right axes.
-    zc_graph::options_t axis_l_options;  //!< Options for left axis
-    zc_graph::options_t axis_r_options;  //!< Options for right axis
+	zc_graph::options_t axis_x_options;  //!< Options for x axis
+    zc_graph::options_t axis_l_options;  //!< Options for left y axis
+    zc_graph::options_t axis_r_options;  //!< Options for right y axis
     void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
                                          //!< Function to convert sp_point into coordinates for plotting.
 	bool enabled = false;                //!< Whether this display mode is being shown.
@@ -106,6 +107,9 @@ private:
     void save_current_settings();
     //! Configure the widgets based on the current settings.
     void configure_widgets();
+
+    //! Update the legend for each axis based on the current display mode and data.
+	void update_legend(zc_graph::y_axis_t axis);
 
     //! The current display mode.
     display_mode display_mode_ = static_cast<display_mode>(0);

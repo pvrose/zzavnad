@@ -26,7 +26,8 @@
 
 #include "zc_graph.h"
 
-#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Widget.H>
 
 // C++ standard library includes
 #include <array>
@@ -67,6 +68,7 @@ public:
 
     protected:
     // Callback functions for the widgets in the control panel.
+	static void cb_file_source_add(Fl_Widget* widget, void* data);
     static void cb_file_input(Fl_Widget* widget, void* data);
     static void cb_file_enable(Fl_Widget* widget, void* data);
     static void cb_file_line(Fl_Widget* widget, void* data);
@@ -100,8 +102,9 @@ public:
 
         sp_data_source type() const { return source_; }
 
-        void set_entry(sp_data_entry* entry) { 
+        void set_entry(sp_data_entry* entry, int index) { 
             data_entry_ = entry; 
+            file_index_ = index;
             configure_widgets(); 
         }
 
@@ -110,12 +113,16 @@ public:
         line_style_button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
         Fl_Check_Button* ckb_enable_; //!< Checkbox to enable/disable this data source
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
-    
-        sp_data_entry* data_entry_; //!< Pointer to the data entry associated with this file source.
+		Fl_Button* btn_add_; //!< Button to add a new file data source to the control panel    
+        sp_data_entry* data_entry_ = nullptr; //!< Pointer to the data entry associated with this file source.
  
+        static bool show_add_;  //!< Indicates whether to show the add button. 
+
     private:
         sp_data_source source_; //!< The source type for this data source (e.g. file or nanoVNA)
-        
+
+        int file_index_ = -1; //!< The index into the list of file sources.
+
     };
 
     //! A data source has been changed so data needs to reflect this.

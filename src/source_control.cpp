@@ -19,12 +19,13 @@
 #include "source_control.hpp"
 
 // Include ZZAVNAD data structures.
-#include "display.hpp"
+#include "display_control.hpp"
 #include "sp_data.hpp"
 
 // Include ZZACOMMON drawing constants
 #include "zc_drawing.h"
 #include "zc_filename_input.h"
+#include "zc_graph.h"
 #include "zc_settings.h"
 #include "zc_utils.h"
 
@@ -35,12 +36,20 @@
 #include <FL/Fl_Choice.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Input.H>
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Widget.H>
 
-const int WCONTROL = 5 * HBUTTON + WEDIT; //!< Width of the controls for each data source
+// C++ standard library headers.
+#include <array>
+#include <string>
+
+const int WCONTROL = 6 * HBUTTON + WEDIT; //!< Width of the controls for each data source
 
 using line_style_button = Fl_Button;
+
+bool source_control::file_source::show_add_ = false; //!< Static variable to control whether the add button is shown for file sources.
 
 // Constructor for the file source control panel.
 source_control::file_source::file_source(int X, int Y, int W, int H, const char* L)
@@ -48,7 +57,12 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
     int cx = x();
     int cy = y();
 
-    btn_remove_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "X");
+    btn_add_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "@+");
+    btn_add_->callback(cb_file_source_add, this);
+    btn_add_->tooltip("Add a source file");
+    cx += HBUTTON;
+
+    btn_remove_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "@1+");
     btn_remove_->callback(cb_file_remove, this);
     btn_remove_->tooltip("Remove this data source");
 
@@ -62,7 +76,7 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 
     cx += ip_filename_->w();
     ckb_enable_ = new Fl_Check_Button(cx, cy, HBUTTON, HBUTTON);
-    ckb_enable_->callback(cb_file_enable, this);
+    ckb_enable_->callback(cb_file_enable, (void*)&file_index_);
     ckb_enable_->tooltip("Enable/disable this data source");
 
     cx += HBUTTON;
@@ -90,21 +104,32 @@ void source_control::file_source::configure_widgets() {
         // No data entry associated with this file source, so disable all widgets.
         ip_filename_->value("");
         ip_filename_->button()->deactivate();
-        ckb_enable_->value(0);
+        ckb_enable_->value(false);
         ckb_enable_->deactivate();
         btn_line_l_->deactivate();
         btn_line_r_->deactivate();
         btn_remove_->deactivate();
+        btn_add_->show();
+        if (show_add_) {
+            btn_add_->activate();
+            show_add_ = false;
+        } else {
+            btn_add_->deactivate();
+		}
         return;
     }
     switch(source_) {
     case SP_DATA_SOURCE_FILE:
         // Set the filename input widget's value to the filename for this data source.
         ip_filename_->value(data_entry_->filename.c_str());
+        ckb_enable_->activate();
         ckb_enable_->value(data_entry_->enabled);
         // Activate the remove button and filename input for file data sources, 
         // but deactivate the line configuration button if the data source is disabled.
         btn_remove_->activate();
+        btn_remove_->show();
+		btn_add_->deactivate();
+		btn_add_->show();
         ip_filename_->button()->activate();
         if (data_entry_->enabled) {
             btn_line_l_->activate();
@@ -120,8 +145,10 @@ void source_control::file_source::configure_widgets() {
     case SP_DATA_SOURCE_VNA:
         ip_filename_->value("nanoVNA");
         ip_filename_->button()->deactivate();
+        ckb_enable_->activate();
         ckb_enable_->value(data_entry_->enabled);
         btn_remove_->deactivate();
+		btn_add_->deactivate();
         if (data_entry_->enabled) {
             btn_line_l_->activate();
             btn_line_r_->activate();
@@ -163,7 +190,7 @@ void source_control::create_widgets() {
 	sp_data_entry* nvna_entry = sp_data_->get_dataset(0);
 	nvna_entry->source = SP_DATA_SOURCE_VNA;
 	nvna_entry->enabled = false;
-	nvna_source_->set_entry(nvna_entry); // The first dataset is reserved for the nanoVNA data source.
+	nvna_source_->set_entry(nvna_entry, -1); // The first dataset is reserved for the nanoVNA data source.
 
     cy += HBUTTON;
 
@@ -174,7 +201,7 @@ void source_control::create_widgets() {
     for (int i = 0; i < NUM_FILE_SOURCES; i++) {
         file_source* fs = new file_source(cx, cy, WCONTROL, HBUTTON);
         fs->type(SP_DATA_SOURCE_FILE);
-        fs->set_entry(nullptr); // No data entry associated with this file source yet.
+        fs->set_entry(nullptr, -1); // No data entry associated with this file source yet.
 		file_sources_[i] = fs;
         cy += HBUTTON;
     }
@@ -192,8 +219,25 @@ void source_control::create_widgets() {
 
 };
 
-// Load the previous settings for the control panel.
+// Load the previous settings for the control panel. This also loads known files.
 void source_control::load_default_settings() {
+    // Load the file data for known files.
+    int num_files = sp_data_->get_dataset_count();
+	int file_source_ix = 0;
+    for (int i = 0; i < num_files; i++) {
+        sp_data_entry* entry = sp_data_->get_dataset(i);
+        if (entry->source == SP_DATA_SOURCE_FILE) {
+            // The file sources are currently empty. Add the known ones.
+            if (file_source_ix < NUM_FILE_SOURCES) {
+                file_sources_[file_source_ix]->set_entry(entry, i);
+                file_source_ix++;
+            }
+            else {
+                // No more file source controls available to add this data source to, so stop loading known files.
+                break;
+            }
+        }
+    }
 };
 
 // Save the current settings for the control panel.
@@ -202,6 +246,7 @@ void source_control::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void source_control::configure_widgets() {
+	file_source::show_add_ = true;
     // Configure the nanoVNA line button based on the current colour and thickness settings.
     nvna_source_->configure_widgets();
     // Configure the file data source controls based on the current settings for each file data source.
@@ -227,9 +272,28 @@ void source_control::configure_line_button(Fl_Button* button, zc_graph_line_t li
 // \note If \p source is nullptr, all data sources should be reloaded.
 void source_control::data_source_changed(file_source* source) {
     // Update the display to reflect the changed data source.
-    if (display_ != nullptr) {
-        display_->configure_graph();
-        display_->update_graph();
+    if (display_control_ != nullptr) {
+        display_control_->configure_displays();
+        display_control_->update_displays();
+    }
+}
+
+// Callback function to add a new file data source when the add button is clicked.
+void source_control::cb_file_source_add(Fl_Widget* widget, void* data) {
+    source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
+	source_control* control = zc::ancestor_view<source_control>(file_source);
+    if (file_source != nullptr) {
+        // Find the first file source control that does not have a data entry associated with it and associate it with a new file dataset.
+        for (int i = 0; i < NUM_FILE_SOURCES; i++) {
+            if (control->file_sources_[i]->data_entry_ == nullptr) {
+				int new_ix = sp_data_->add_dataset();
+                sp_data_entry* new_entry = sp_data_->get_dataset(new_ix);
+				new_entry->source = SP_DATA_SOURCE_FILE;
+                new_entry->enabled = false;
+                control->file_sources_[i]->set_entry(new_entry, new_ix);
+                break;
+            }
+        }
     }
 }
  
@@ -251,6 +315,8 @@ void source_control::cb_file_enable(Fl_Widget* widget, void* data) {
         // Reconfigure the widgets for this data source based on the new settings.
         file_source->configure_widgets();
         // Update data
+		int file_index = *(int*)data;
+		sp_data_->read_data_from_file(file_index);
         source_control* control = zc::ancestor_view<source_control>(file_source);
         if (control != nullptr) {
             control->data_source_changed(file_source);

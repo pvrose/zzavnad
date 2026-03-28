@@ -23,12 +23,15 @@
 
 // Include ZZACOMMON drawing constants
 #include "zc_drawing.h"
+#include "zc_graph.h"
 #include "zc_settings.h"
 #include "zc_utils.h"
 
 // Include FLTK headers for the widgets used in the control panel.
 #include <FL/Enumerations.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Double_Window.H>
+
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Window.H>
 
@@ -44,6 +47,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "SWR",
         "SWR vs frequency",
         false,
+    	{ 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
         { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
         display::convert_sp_point_swr
@@ -52,6 +56,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 Raw",
         "S11 Raw data",
         true,
+        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 0.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
         { -1.0F, 1.0F, "Si", zc_graph::axis_xier_t::NONE, 20 },
         display::convert_sp_point_s11
@@ -60,6 +65,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 R+jX",
         "S11 Resistance and Reactance vs frequency",
         true,
+        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 0.0F, 1000.0F, "\xCE\xA9(R)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         {  -1000.0F, 1000.0F, "\xCE\xA9(X)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         display::convert_sp_point_s11_rx
@@ -68,6 +74,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 M+A",
         "S11 Magnitude and angle vs frequency",
         true,
+        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { -1.0F, 1.0F, "M", zc_graph::axis_xier_t::NONE, 20 },
         { -180.0F, 180.0F, "\xC2\xB0", zc_graph::axis_xier_t::NONE, 60 },
         display::convert_sp_point_s11_ma
@@ -91,7 +98,6 @@ display::display(int X, int Y, int W, int H, const char* L)
     box(FL_BORDER_BOX);
     align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     // Set the default display mode.
-    set_display_mode(DM_SWR);
     create_widgets();
     load_default_settings();
     configure_widgets();
@@ -106,25 +112,27 @@ display::~display() {
 void display::create_widgets() {
     int cx = x() + GAP;
     int cy = y() + HTEXT;
+	const int HLEGEND = HBUTTON * 7; // Height of the legend widgets.
+
     // Add the graph widget for plotting the data.
-    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT);
-    graph_->box(FL_DOWN_FRAME);
+    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT - HLEGEND);
+    graph_->box(FL_BORDER_BOX);
     graph_->tooltip("Graph for plotting S-parameter data");
 
     cy += graph_->h();
 
 	// Add the left axis legend.
-	legend_l_ = new display_legend(cx, cy, w() / 2 - GAP, HBUTTON * 7, "Left Axis Legend");
-    legend_l_->box(FL_BORDER_FRAME);
+	legend_l_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND, "Left Axis Legend");
+    legend_l_->box(FL_BORDER_BOX);
 	legend_l_->tooltip("Legend for the left Y-axis");
-    legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
+    legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
 	// Add the right axis legend.
     cx += legend_l_->w();
-	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HBUTTON * 7, "Right Axis Legend");
-	legend_r_->box(FL_BORDER_FRAME);
+	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND, "Right Axis Legend");
+	legend_r_->box(FL_BORDER_BOX);
     legend_r_->tooltip("Legend for the right Y-axis");
-    legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
+    legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
 	size(w(), cy + legend_l_->h() + GAP);
 	resizable(graph_);
@@ -138,6 +146,7 @@ void display::set_display_mode(display_mode mode) {
     display_mode_ = mode;
     // Set whether we need dual axes based on the selected display mode.
     dual_axes_ = display_mode_params_.at(mode).dual_axes;
+	configure_widgets();
 }
 
 // Configure the graph data based on the current display mode and the S-parameter data in sp_data.
@@ -175,6 +184,17 @@ void display::configure_graph() {
             dataset_to_graph_map_[dataset_index].index_r = ix_r;
         }
     }
+	auto& params = display_mode_params_.at(display_mode_);
+    if (dual_axes_) {
+        graph_->set_params(params.axis_x_options, params.axis_l_options, params.axis_r_options);
+    } else {
+        graph_->set_params(params.axis_x_options, params.axis_l_options);
+	}
+	update_legend(zc_graph::Y_LEFT);
+    if (dual_axes_) {
+        update_legend(zc_graph::Y_RIGHT);
+	}
+	redraw();
 }
 
 // Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
@@ -203,7 +223,47 @@ void display::update_graph() {
             }
         }
     }
+	// After updating the data, we need to adjust the graph scales to fit the new data.
+    graph_->set_drawing_area();
+    graph_->adjust_scale_x();
+    graph_->adjust_scale_y(zc_graph::Y_LEFT);
+    if (dual_axes_) {
+        graph_->adjust_scale_y(zc_graph::Y_RIGHT);
+    }
+    redraw();
 }
+
+// Update the legend for each axis based on the current display mode and data.
+void display::update_legend(zc_graph::y_axis_t axis) {
+    // Get the label for this axis based on the current display mode.
+    std::string label;
+    // For each dataset map onto next legend entry for this axis.
+    int num_datasets = sp_data_->get_dataset_count();
+    std::vector<legend_entry_t> legend_entries;
+    for (int i = 0; i < num_datasets; i++) {
+        auto dataset = sp_data_->get_dataset(i);
+        if (dataset->enabled) {
+            legend_entry_t entry;
+            if (axis == zc_graph::Y_LEFT) {
+                entry.style = dataset->line_style_l;
+            }
+            else {
+                entry.style = dataset->line_style_r;
+            }
+            entry.source = zc::terminal(dataset->filename);
+            // Set the legend entry for this dataset.
+            legend_entries.push_back(entry);
+        }
+    }
+    if (axis == zc_graph::Y_LEFT) {
+        legend_l_->set_entries(legend_entries);
+    }
+    else {
+        legend_r_->set_entries(legend_entries);
+    }
+    redraw();
+}
+
 
 // Load the previous settings for the display.
 void display::load_default_settings() {
@@ -219,7 +279,13 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
-    // None at the moment.
+    if (dual_axes_) {
+        legend_l_->show();
+        legend_r_->show();
+    } else {
+        legend_l_->show();
+        legend_r_->hide();
+	}
 }
 
 // Convert sp_point into 2 coordinates for plotting S11 as resistance and reactance vs frequency.

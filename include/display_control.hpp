@@ -74,6 +74,11 @@ public:
 	//! \brief Instantiate the widgets for the display control.
 	void create_widgets();
 
+	//! \brief Configure all active display.
+	void configure_displays();
+	//! \brief Update all active displays with the current S-parameter data.
+	void update_displays();
+
 	//! \brief Callback function for when a display mode selection is changed.
 	static void cb_display_mode(Fl_Widget* widget, void* data);
 

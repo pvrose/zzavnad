@@ -143,6 +143,27 @@ void display_control::create_widgets() {
 	Fl_Group::current(save_current);
 }
 
+// Configure all active display windows based on the current settings.
+void display_control::configure_displays() {
+	for (auto& pair : display_mode_params_) {
+		display_mode mode = pair.first;
+		dm_params_t& params = pair.second;
+		if (params.window != nullptr) {
+			params.window->configure_graph();
+		}
+	}
+}
+
+// Update all active display windows with the current S-parameter data.
+void display_control::update_displays() {
+	for (auto& pair : display_mode_params_) {
+		dm_params_t& params = pair.second;
+		if (params.window != nullptr) {
+			params.window->update_graph();
+		}
+	}
+}
+
 // Callback function for when a display mode selection is changed.
 void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 	display_mode mode = (display_mode)(uintptr_t)data;
@@ -154,11 +175,10 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 		if (params.window == nullptr) {
 			params.window = new display(params.left, params.top, params.width, params.height, params.title.c_str());
 			params.window->set_display_mode(mode);
-			params.window->show();
 		}
-		else {
-			params.window->show();
-		}
+		params.window->configure_graph();
+		params.window->update_graph();
+		params.window->show();
 	}
 	else {
 		// Disable and hide the display window for this mode.

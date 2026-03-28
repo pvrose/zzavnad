@@ -22,6 +22,16 @@
 // Include zzacommon items.
 #include "zc_drawing.h"
 
+// Include FLTK widgets
+#include <FL/Enumerations.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Group.H>
+
+// Include C++ standard library headers.
+#include <string>
+#include <vector>
+
 // Constructor for the display legend.
 display_legend::display_legend(int X, int Y, int W, int H, const char* L) :
 	Fl_Group(X, Y, W, H, L) {
@@ -39,10 +49,10 @@ void display_legend::create_widgets() {
 	int cx = x() + GAP;
 	int cy = y() + HTEXT;
 	for (int i = 0; i <= NUM_FILE_SOURCES; i++) {
-		line_style_button* line_btn = new line_style_button(cx, cy, WBUTTON, HBUTTON);
+		line_style_button* line_btn = new line_style_button(cx, cy, WBUTTON / 2, HBUTTON);
 		line_btn->tooltip("Shows the line style for this dataset.");
 		line_style_buttons_.push_back(line_btn);
-		cx += WBUTTON;
+		cx += WBUTTON / 2;
 		Fl_Box* label = new Fl_Box(cx, cy, WLABEL, HBUTTON);
 		label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 		labels_.push_back(label);
@@ -59,13 +69,12 @@ void display_legend::set_entries(const std::vector<legend_entry_t>& entries) {
 		if (i < entries.size()) {
 			line_btn->labelcolor(entries[i].style.colour);
 			line_btn->copy_label(std::to_string(entries[i].style.thickness).c_str());
-			line_btn->box(FL_FLAT_BOX);
-			labels_[i]->label(entries[i].source.c_str());
+			labels_[i]->copy_label(entries[i].source.c_str());
 		} else {
 			line_btn->labelcolor(FL_BACKGROUND_COLOR);
 			line_btn->copy_label("");
-			line_btn->box(FL_BORDER_BOX);
-			labels_[i]->label("");
+			line_btn->box(FL_FLAT_BOX);
+			labels_[i]->copy_label("");
 		}
 	}
 }
