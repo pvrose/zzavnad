@@ -295,6 +295,7 @@ void source_control::cb_file_source_add(Fl_Widget* widget, void* data) {
             }
         }
     }
+	control->configure_widgets();
 }
  
 void source_control::cb_file_input(Fl_Widget* widget, void* data) {
