@@ -101,8 +101,8 @@ struct display_mode_params_t {
 const std::complex<double> ONE = 1.0;
 
 // Constructor for the display class.
-display::display(int X, int Y, int W, int H, const char* L)
-    : Fl_Double_Window(X, Y, W, H, L) {
+display::display(int W, int H, const char* L)
+    : Fl_Double_Window(W, H, L) {
     box(FL_BORDER_BOX);
     align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     // Set the default display mode.

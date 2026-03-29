@@ -50,8 +50,6 @@ struct dm_params_t {
     void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
                                          //!< Function to convert sp_point into coordinates for plotting.
 	bool enabled = false;                //!< Whether this display mode is being shown.
-	int top = 0;                         //!< The top position of the display window for this mode.
-	int left = 0;                        //!< The left position of the display window for this mode.
 	int width = 800;                     //!< The width of the display window for this mode.
 	int height = 600;                    //!< The height of the display window for this mode.
     display* window = nullptr;           //!< Pointer to the display window for this mode.
@@ -65,12 +63,10 @@ class display : public Fl_Double_Window {
 public:
     
     //! Constructor for the display class.
-    //! \param X The x-coordinate of the display window.
-    //! \param Y The y-coordinate of the display window.
     //! \param W The width of the display window.
     //! \param H The height of the display window.
     //! \param L The label for the display window.
-    display(int X, int Y, int W, int H, const char* L = nullptr);
+    display(int W, int H, const char* L = nullptr);
     
     //! Destructor for the display class.
     ~display();

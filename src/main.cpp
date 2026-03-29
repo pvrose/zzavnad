@@ -23,6 +23,7 @@
 #include "sp_data.hpp"
 
 #include "zc_file_holder.h"
+#include "zc_status.h"
 
 // include FLTK headers.
 #include <FL/Enumerations.H>
@@ -96,6 +97,7 @@ static void customise_fltk() {
 int main(int argc, char** argv) {
 	file_holder_ = new zc_file_holder(argv[0], FILE_CONTROL);
     customise_fltk();
+	status_ = new zc_status(zc_status::HAS_CONSOLE, {});
     // Create the main data item for the S-parameter data.
     sp_data_ = new sp_data();
     // Create the main application window.
