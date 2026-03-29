@@ -87,10 +87,10 @@ void sp_data::load_settings() {
         }
         dataset_settings.get("Valid Ports", entry->valid_ports, 2);
         dataset_settings.get("Left Colour", entry->line_style_l.colour, FL_BLUE);
-		dataset_settings.get("Left Thickness", entry->line_style_l.thickness, 2);
+		dataset_settings.get("Left Width", entry->line_style_l.width, 2);
 		dataset_settings.get("Left Style", entry->line_style_l.style, (int)FL_SOLID);
 		dataset_settings.get("Right Colour", entry->line_style_r.colour, FL_GREEN);
-		dataset_settings.get("Right Thickness", entry->line_style_r.thickness, 2);
+		dataset_settings.get("Right Width", entry->line_style_r.width, 2);
 		dataset_settings.get("Right Style", entry->line_style_r.style, (int)FL_SOLID);
         datasets_.push_back(entry);
     }
@@ -121,9 +121,9 @@ void sp_data::save_settings() {
         }
         dataset_settings->set("Valid Ports", entry->valid_ports);
         dataset_settings->set("Left Colour", entry->line_style_l.colour);
-        dataset_settings->set("Left Thickness", entry->line_style_l.thickness);
+        dataset_settings->set("Left Width", entry->line_style_l.width);
         dataset_settings->set("Right Colour", entry->line_style_r.colour);
-        dataset_settings->set("Right Thickness", entry->line_style_r.thickness);
+        dataset_settings->set("Right Width", entry->line_style_r.width);
     }
 }
 
@@ -133,8 +133,8 @@ int sp_data::add_dataset() {
     entry->source = SP_DATA_SOURCE_FILE;
     entry->filename = "";
     entry->valid_ports = 2;
-    entry->line_style_l = zc_graph_line_t{FL_BLUE, 2, FL_SOLID};
-    entry->line_style_r = zc_graph_line_t{FL_RED, 2, FL_SOLID};
+    entry->line_style_l = zc_line_style(FL_BLUE, 2, FL_SOLID);
+    entry->line_style_r = zc_line_style(FL_RED, 2, FL_SOLID);
     datasets_.push_back(entry);
     return datasets_.size() - 1;
 }

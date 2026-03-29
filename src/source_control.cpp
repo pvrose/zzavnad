@@ -47,8 +47,6 @@
 
 const int WCONTROL = 6 * HBUTTON + WEDIT; //!< Width of the controls for each data source
 
-using line_style_button = Fl_Button;
-
 bool source_control::file_source::show_add_ = false; //!< Static variable to control whether the add button is shown for file sources.
 
 // Constructor for the file source control panel.
@@ -259,13 +257,11 @@ void source_control::configure_widgets() {
 // Configure a linestyle button based on the given colour and thickness.
 // TODO: Can we add a visual indication of the line thickness to the button? 
 // Maybe by drawing a line on the button itself?
-void source_control::configure_line_button(Fl_Button* button, zc_graph_line_t line_style) {
-    // Set the label colour to the given colour.
-    button->labelcolor(line_style.colour);
+void source_control::configure_line_button(line_style_button* button, zc_line_style line_style) {
+
     // Set the button's label to indicate the line thickness.
-    button->labelfont(FL_BOLD);
-    button->copy_label(std::to_string(line_style.thickness).c_str());
-};
+    button->value(line_style);
+}
 
 // A data source has been changed so data needs to reflect this.
 // \param source The data source that has been changed. 
@@ -329,7 +325,7 @@ void source_control::cb_file_enable(Fl_Widget* widget, void* data) {
 void source_control::cb_file_line(Fl_Widget* widget, void* data) {
     source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
     if (file_source != nullptr) {
-		zc_graph_line_t line_style;
+		zc_line_style line_style;
         switch ((zc_graph::y_axis_t)(intptr_t)data) {
 		case zc_graph::Y_LEFT:
 			line_style = file_source->data_entry_->line_style_l;
@@ -340,7 +336,7 @@ void source_control::cb_file_line(Fl_Widget* widget, void* data) {
         }
         // TODO: Implement line configuration dialog to allow the user to select the colour and thickness for this data source.
         line_style.colour = FL_RED; // Placeholder for testing
-        line_style.thickness = 3; // Placeholder for testing
+        line_style.width = 3; // Placeholder for testing
 		line_style.style = FL_SOLID; // Placeholder for testing
         file_source->configure_widgets();
         // Update data

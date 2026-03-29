@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "zc_graph.h"
+#include "zc_line_style.h"
 
 //! \file sp_data.hpp
 //! \brief Provides the basic data types used for the S-parameter data.
@@ -62,8 +62,8 @@ struct sp_data_entry {
     sp_data_source source;     //!< The source of the data
     std::string filename;      //!< Optional filename if data was read from a file
     int valid_ports;           //!< Number of valid ports (1 or 2)
-    zc_graph_line_t line_style_l;       //!< Line configuration for left hand data (e.g. colour, thickness)
-    zc_graph_line_t line_style_r;       //!< Line configuration for right hand data (e.g. colour, thickness)
+    zc_line_style line_style_l;       //!< Line configuration for left hand data (e.g. colour, thickness)
+    zc_line_style line_style_r;       //!< Line configuration for right hand data (e.g. colour, thickness)
     double z0;                 //!< Characteristic impedance of the system for this data (e.g. 50 ohms)
     bool enabled;              //!< Whether this dataset is enabled for display
 };

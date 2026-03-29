@@ -67,12 +67,9 @@ void display_legend::set_entries(const std::vector<legend_entry_t>& entries) {
 	for (size_t i = 0; i < line_style_buttons_.size(); i++) {
 		line_style_button* line_btn = line_style_buttons_[i];
 		if (i < entries.size()) {
-			line_btn->labelcolor(entries[i].style.colour);
-			line_btn->copy_label(std::to_string(entries[i].style.thickness).c_str());
-			labels_[i]->copy_label(entries[i].source.c_str());
+			line_btn->value(entries[i].style);
 		} else {
-			line_btn->labelcolor(FL_BACKGROUND_COLOR);
-			line_btn->copy_label("");
+			line_btn->value(zc_line_style());
 			line_btn->box(FL_FLAT_BOX);
 			labels_[i]->copy_label("");
 		}

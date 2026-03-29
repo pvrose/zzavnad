@@ -21,6 +21,7 @@
 #pragma once
 
 #include "sp_data.hpp"
+
 #include "zc_graph.h"
 
 #include <FL/Fl_Double_Window.H>

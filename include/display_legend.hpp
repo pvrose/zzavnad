@@ -34,7 +34,7 @@
 #include <vector>
 
 //! Temporary class for a line-style button
-using line_style_button = Fl_Button;
+typedef zc_button_dialog<zc_line_style_dialog, zc_line_style> line_style_button;
 
 // Forward declarations
 enum display_mode : uint8_t;
@@ -42,7 +42,7 @@ enum display_mode : uint8_t;
 //! \brief Data needed to display the legend for a display.
 struct legend_entry_t {
 	zc_graph::y_axis_t axis; //!< Y-axis for this entry.
-	zc_graph_line_t style; //!< Line style to show for this entry.
+	zc_line_style style; //!< Line style to show for this entry.
 	std::string source; //!< Source for this entry.
 };
 

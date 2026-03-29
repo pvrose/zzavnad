@@ -26,6 +26,9 @@
 
 #include "zc_graph.h"
 
+#include "zc_line_style.h"
+#include "zc_button_dialog.h"
+
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
 
@@ -43,8 +46,8 @@ class Fl_Choice;
 // Forward declaration of zzacommon widgets
 class zc_filename_input;
 
-// Temporary fix for line-style button
-using line_style_button = Fl_Button;
+// Line-style button
+typedef zc_button_dialog<zc_line_style_dialog, zc_line_style> line_style_button;
 
 // Forward declaration of the S-parameter data structures.
 struct sp_data_entry; 
@@ -87,7 +90,7 @@ public:
     void configure_widgets();
 
     //! Configure a linestyle button based on the given colour and thickness.
-    static void configure_line_button(Fl_Button* button, zc_graph_line_t line_style);
+    static void configure_line_button(line_style_button* button, zc_line_style line_style);
 
     // Widgets for the control panel.
     //! Group to select and configure the file data sources.
