@@ -43,6 +43,20 @@ display_control::display_control(int X, int Y, int W, int H, const char* L) :
 	create_widgets();
 	// Load the previous settings for the display control.
 	load_settings();
+	// Open any windows for display modes that were enabled in the settings.
+	Fl_Group* save_current = Fl_Group::current();
+	Fl_Group::current(nullptr);
+	for (display_mode mode = static_cast<display_mode>(0); mode < DM_COUNT; mode = static_cast<display_mode>(mode + 1)) {
+		dm_params_t& params = display_mode_params_.at(mode);
+		if (params.enabled) {
+			params.window = new display(params.left, params.top, params.width, params.height, params.title.c_str());
+			params.window->set_display_mode(mode);
+			params.window->show();
+		}
+	}
+	Fl_Group::current(save_current);
+	configure_displays();
+	update_displays();
 	end();
 	show();
 }
@@ -70,7 +84,6 @@ void display_control::load_settings() {
 			mode_settings.get("Top", params.top, 0);
 			mode_settings.get("Width", params.width, 400);
 			mode_settings.get("Height", params.height, 300);
-			mode_settings.get("Title", params.title, std::string(""));
 		}
 	}
 }
@@ -163,6 +176,7 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 	Fl_Check_Button* cb_mode = (Fl_Check_Button*)widget;
 	bool enabled = cb_mode->value();
 	dm_params_t& params = display_mode_params_.at(mode);
+	params.enabled = enabled;
 	if (enabled) {
 		// Create and enable the display window for this mode.
 		if (params.window == nullptr) {
