@@ -59,7 +59,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 Raw data",
         true,
         { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { 0.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
+        { -1.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
         { -1.0F, 1.0F, "Si", zc_graph::axis_xier_t::NONE, 20 },
         "S11 Real data",
 		"S11 Imaginary data",
@@ -81,7 +81,7 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 Magnitude and angle vs frequency",
         true,
         { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { -1.0F, 1.0F, "Mag", zc_graph::axis_xier_t::NONE, 20 },
+        { 0.0F, 1.0F, "Mag", zc_graph::axis_xier_t::NONE, 20 },
         { -180.0F, 180.0F, "degree", zc_graph::axis_xier_t::NONE, 60 },
 		"S11 Magnitude",
 		"S11 Angle",
@@ -234,10 +234,10 @@ void display::update_graph() {
 	// After updating the data, we need to adjust the graph scales to fit the new data.
     graph_->set_drawing_area();
     graph_->adjust_scale_x();
-    graph_->adjust_scale_y(zc_graph::Y_LEFT);
-    if (dual_axes_) {
-        graph_->adjust_scale_y(zc_graph::Y_RIGHT);
-    }
+    //graph_->adjust_scale_y(zc_graph::Y_LEFT);
+    //if (dual_axes_) {
+    //    graph_->adjust_scale_y(zc_graph::Y_RIGHT);
+    //}
     redraw();
 }
 
