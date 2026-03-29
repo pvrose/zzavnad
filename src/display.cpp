@@ -318,12 +318,12 @@ void display::convert_sp_point_s11_ma(const sp_point& point, const sp_data_entry
     point_r.y = std::arg(s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
 }
 
-// Convert sp_point into 2 coordinates for plotting S11 magnitude and phase vs frequency.
+// Convert sp_point into 2 coordinates for plotting S11 raw data.
 void display::convert_sp_point_s11(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
     point_l.x = point.frequency;
-    point_l.y = std::abs(point.sparams.s11); // S11 magnitude
+    point_l.y = point.sparams.s11.real(); // S11 real part
     point_r.x = point.frequency;
-    point_r.y = std::arg(point.sparams.s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
+    point_r.y = point.sparams.s11.imag(); // S11 imaginary part
 }
 
 // Convert sp_point into a single coordinate for plotting SWR vs frequency.
