@@ -37,6 +37,7 @@
 // Constructor for the main application window.
 main_window::main_window(int W, int H, const char* L)
     : Fl_Double_Window(W, H, L) {
+    callback(cb_exit, this);
     create_widgets();
 }; 
 
@@ -87,3 +88,9 @@ void main_window::create_widgets() {
     ::display_control_ = display_control_;
 };
     
+// Callback function for the "Exit" menu item.
+void main_window::cb_exit(Fl_Widget* widget, void* data) {
+    main_window* win = (main_window*)widget;
+	win->display_control_->close_displays();
+	default_callback((Fl_Window*)widget, data);
+};

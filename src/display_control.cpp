@@ -52,14 +52,7 @@ display_control::~display_control() {
 	// Save the current settings for the display control.
 	save_settings();
 	// Close any open display windows.
-	for (auto& pair : display_mode_params_) {
-		dm_params_t& params = pair.second;
-		if (params.window != nullptr) {
-			params.window->hide();
-			delete params.window;
-			params.window = nullptr;
-		}
-	}
+	close_displays();
 }
 
 // Load the previous settings for the display control.
@@ -201,6 +194,18 @@ void display_control::configure_widgets() {
 		else if (params.window != nullptr) {
 			cb_mode->value(0);
 			params.window->hide();
+		}
+	}
+}
+
+// Close all active display windows.
+void display_control::close_displays() {
+	for (auto& pair : display_mode_params_) {
+		dm_params_t& params = pair.second;
+		if (params.window != nullptr) {
+			params.window->hide();
+			delete params.window;
+			params.window = nullptr;
 		}
 	}
 }

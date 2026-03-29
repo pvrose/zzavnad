@@ -79,6 +79,9 @@ public:
 	//! \brief Update all active displays with the current S-parameter data.
 	void update_displays();
 
+	//! \brief Close all active display windows.
+	void close_displays();
+
 	//! \brief Callback function for when a display mode selection is changed.
 	static void cb_display_mode(Fl_Widget* widget, void* data);
 

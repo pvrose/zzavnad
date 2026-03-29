@@ -29,6 +29,11 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
+// Include C++ standard library headers.
+#include <cstdint>
+#include <map>
+#include <string>
+
 
 // Declare global pointers.
 display* display_;

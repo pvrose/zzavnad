@@ -41,6 +41,9 @@ public:
     //! Create the widgets for the main window.
     void create_widgets();
 
+	//! Callback function for the "Exit" menu item.
+	static void cb_exit(Fl_Widget* widget, void* data);
+
     // Widgets for the main window.
     display_control* display_control_; //!< The main display control for managing the display windows.
     source_control* source_control_; //!< The control panel for selecting data sources and configuring their display settings.
