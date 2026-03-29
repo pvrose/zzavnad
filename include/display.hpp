@@ -45,6 +45,8 @@ struct dm_params_t {
 	zc_graph::options_t axis_x_options;  //!< Options for x axis
     zc_graph::options_t axis_l_options;  //!< Options for left y axis
     zc_graph::options_t axis_r_options;  //!< Options for right y axis
+	std::string legend_l = "";              //!< Legend for left y axis data.
+	std::string legend_r = "";              //!< Legend for right y axis data.
     void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
                                          //!< Function to convert sp_point into coordinates for plotting.
 	bool enabled = false;                //!< Whether this display mode is being shown.

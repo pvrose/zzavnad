@@ -50,6 +50,8 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
     	{ 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
         { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
+		"Standing Wave Ratio",
+        "",
         display::convert_sp_point_swr
     }},
     { DM_S11, {
@@ -59,6 +61,8 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 0.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
         { -1.0F, 1.0F, "Si", zc_graph::axis_xier_t::NONE, 20 },
+        "S11 Real data",
+		"S11 Imaginary data",
         display::convert_sp_point_s11
     }},
     { DM_S11_RX, {
@@ -68,6 +72,8 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         { 0.0F, 1000.0F, "\xCE\xA9(R)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
         {  -1000.0F, 1000.0F, "\xCE\xA9(X)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
+		"S11 Resistance",
+		"S11 Reactance",
         display::convert_sp_point_s11_rx
     }},
     { DM_S11_MA, {
@@ -75,8 +81,10 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 Magnitude and angle vs frequency",
         true,
         { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { -1.0F, 1.0F, "M", zc_graph::axis_xier_t::NONE, 20 },
-        { -180.0F, 180.0F, "\xC2\xB0", zc_graph::axis_xier_t::NONE, 60 },
+        { -1.0F, 1.0F, "Mag", zc_graph::axis_xier_t::NONE, 20 },
+        { -180.0F, 180.0F, "degree", zc_graph::axis_xier_t::NONE, 60 },
+		"S11 Magnitude",
+		"S11 Angle",
         display::convert_sp_point_s11_ma
     }}
 };
@@ -122,14 +130,14 @@ void display::create_widgets() {
     cy += graph_->h();
 
 	// Add the left axis legend.
-	legend_l_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND, "Left Axis Legend");
+	legend_l_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND);
     legend_l_->box(FL_BORDER_BOX);
 	legend_l_->tooltip("Legend for the left Y-axis");
     legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
 	// Add the right axis legend.
     cx += legend_l_->w();
-	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND, "Right Axis Legend");
+	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND);
 	legend_r_->box(FL_BORDER_BOX);
     legend_r_->tooltip("Legend for the right Y-axis");
     legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
@@ -279,11 +287,12 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
+    legend_l_->show();
+	legend_l_->copy_label(display_mode_params_.at(display_mode_).legend_l.c_str());
     if (dual_axes_) {
-        legend_l_->show();
         legend_r_->show();
+		legend_r_->copy_label(display_mode_params_.at(display_mode_).legend_r.c_str());
     } else {
-        legend_l_->show();
         legend_r_->hide();
 	}
 }
