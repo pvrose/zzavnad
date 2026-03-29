@@ -40,6 +40,20 @@
 // Constructor for the S-parameter data manager.
 sp_data::sp_data() {
     load_settings();
+	// If any datasets were loaded from settings, attempt to read the data for them.
+    for (int i = 0; i < datasets_.size(); i++) {
+        sp_data_entry* entry = datasets_[i];
+        if (entry->source == SP_DATA_SOURCE_FILE) {
+            if (!read_data_from_file(i)) {
+                if (status_) status_->misc_status(ST_ERROR, "Failed to read data from file: %s", entry->filename.c_str());
+            }
+        }
+        else if (entry->source == SP_DATA_SOURCE_VNA) {
+            if (!acquire_data_from_vna()) {
+                if (status_) status_->misc_status(ST_ERROR, "Failed to acquire data from VNA");
+            }
+        }
+	}
 }
 
 // Destructor for the S-parameter data manager.
@@ -57,12 +71,13 @@ void sp_data::load_settings() {
     zc_settings settings;
     zc_settings sp_settings(&settings, "Data");
     // Load specific settings for sp_data here.
-    int dataset_count = sp_settings.group_count();
+    int dataset_count;
+	sp_settings.get("Dataset Count", dataset_count, 0);
     for (int i = 0; i < dataset_count; i++) {
-        zc_settings dataset_settings(&sp_settings, i);
+		std::string dataset_name = i == 0 ? "nanoVNA" : "Dataset " + std::to_string(i);
+        zc_settings dataset_settings(&sp_settings, dataset_name);
         sp_data_entry* entry = new sp_data_entry;
-        std::string name = dataset_settings.name();
-        if (name != "nanoVNA") {
+        if (i != 0) {
             entry->source = SP_DATA_SOURCE_FILE;
             dataset_settings.get("Filename", entry->filename, std::string(""));
         }
@@ -71,8 +86,12 @@ void sp_data::load_settings() {
             nanoVNA_index_ = i;
         }
         dataset_settings.get("Valid Ports", entry->valid_ports, 2);
-        dataset_settings.get("Colour", entry->line_style_l.colour, FL_BLUE);
-        dataset_settings.get("Thickness", entry->line_style_l.thickness, 2);
+        dataset_settings.get("Left Colour", entry->line_style_l.colour, FL_BLUE);
+		dataset_settings.get("Left Thickness", entry->line_style_l.thickness, 2);
+		dataset_settings.get("Left Style", entry->line_style_l.style, (int)FL_SOLID);
+		dataset_settings.get("Right Colour", entry->line_style_r.colour, FL_GREEN);
+		dataset_settings.get("Right Thickness", entry->line_style_r.thickness, 2);
+		dataset_settings.get("Right Style", entry->line_style_r.style, (int)FL_SOLID);
         datasets_.push_back(entry);
     }
     if (datasets_.size() == 0) {
@@ -101,8 +120,10 @@ void sp_data::save_settings() {
             dataset_settings->set("Filename", entry->filename);
         }
         dataset_settings->set("Valid Ports", entry->valid_ports);
-        dataset_settings->set("Colour", entry->line_style_l.colour);
-        dataset_settings->set("Thickness", entry->line_style_l.thickness);
+        dataset_settings->set("Left Colour", entry->line_style_l.colour);
+        dataset_settings->set("Left Thickness", entry->line_style_l.thickness);
+        dataset_settings->set("Right Colour", entry->line_style_r.colour);
+        dataset_settings->set("Right Thickness", entry->line_style_r.thickness);
     }
 }
 

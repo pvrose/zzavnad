@@ -50,7 +50,7 @@ extern std::string APP_VERSION;
 //! File holder customisation - control data
 const std::map < uint8_t, file_control_t > FILE_CONTROL = {
 	// ID, { filename, reference, read-only
-	{ FILE_SETTINGS, { APP_NAME + ".json", false, false, 0 }},
+	{ FILE_SETTINGS, { "ZZAVNAD.json", false, false, 0 }},
 	{ FILE_STATUS, { "status.txt", false, false, 0}},
 	{ FILE_ICON_ZZA, { "rose.png", true, true, 0}}
 };
@@ -99,7 +99,12 @@ int main(int argc, char** argv) {
     // Create the main data item for the S-parameter data.
     sp_data_ = new sp_data();
     // Create the main application window.
-    main_window window(800, 600, (APP_NAME + " " + APP_VERSION + " - VNA Analysis Software").c_str());
+    main_window* window = new main_window(800, 600, (APP_NAME + " " + APP_VERSION + " - VNA Analysis Software").c_str());
     // Run the FLTK event loop.
-    return Fl::run();   
+    int result = Fl::run();   
+	// Clean up and exit.
+	delete window;
+	delete sp_data_;
+	delete file_holder_;
+	return result;
 }
