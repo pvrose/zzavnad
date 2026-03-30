@@ -325,19 +325,17 @@ void source_control::cb_file_enable(Fl_Widget* widget, void* data) {
 void source_control::cb_file_line(Fl_Widget* widget, void* data) {
     source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
     if (file_source != nullptr) {
-		zc_line_style line_style;
+		zc_line_style* line_style;
         switch ((zc_graph::y_axis_t)(intptr_t)data) {
 		case zc_graph::Y_LEFT:
-			line_style = file_source->data_entry_->line_style_l;
+			line_style = &file_source->data_entry_->line_style_l;
             break;
 		case zc_graph::Y_RIGHT:
-			line_style = file_source->data_entry_->line_style_r;
+			line_style = &file_source->data_entry_->line_style_r;
 			break;
         }
-        // TODO: Implement line configuration dialog to allow the user to select the colour and thickness for this data source.
-        line_style.colour = FL_RED; // Placeholder for testing
-        line_style.width = 3; // Placeholder for testing
-		line_style.style = FL_SOLID; // Placeholder for testing
+		line_style_button* line_button = (line_style_button*)widget;
+		*line_style = line_button->value();
         file_source->configure_widgets();
         // Update data
         source_control* control = zc::ancestor_view<source_control>(file_source);
