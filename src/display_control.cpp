@@ -55,6 +55,7 @@ display_control::display_control(int X, int Y, int W, int H, const char* L) :
 		}
 	}
 	Fl_Group::current(save_current);
+	configure_widgets();
 	configure_displays();
 	update_displays();
 	end();
