@@ -18,7 +18,8 @@
 
 #include "nvna_control.hpp"
 
-// Include the S-parameter data structures.
+#include "display_control.hpp"
+#include "nvna_iface.hpp"
 #include "sp_data.hpp"
 
 // Include ZZACOMMON drawing constants
@@ -28,14 +29,19 @@
 #include "zc_utils.h"
 
 // Include FLTK headers for the widgets used in the control panel.
+#include <FL/Enumerations.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Group.H>
-#include <FL/Fl_Radio_Round_Button.H>
+#include <FL/Fl_Widget.H>
 
 #include <cmath>
+#include <exception>
+#include <stdexcept>
 #include <string>
+#include <set>
+#include <vector>
 
 // Constructor for the nanoVNA control panel.
 nvna_control::nvna_control(int X, int Y, int W, int H, const char* L)
@@ -161,7 +167,7 @@ void nvna_control::load_default_settings() {
 }
 
 // Save the current frequency settings to the settings.
-void nvna_control::save_current_settings() {
+void nvna_control::save_current_settings() const {
     zc_settings settings;
     zc_settings nvna_settings(&settings, "nanoVNA Control");
     nvna_settings.set("Frequency Multiplier", frequency_xier_);
@@ -192,8 +198,7 @@ void nvna_control::configure_widgets() {
 
 // Populate the nanoVNA port and speed dropdowns with available options.
 void nvna_control::populate_nvna_options() {
-    zc_serial serial;
-    std::set<std::string> ports = serial.available_ports(true);
+    std::set<std::string> ports = zc_serial::available_ports(true);
     choice_nvna_port_->clear();
     for (const auto& port : ports) {
         choice_nvna_port_->add(port.c_str());
@@ -211,6 +216,18 @@ void nvna_control::cb_acquire(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
     if (control->nvna_enabled_) {
         // TODO: Implement data acquisition from nanoVNA.
+        auto data = sp_data_->get_dataset(0); // Get the first dataset (NVNA).
+        if (data) {
+            // Acquire data from start frequency to stop frequency with the specified step and store it in the dataset.
+            // Number of steps = (stop_freq_ - start_freq_) / step_freq_ + 1
+            int num_steps = static_cast<int>((control->stop_freq_ - control->start_freq_) / control->step_freq_) + 1;
+            // Get the data
+            if (control->nvna_interface_) {
+                control->nvna_interface_->acquire_data(&data->data, control->start_freq_, control->step_freq_, num_steps);
+            }
+			display_control_->configure_displays(); // Update the displays with the new data.
+            display_control_->update_displays();
+        }
     }
 }
 
@@ -253,5 +270,6 @@ void nvna_control::cb_nvna_speed(Fl_Widget* widget, void* data) {
 // Callback function for the nanoVNA connect button.
 void nvna_control::cb_nvna_connect(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
-    // TODO: Implement nanoVNA connection logic.
+	control->nvna_interface_ = new nvna_iface(control->nvna_port_, control->nvna_speed_);
+	control->enable_nvna();
 }

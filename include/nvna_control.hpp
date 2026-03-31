@@ -26,6 +26,9 @@ class Fl_Button;
 class Fl_Choice;
 class Fl_Float_Input;
 class Fl_Radio_Round_Button;
+class Fl_Widget;
+
+class nvna_iface;
 
 //! \file nvna_control.hpp
 //! \brief Provides the nanoVNA control interface for acquiring S-parameter data from a nanoVNA.
@@ -71,7 +74,7 @@ public:
     //! Load the default frequency settings into the input fields.
     void load_default_settings();
     //! Save the current frequency settings.
-    void save_current_settings();
+    void save_current_settings() const;
     //! Configure the widgets based on the current scenario.
     void configure_widgets();
 
@@ -104,6 +107,9 @@ public:
 
     std::string nvna_port_; //!< Currently selected nanoVNA serial port
     int nvna_speed_; //!< Currently selected nanoVNA baud rate
+
+	//! Pointer to the nanoVNA interface for communicating with the nanoVNA device.
+	nvna_iface* nvna_interface_;
 
 };
 
