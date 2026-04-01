@@ -155,7 +155,7 @@ void source_control::file_source::configure_widgets() {
             btn_line_r_->deactivate();
         }
         configure_line_button(btn_line_l_, data_entry_->line_style_l);
-        configure_line_button(btn_line_r_, data_entry_->line_style_l);
+        configure_line_button(btn_line_r_, data_entry_->line_style_r);
         break;
     default:
         break;
