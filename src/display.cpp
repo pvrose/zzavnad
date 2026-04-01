@@ -135,6 +135,8 @@ void display::create_widgets() {
 	legend_l_->tooltip("Legend for the left Y-axis");
     legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
+    legend_l_->resizable(nullptr);
+
 	// Add the right axis legend.
     cx += legend_l_->w();
 	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND);
@@ -142,7 +144,8 @@ void display::create_widgets() {
     legend_r_->tooltip("Legend for the right Y-axis");
     legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
-	size(w(), cy + legend_l_->h() + GAP);
+	legend_r_->resizable(nullptr);
+
 	resizable(graph_);
 
     end();
