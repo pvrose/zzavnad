@@ -258,7 +258,12 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             else {
                 entry.style = dataset->line_style_r;
             }
-            entry.source = zc::terminal(dataset->filename);
+            if (dataset->source == SP_DATA_SOURCE_FILE) {
+                entry.source = zc::terminal(dataset->filename);
+            }
+            else {
+				entry.source = "nanoVNA";
+            }
             // Set the legend entry for this dataset.
             legend_entries.push_back(entry);
         }
