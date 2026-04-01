@@ -17,8 +17,11 @@
 */
 #pragma once
 
+#include "sp_data.hpp"
+
 #include <FL/Fl_Group.H>
 
+#include <set>
 #include <string>
 
 // Forward declaration of FLTK widgets.
@@ -53,7 +56,13 @@ public:
     //! Disable the nanoVNA for data acquisition.
     void disable_nvna() { nvna_enabled_ = false; }
 
-    protected:
+	//! Acquire S-parameter data from the nanoVNA and store it in the provided data entry.
+	void acquire_data_from_nvna(sp_data_set* data);
+
+	//! Check if the nanoVNA is currently enabled for data acquisition.
+	bool is_nvna_enabled() const { return nvna_enabled_; }
+
+protected:
     //! Callback function for the "Acquire Data" button.
     static void cb_acquire(Fl_Widget* widget, void* data);
     //! Callback function for the frequency unit radio buttons.
@@ -66,6 +75,8 @@ public:
     static void cb_nvna_speed(Fl_Widget* widget, void* data);
     //! Callback function for the nanoVNA connect button.
     static void cb_nvna_connect(Fl_Widget* widget, void* data);
+	//! Callback function for the nanoVNA rescan ports button.
+	static void cb_rescan_ports(Fl_Widget* widget, void* data);
 
     private:
 
@@ -93,6 +104,7 @@ public:
     Fl_Choice* choice_nvna_speed_; //!< Dropdown to select the nanoVNA baud rate
 
     Fl_Button* btn_connect_nvna_; //!< Button to connect to the nanoVNA
+	Fl_Button* btn_rescan_ports_; //!< Button to rescan for available nanoVNA ports
 
     //! Frequency unit multiplier based on the selected radio button.
     double frequency_xier_;
@@ -109,7 +121,7 @@ public:
     int nvna_speed_; //!< Currently selected nanoVNA baud rate
 
 	//! Pointer to the nanoVNA interface for communicating with the nanoVNA device.
-	nvna_iface* nvna_interface_;
+	nvna_iface* nvna_interface_ = nullptr;
 
 };
 

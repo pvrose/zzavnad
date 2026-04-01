@@ -22,36 +22,28 @@
 #include "zc_serial.h"
 #include "zc_status.h"
 
-// Include boost asio for cross-platform serial port access.
-#include <boost/asio.hpp>
-
 // Include standard library headers.
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 //! Constructor for the nanoVNA interface. It initialises the connection to the nanoVNA on \p port with \p baud_rate.
 //! Currently only NanoVNA-H is supported.
 nvna_iface::nvna_iface(const std::string& port, int baud_rate) {
-	try {
-		boost::asio::io_service io;
-		serial_port_ = new boost::asio::serial_port(io, port);
-		serial_port_->set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-	}
-	catch (boost::system::system_error& e) {
-		status_->misc_status(ST_ERROR, "Failed to open serial port: %s", e.what());
+	serial_port_ = new zc_serial(port, baud_rate);
+	if (serial_port_) {
+		status_->misc_status(ST_NOTE, "Connected to nanoVNA on port %s at baud rate %d.", port.c_str(), baud_rate);
+		write_command(""); // Send a carriage return to get the prompt.
+		std::string version;
+		write_command("version", version);
+		status_->misc_status(ST_NOTE, "Version: %s", version.c_str());
 	}
 }
 
 //! Destructor for the nanoVNA interface. It closes the connection to the nanoVNA.
 nvna_iface::~nvna_iface() {
 	if (serial_port_) {
-		try {
-			serial_port_->close();
-		}
-		catch (boost::system::system_error& e) {
-			status_->misc_status(ST_ERROR, "Failed to close serial port: %s", e.what());
-		}
 		delete serial_port_;
 	}
 }
@@ -97,34 +89,70 @@ bool nvna_iface::acquire_data_batch(sp_data_set* data, double start, double step
 	// Send the command to acquire data from the nanoVNA.
 	// "scan <start_freq> <stop_freq> <points> <flags>"
 	char command[100];
-	snprintf(command, sizeof(command), "scan %e %e %d 7\n", start, start + step * (steps - 1), steps);
-	boost::asio::write(*serial_port_, boost::asio::buffer(command, strlen(command)));
-	// Read the response from the nanoVNA and parse it to extract the S-parameter data.
-	// The response is expected to be in the format:
-	// "<freq1> <s11_real1> <s11_imag1> <s21_real1> <s21_imag1>\n"
-	// Put the reads in a loop to read all the points.
-	try {
-		for (int i = 0; i < steps; ++i) {
-			std::string response;
-			size_t len = boost::asio::read_until(*serial_port_, boost::asio::dynamic_buffer(response), '\n');
-			
-			double frequency, s11_real, s11_imag, s21_real, s21_imag;
-			if (sscanf(response.c_str(), "%lf %lf %lf %lf %lf", &frequency, &s11_real, &s11_imag, &s21_real, &s21_imag) == 5) {
-				sp_point point;
-				point.frequency = frequency;
-				point.sparams.s11 = std::complex<double>(s11_real, s11_imag);
-				point.sparams.s21 = std::complex<double>(s21_real, s21_imag);
-				data->insert(point);
-			}
-			else {
-				status_->misc_status(ST_ERROR, "Failed to parse response from nanoVNA: %s", response.c_str());
-				return false;
-			}
-		}
-	}
-	catch (boost::system::system_error& e) {
-		status_->misc_status(ST_ERROR, "Failed to read from serial port: %s", e.what());
+	uint32_t start_freq = static_cast<uint32_t>(start);
+	uint32_t stop_freq = static_cast<uint32_t>(start + step * (steps - 1));
+	snprintf(command, sizeof(command), "scan %d %d %d 7", start_freq, stop_freq, steps);
+	std::string response;
+	if (!write_command(command, response)) {
+		status_->misc_status(ST_ERROR, "Failed to send command to nanoVNA.");
 		return false;
 	}
+	// Scan the response from the nanoVNA and parse it to extract the S-parameter data.
+	// The response is expected to be in the format:
+	// "<freq1> <s11_real1> <s11_imag1> <s21_real1> <s21_imag1>\n"
+	std::stringstream ss(response);
+	while (ss.good()) {
+		double freq, s11_real, s11_imag, s21_real, s21_imag;
+		ss >> freq >> s11_real >> s11_imag >> s21_real >> s21_imag;
+		if (ss.good()) {
+			sp_point point;
+			point.frequency = freq;
+			point.sparams.s11 = std::complex<double>(s11_real, s11_imag);
+			point.sparams.s21 = std::complex<double>(s21_real, s21_imag);
+			data->insert(point);
+		}
+	}	
 	return true;
+}
+
+//! Check if the nanoVNA interface is connected and ready for data acquisition.
+bool nvna_iface::is_connected() const {
+	return serial_port_ && serial_port_->is_connected();
+}
+
+// ! Write a command and extract the response.
+// Return data will be <command><CR/LF><response><prompt>	
+bool nvna_iface::write_command(const std::string& command, std::string& response) {
+	serial_port_->write_line(command + "\r");
+	// Read all the data until we get the prompt again.
+	std::string buffer;
+	while (true)
+	{
+		std::string data;
+		if (serial_port_->read_any(data)) {
+			buffer += data;
+			size_t prompt_pos = buffer.find("ch> ");
+			if (prompt_pos != std::string::npos) {
+				// Check if the response starts with the command we sent. 
+				// If so, remove it from the response.
+				if (buffer.find(command) == 0) {
+					buffer.erase(0, command.length());
+					prompt_pos -= command.length(); // Adjust the prompt position if we removed the command.
+				}
+				// Remove any leading CR/LF from the response.
+			    while (!buffer.empty() && (buffer[0] == '\r' || buffer[0] == '\n')) {
+					buffer.erase(0, 1);
+					prompt_pos--;
+				}
+				// Remove the prompt from the end of the response.
+				buffer.erase(prompt_pos);
+				// and return the response.
+				response = buffer;
+				return true;
+			}
+		}
+		else {
+			return false;
+		}
+	}
 }

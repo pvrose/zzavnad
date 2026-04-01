@@ -155,6 +155,7 @@ private:
 
     int nanoVNA_index_ = -1; //!< Index of the dataset containing nanoVNA data, or -1 if no nanoVNA data is stored.
 
+	double default_z0_ = 50.0; //!< Default characteristic impedance to use if not specified in the data file.
 };
 
 extern sp_data* sp_data_; //!< Global pointer to the sp_data instance used by the application.

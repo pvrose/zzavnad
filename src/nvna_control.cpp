@@ -66,7 +66,7 @@ void nvna_control::create_widgets() {
 
 	// Add a group box for the frequency scansettings.
     const int HSCAN = HTEXT + 5 * HBUTTON + GAP;
-	const int WSCAN = WLABEL + WBUTTON + 2 * GAP;
+	const int WSCAN = WLABEL + WBUTTON + GAP;
     Fl_Group* scan_group = new Fl_Group(cx, cy, WSCAN, HSCAN, "Scan Settings");
     scan_group->box(FL_BORDER_BOX);
     scan_group->align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -115,7 +115,7 @@ void nvna_control::create_widgets() {
 
 	// Add a group box for the nanoVNA connection settings.
 	const int HCONN = 3 * HBUTTON + HTEXT + GAP;
-    const int WCONN = WSCAN;
+    const int WCONN = WSCAN + HBUTTON;
 
     cx = x() + GAP;
 
@@ -131,6 +131,14 @@ void nvna_control::create_widgets() {
     choice_nvna_port_->callback(cb_nvna_port, this);
     choice_nvna_port_->tooltip("Select the serial port for the nanoVNA connection");
 
+	// Add the rescan ports button next to the port dropdown.
+    cx += WBUTTON;
+
+	btn_rescan_ports_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "@reload");
+	btn_rescan_ports_->callback(cb_rescan_ports, this);
+	btn_rescan_ports_->tooltip("Rescan for available nanoVNA ports");
+
+	cx = x() + GAP + WLABEL;
 	cy += HBUTTON;
     choice_nvna_speed_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "Speed");
 	choice_nvna_speed_->align(FL_ALIGN_LEFT);
@@ -191,8 +199,10 @@ void nvna_control::configure_widgets() {
     // Disable the acquire button if the nanoVNA is not connected.
     if (!nvna_enabled_) {
         btn_acquire_->deactivate();
+		btn_connect_nvna_->activate();
     } else {
         btn_acquire_->activate();
+		btn_connect_nvna_->deactivate();
     }
 }
 
@@ -200,14 +210,50 @@ void nvna_control::configure_widgets() {
 void nvna_control::populate_nvna_options() {
     std::set<std::string> ports = zc_serial::available_ports(true);
     choice_nvna_port_->clear();
+	// Index to set the configured port as the default selection.
+	int index = 0;
+	bool port_found = false;
     for (const auto& port : ports) {
         choice_nvna_port_->add(port.c_str());
+        if (port == nvna_port_) {
+            choice_nvna_port_->value(index);
+            port_found = true;
+        }
+        ++index;
     }  
+	// If no port was found, select the first available port.
+	if (!port_found && !ports.empty()) {
+		choice_nvna_port_->value(0);
+		nvna_port_ = choice_nvna_port_->text(0);
+	}
     // Add common baud rates to the speed dropdown.
     const std::vector<int> baud_rates = {9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600};
     choice_nvna_speed_->clear();
+    index = 0;
+	bool speed_found = false;
     for (int baud : baud_rates) {
         choice_nvna_speed_->add(std::to_string(baud).c_str());
+        if (baud == nvna_speed_) {
+            choice_nvna_speed_->value(index);
+            speed_found = true;
+        }
+        ++index;
+    }
+	// If no speed was found, select the first available speed.
+	if (!speed_found && !baud_rates.empty()) {
+		choice_nvna_speed_->value(0);
+		nvna_speed_ = baud_rates[0];
+	}
+}
+
+// Acquire data from the nanoVNA and store it in the provided data entry.
+void nvna_control::acquire_data_from_nvna(sp_data_set* data) {
+    if (nvna_enabled_ && nvna_interface_ != nullptr) {
+        data-> clear(); // Clear any existing data in the dataset before acquiring new data.
+        // Acquire data from start frequency to stop frequency with the specified step and store it in the dataset.
+        // Number of steps = (stop_freq_ - start_freq_) / step_freq_ + 1
+        int num_steps = static_cast<int>((stop_freq_ - start_freq_) / step_freq_) + 1;
+        nvna_interface_->acquire_data(data, start_freq_, step_freq_, num_steps);
     }
 }
 
@@ -215,16 +261,9 @@ void nvna_control::populate_nvna_options() {
 void nvna_control::cb_acquire(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
     if (control->nvna_enabled_) {
-        // TODO: Implement data acquisition from nanoVNA.
         auto data = sp_data_->get_dataset(0); // Get the first dataset (NVNA).
         if (data) {
-            // Acquire data from start frequency to stop frequency with the specified step and store it in the dataset.
-            // Number of steps = (stop_freq_ - start_freq_) / step_freq_ + 1
-            int num_steps = static_cast<int>((control->stop_freq_ - control->start_freq_) / control->step_freq_) + 1;
-            // Get the data
-            if (control->nvna_interface_) {
-                control->nvna_interface_->acquire_data(&data->data, control->start_freq_, control->step_freq_, num_steps);
-            }
+            control->acquire_data_from_nvna(&data->data);
 			display_control_->configure_displays(); // Update the displays with the new data.
             display_control_->update_displays();
         }
@@ -271,5 +310,17 @@ void nvna_control::cb_nvna_speed(Fl_Widget* widget, void* data) {
 void nvna_control::cb_nvna_connect(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
 	control->nvna_interface_ = new nvna_iface(control->nvna_port_, control->nvna_speed_);
-	control->enable_nvna();
+    if (control->nvna_interface_->is_connected()) {
+        control->enable_nvna();
+    } else {
+        control->disable_nvna();
+	}
+	control->configure_widgets();
+}
+
+// Callback function for the nanoVNA rescan ports button.
+void nvna_control::cb_rescan_ports(Fl_Widget* widget, void* data) {
+    nvna_control* control = zc::ancestor_view<nvna_control>(widget);
+    control->populate_nvna_options();
+	control->configure_widgets();
 }

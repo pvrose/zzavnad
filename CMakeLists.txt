@@ -74,6 +74,12 @@ target_include_directories(${TARGET} PRIVATE
   ${ZC_APP_LIBRARY}
   ${FLTK_INCLUDE_DIR}
 )
+# Needed for boost::asio on Windows.
+# This is set in zzacommon, but we need it here too for the executable target.
+# TODO: How can we set this in zzacommon/CMakeLists.txt to propagate it to this target?
+target_compile_definitions(${TARGET} PRIVATE
+  _WIN32_WINNT=0x0601
+)
 ## Extra include directories required on MSVC
 if (MSVC)
   message(STATUS "Including other libraries for MSVC from ${USER_HOME_DIR}")

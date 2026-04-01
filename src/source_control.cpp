@@ -313,11 +313,22 @@ void source_control::cb_file_enable(Fl_Widget* widget, void* data) {
         file_source->configure_widgets();
         // Update data
 		int file_index = *(int*)data;
-		sp_data_->read_data_from_file(file_index);
-        source_control* control = zc::ancestor_view<source_control>(file_source);
-        if (control != nullptr) {
-            control->data_source_changed(file_source);
-        }   
+        if (file_index >= 0) {
+            // Data is from a file source, so reload the data for this file.
+            sp_data_->read_data_from_file(file_index);
+            source_control* control = zc::ancestor_view<source_control>(file_source);
+            if (control != nullptr) {
+                control->data_source_changed(file_source);
+            }
+        }
+        else {
+			// Data has altready been reloaded for this source,
+            // so just update the display to reflect the changed enabled state.
+			source_control* control = zc::ancestor_view<source_control>(file_source);
+            if (control != nullptr) {
+                control->data_source_changed(file_source);
+			}
+        }
     }
 }
 
@@ -325,7 +336,7 @@ void source_control::cb_file_enable(Fl_Widget* widget, void* data) {
 void source_control::cb_file_line(Fl_Widget* widget, void* data) {
     source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
     if (file_source != nullptr) {
-		zc_line_style* line_style;
+		zc_line_style* line_style = nullptr;
         switch ((zc_graph::y_axis_t)(intptr_t)data) {
 		case zc_graph::Y_LEFT:
 			line_style = &file_source->data_entry_->line_style_l;

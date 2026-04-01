@@ -30,8 +30,8 @@
 // Include S-parameter data structures.
 #include "sp_data.hpp"
 
-// Include boost asio for cross-platform serial port access.
-#include <boost/asio.hpp>
+// Forward declarations.
+class zc_serial;
 
 class nvna_iface {
 
@@ -52,6 +52,9 @@ public:
 	//! \return True if the acquisition was successful, false otherwise.
 	bool acquire_data(sp_data_set* data, double start, double stop, int steps);
 
+	//! Check if the nanoVNA interface is connected and ready for data acquisition.
+	bool is_connected() const;
+
 private:
 
 	//! Acquire one batch of S-parameter data from the nanoVNA.
@@ -62,7 +65,16 @@ private:
 	//! \return True if the acquisition was successful, false otherwise.
 	bool acquire_data_batch(sp_data_set* data, double start, double step, int steps);
 
+	//! Write a command and extract any response.
+	bool write_command(const std::string& command, std::string& response);
+
+	//! Write a command and discard any response.
+	bool write_command(const std::string& command) {
+		std::string response;
+		return write_command(command, response);
+	}
+
 	//! Serial port for communication with the nanoVNA.
-	boost::asio::serial_port* serial_port_;
+	zc_serial* serial_port_ = nullptr;
 
 };

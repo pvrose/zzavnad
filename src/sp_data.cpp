@@ -17,6 +17,8 @@
 */
 #include "sp_data.hpp"
 
+#include "nvna_control.hpp"
+
 // Include ZZACOMMON items.
 #include "zc_graph.h"
 #include "zc_settings.h"
@@ -83,6 +85,7 @@ void sp_data::load_settings() {
         }
         else {
             entry->source = SP_DATA_SOURCE_VNA;
+            dataset_settings.get("Z0", entry->z0, 50.0);
             nanoVNA_index_ = i;
         }
         dataset_settings.get("Valid Ports", entry->valid_ports, 2);
@@ -98,6 +101,7 @@ void sp_data::load_settings() {
         sp_data_entry* entry = new sp_data_entry;
         entry->source = SP_DATA_SOURCE_VNA;
         entry->valid_ports = 2;
+		entry->z0 = default_z0_;
         entry->line_style_l = { FL_BLUE, 2, 0 };
         datasets_.push_back(entry);
     }
@@ -114,6 +118,7 @@ void sp_data::save_settings() {
         zc_settings* dataset_settings;
         if (entry->source == SP_DATA_SOURCE_VNA) {
             dataset_settings = new zc_settings(&sp_settings, "nanoVNA");
+			dataset_settings->set("Z0", entry->z0);
         }
         else {
             dataset_settings = new zc_settings(&sp_settings, "Dataset " + std::to_string(i));
@@ -135,6 +140,7 @@ int sp_data::add_dataset() {
     entry->valid_ports = 2;
     entry->line_style_l = zc_line_style(FL_BLUE, 2, FL_SOLID);
     entry->line_style_r = zc_line_style(FL_RED, 2, FL_SOLID);
+    entry->z0 = default_z0_;
     datasets_.push_back(entry);
     return datasets_.size() - 1;
 }
@@ -172,8 +178,14 @@ bool sp_data::read_data_from_file(int index) {
 //! Acquire S-parameter data from a VNA and store it in the dataset.
 //! \return True if the data was successfully acquired and stored, false otherwise.
 bool sp_data::acquire_data_from_vna() {
-    // TODO: Implement VNA data acquisition.
-    return false;
+    if (nvna_control_ && nvna_control_->is_nvna_enabled()) {
+        auto data = get_dataset(0); // Get the first dataset (NVNA).
+        if (data) {
+            nvna_control_->acquire_data_from_nvna(&data->data);
+            return true;
+        }
+    }
+	return false;
 }
 
 
@@ -312,9 +324,9 @@ bool sp_data::parse_sxp_header(const std::string& header_line, double& multiplie
         status_->misc_status(ST_WARNING, "Invalid impedance value in header: %s", token.c_str());
         return false;
     }
-    if (std::abs(impedance - 50.0) > 1e-6) {
-        // Impedance is not 50 ohms, raise a warning.
-        status_->misc_status(ST_WARNING, "Impedance in header is not 50 ohms: %f", impedance);
+    if (std::abs(impedance - default_z0_) > 1e-6) {
+        // Impedance is not the default Z0, raise a warning.
+        status_->misc_status(ST_WARNING, "Impedance in header is not the default Z0: %f vs %f", impedance, default_z0_);
         return false;
     }
     z0 = impedance;
