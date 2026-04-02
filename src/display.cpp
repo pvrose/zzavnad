@@ -125,6 +125,7 @@ void display::create_widgets() {
     // Add the graph widget for plotting the data.
     graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT - HLEGEND);
     graph_->box(FL_BORDER_BOX);
+	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
 
     cy += graph_->h();
@@ -261,11 +262,16 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             else {
                 entry.style = dataset->line_style_r;
             }
-            if (dataset->source == SP_DATA_SOURCE_FILE) {
-                entry.source = zc::terminal(dataset->filename);
-            }
-            else {
-				entry.source = "nanoVNA";
+            switch (dataset->source) {
+                case SPDS_ACTIVE:
+                    entry.source = "nanoVNA";
+                    break;
+				case SPDS_FILE:
+					entry.source = zc::terminal(dataset->filename);
+                    break;
+                case SPDS_KEPT:
+                    entry.source = dataset->timestamp;
+                    break;
             }
             // Set the legend entry for this dataset.
             legend_entries.push_back(entry);

@@ -51,6 +51,8 @@ void display_legend::create_widgets() {
 	for (int i = 0; i <= NUM_FILE_SOURCES; i++) {
 		line_style_button* line_btn = new line_style_button(cx, cy, WBUTTON / 2, HBUTTON);
 		line_btn->tooltip("Shows the line style for this dataset.");
+		line_btn->type(ZC_BUTTON_DIALOG_OUTPUT);
+		line_btn->color(FL_WHITE);
 		line_style_buttons_.push_back(line_btn);
 		cx += WBUTTON / 2;
 		Fl_Box* label = new Fl_Box(cx, cy, WLABEL, HBUTTON);

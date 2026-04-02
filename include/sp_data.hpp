@@ -19,6 +19,7 @@
 
 #include <complex>
 #include <cstdint>
+#include <ctime>
 #include <set>
 #include <string>
 #include <vector>
@@ -52,8 +53,10 @@ typedef std::set<sp_point> sp_data_set;
 
 //! \brief Source of data sets.
 enum sp_data_source : uint8_t {
-    SP_DATA_SOURCE_FILE, //!< Data read from a file
-    SP_DATA_SOURCE_VNA,  //!< Data acquired from a VNA
+	SPDS_NONE,      //!< No data source (e.g. empty dataset).
+	SPDS_ACTIVE,    //!< Active data source - currently used for a datase being acquired from the VNA.
+	SPDS_FILE,      //!< Data source is a file - the dataset was read from a file.
+	SPDS_KEPT       //!< Data has been previously acquired in this session and is being kept for display.
 };
 
 //! \brief A structure to hold S-parameter data along with its source information.
@@ -61,12 +64,18 @@ struct sp_data_entry {
     sp_data_set data;          //!< The S-parameter data points
     sp_data_source source;     //!< The source of the data
     std::string filename;      //!< Optional filename if data was read from a file
+	std::string timestamp;     //!< Timestamp of when the data was acquired.
     int valid_ports;           //!< Number of valid ports (1 or 2)
     zc_line_style line_style_l;       //!< Line configuration for left hand data (e.g. colour, thickness)
     zc_line_style line_style_r;       //!< Line configuration for right hand data (e.g. colour, thickness)
     double z0;                 //!< Characteristic impedance of the system for this data (e.g. 50 ohms)
     bool enabled;              //!< Whether this dataset is enabled for display
+	std::string notes;         //!< Optional notes about the dataset (saved as comment in the file if read from a file)
 };
+
+//! Index to the dataset being acquired from the nVNA, if any.
+const size_t NANO_VNA_INDEX = 0;
+const size_t START_INDEX = 1; //!< Index at which file datasets will start being added.
 
 //! \brief SxP data formats
 enum sxp_data_format : uint8_t {
@@ -90,7 +99,7 @@ public:
     void save_settings();
 
     //! Reserve a new file dataset and return its index.
-    int add_dataset();
+    int add_dataset(sp_data_source source);
 
     //! Get a reference to file dataset by index.
     sp_data_entry* get_dataset(int index);
@@ -99,26 +108,18 @@ public:
     int get_dataset_count() const;
 
     //! Read S-parameter data from a file and store it in the dataset.
-    //! \param index The index of the dataset to store the data in.
+    //! \param entry The dataset to store the data in.
     //! \return True if the data was successfully read and stored, false otherwise.
-    bool read_data_from_file(int index);
+    bool read_data_from_file(sp_data_entry* entry);
 
-    //! Acquire S-parameter data from a VNA and store it in the dataset.
-    //! \return True if the data was successfully acquired and stored, false otherwise.
-    bool acquire_data_from_vna();
-
-    //! \brief Remove all file datasets.
-    void clear_file_datasets();
-
-    //! \brief Remove all undisplayed file datasets.
-    void clear_undisplayed_file_datasets();
+	//! \brief Store the specified dataset as a file.
+	//! \param entry The dataset to store.
+	//! \return True if the data was successfully stored, false otherwise.
+	bool store_data_to_file(sp_data_entry* entry);
 
     //! \brief Remove specified dataset by pointer.
     //! \param entry The dataset to remove.
     void remove_dataset(sp_data_entry* entry);
-
-	//! \brief Get overall frequency range across all datasets.
-	void get_frequency_range(double& min_freq, double& max_freq) const;
 
 private:
 
@@ -151,9 +152,13 @@ private:
     //! \return A sp_point containing the frequency and S-parameters
     sp_point parse_sxp_data_line(const std::string& data_line, int ports, double multiplier, sxp_data_format format);
 
-    std::vector<sp_data_entry*> datasets_; //!< Vector to hold all datasets etc.
+    //! \brief Create active dataset for acquiring data from the VNA.
+	void create_active_dataset();
 
-    int nanoVNA_index_ = -1; //!< Index of the dataset containing nanoVNA data, or -1 if no nanoVNA data is stored.
+    //! \brief All the datasets currently stored, including active, file and kept datasets.
+    //! Entry at index 0 is reserved for the active dataset being acquired from the VNA.
+    //! The other entries will be filled as they are created.
+    std::vector<sp_data_entry*> datasets_;
 
 	double default_z0_ = 50.0; //!< Default characteristic impedance to use if not specified in the data file.
 };

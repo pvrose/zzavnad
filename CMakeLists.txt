@@ -20,7 +20,7 @@ string(TIMESTAMP APP_TIMESTAMP UTC)
 set(ZZAVNAD_RC_VALUE "")
 set(APP_VERSION "${ZZAVNAD_VERSION}${ZZAVNAD_RC_VALUE}")
 
-set (TARGET zzanvad )
+set (TARGET zzavnad )
 if (NOT MSVC)
   set(BUILD_SHARED_LIBS OFF)
 endif()
