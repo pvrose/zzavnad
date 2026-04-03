@@ -38,6 +38,7 @@ typedef zc_button_dialog<zc_line_style_dialog, zc_line_style> line_style_button;
 
 // Forward declarations
 enum display_mode : uint8_t;
+class Fl_Scroll;
 
 //! \brief Data needed to display the legend for a display.
 struct legend_entry_t {
@@ -62,8 +63,16 @@ public:
 	//! Set the display mode for the legend.
 	void set_entries(const std::vector<legend_entry_t>& entries);
 
-	// Widgets for the display legend.
-	std::vector<Fl_Box*> labels_; //!< Labels for the legend entries.
-	std::vector<line_style_button*> line_style_buttons_; //!< Buttons for selecting the line style for each legend entry.
+private:
+	Fl_Scroll* scroll_; //!< Scroll widget to contain the legend entries.
 
+	// Group to contain a label and line style button for each entry.
+	class entry_group : public Fl_Group {
+	public:
+		entry_group(int X, int Y, int W, int H, const legend_entry_t& entry);
+	};
+
+	void add_entry_groups();
+
+	std::vector<legend_entry_t> entries_;
 };

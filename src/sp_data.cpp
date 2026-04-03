@@ -73,6 +73,7 @@ void sp_data::create_active_dataset() {
         throw std::logic_error("Active dataset must be at index " + std::to_string(NANO_VNA_INDEX));
     }
     sp_data_entry* entry = get_dataset(add_index);
+	entry->enabled = false;
     entry->valid_ports = 2;
     entry->z0 = default_z0_;
     entry->line_style_l = zc_line_style(COLOUR_CODE[0], 2, FL_SOLID);
@@ -92,11 +93,12 @@ void sp_data::load_settings() {
 		int index = add_dataset(SPDS_FILE);
 		sp_data_entry* entry = get_dataset(index);
 		dataset_settings.get<std::string>("Filename", entry->filename, "");
+		dataset_settings.get("Enabled", entry->enabled, true);
         dataset_settings.get("Valid Ports", entry->valid_ports, 2);
-        dataset_settings.get("Left Colour", entry->line_style_l.colour, COLOUR_CODE[index % 10]);
+        dataset_settings.get("Left Colour", entry->line_style_l.colour, COLOUR_CODE[index % 9]);
 		dataset_settings.get("Left Width", entry->line_style_l.width, 2);
 		dataset_settings.get("Left Style", entry->line_style_l.style, (int)FL_SOLID);
-		dataset_settings.get("Right Colour", entry->line_style_r.colour, COLOUR_CODE[index % 10]);
+		dataset_settings.get("Right Colour", entry->line_style_r.colour, COLOUR_CODE[index % 9]);
 		dataset_settings.get("Right Width", entry->line_style_r.width, 2);
 		dataset_settings.get("Right Style", entry->line_style_r.style, (int)FL_DASH);
     }
@@ -105,6 +107,7 @@ void sp_data::load_settings() {
 	sp_data_entry* nvna_entry = get_dataset(NANO_VNA_INDEX);
     if (nvna_entry) {
         nvna_settings.get("Z0", nvna_entry->z0);
+		nvna_settings.get("Enabled", nvna_entry->enabled);
 		nvna_settings.get("Valid Ports", nvna_entry->valid_ports);
 		nvna_settings.get("Left Colour", nvna_entry->line_style_l.colour);
 		nvna_settings.get("Left Width", nvna_entry->line_style_l.width);
@@ -126,6 +129,7 @@ void sp_data::save_settings() {
         if (dataset->source == SPDS_FILE) {
             dataset_settings = new zc_settings(&sp_settings, "Dataset " + std::to_string(dataset_count));
             dataset_settings->set("Filename", dataset->filename);
+			dataset_settings->set("Enabled", dataset->enabled);
             dataset_settings->set("Valid Ports", dataset->valid_ports);
             dataset_settings->set("Left Colour", dataset->line_style_l.colour);
             dataset_settings->set("Left Width", dataset->line_style_l.width);
@@ -137,6 +141,7 @@ void sp_data::save_settings() {
         } else if (dataset->source == SPDS_ACTIVE) {
             dataset_settings = new zc_settings(&sp_settings, "nanoVNA");
             dataset_settings->set("Z0", dataset->z0);
+			dataset_settings->set("Enabled", dataset->enabled);
             dataset_settings->set("Valid Ports", dataset->valid_ports);
             dataset_settings->set("Left Colour", dataset->line_style_l.colour);
             dataset_settings->set("Left Width", dataset->line_style_l.width);
@@ -157,8 +162,9 @@ int sp_data::add_dataset(sp_data_source source) {
     entry->source = source;
     entry->filename = "";
     entry->valid_ports = 2;
-    entry->line_style_l = zc_line_style(COLOUR_CODE[index % 10], 2, FL_SOLID);
-    entry->line_style_r = zc_line_style(COLOUR_CODE[index % 10], 1, FL_SOLID);
+    // Do not use COLOUR_CODE[9] as this is white!
+    entry->line_style_l = zc_line_style(COLOUR_CODE[index % 9], 2, FL_SOLID);
+    entry->line_style_r = zc_line_style(COLOUR_CODE[index % 9], 1, FL_SOLID);
     entry->z0 = default_z0_;
     return index;
 }

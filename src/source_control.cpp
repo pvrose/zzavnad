@@ -113,6 +113,7 @@ void source_control::file_source::configure_widgets() {
         ip_filename_->show();
         ip_filename_->button()->label("@fileopen"); // Show a file open symbol to indicate we want to select a file.
 		ip_filename_->tooltip("Click to add a new file data source.");
+		ip_filename_->value("Add file...");
         btn_notes_->hide();
         btn_line_l_->hide();
         btn_line_r_->hide();
@@ -128,7 +129,7 @@ void source_control::file_source::configure_widgets() {
             ip_filename_->show();
             ip_filename_->button()->label("@square"); // Indicates that we can keep the data.
             ip_filename_->tooltip("Click to keep the current data for reference.");
-            ip_filename_->value(entry->timestamp.c_str());
+            ip_filename_->value(("nanoVNA " + entry->timestamp).c_str());
             btn_notes_->show();
             btn_line_l_->show();
             btn_line_l_->value(entry->line_style_l);
@@ -216,7 +217,7 @@ void source_control::create_widgets() {
 	int WSCROLL = WCONTROL + Fl::scrollbar_size();
 	file_group_ = new Fl_Scroll(cx, cy, WSCROLL, HBUTTON * 8);
 	file_group_->box(FL_FLAT_BOX);
-    file_group_->type(Fl_Scroll::VERTICAL_ALWAYS);
+    file_group_->type(Fl_Scroll::VERTICAL);
 
 	cy += file_group_->h() + GAP;
 	cx += file_group_->w() + GAP;
@@ -332,12 +333,13 @@ void source_control::file_source::cb_file_line(Fl_Widget* widget, void* data) {
     source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
     if (file_source != nullptr) {
 		zc_line_style* line_style = nullptr;
+		sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
         switch ((zc_graph::y_axis_t)(intptr_t)data) {
 		case zc_graph::Y_LEFT:
-			line_style = &file_source->data_entry_->line_style_l;
+			line_style = &entry->line_style_l;
             break;
 		case zc_graph::Y_RIGHT:
-			line_style = &file_source->data_entry_->line_style_r;
+			line_style = &entry->line_style_r;
 			break;
         }
 		line_style_button* line_button = (line_style_button*)widget;
@@ -357,7 +359,7 @@ void source_control::file_source::cb_file_remove(Fl_Widget* widget, void* data) 
     source_control* control = zc::ancestor_view<source_control>(widget);
     if (file_source != nullptr && control != nullptr) {
         // Remove the dataset associated with this file source from the data manager.
-        sp_data_->remove_dataset(file_source->data_entry_);
+        sp_data_->remove_dataset((sp_data_entry*)file_source->user_data());
         // Update the control panel to reflect the removed data source.
         control->configure_widgets();
         // Updatethe display to reflect the removed data source.

@@ -103,7 +103,6 @@ public:
         line_style_button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
         Fl_Check_Button* ckb_enable_; //!< Checkbox to enable/disable this data source
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
-        sp_data_entry* data_entry_ = nullptr; //!< Pointer to the data entry associated with this file source.
 		Fl_Box* box_type_; //!< Box to show the type of this data source (e.g. file or nanoVNA)
 		Fl_Button* btn_notes_; //!< Button to open a dialog to edit the notes for this data source.
     private:
