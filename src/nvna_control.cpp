@@ -20,6 +20,7 @@
 
 #include "display_control.hpp"
 #include "nvna_iface.hpp"
+#include "source_control.hpp"
 #include "sp_data.hpp"
 
 // Include ZZACOMMON drawing constants
@@ -30,8 +31,10 @@
 
 // Include FLTK headers for the widgets used in the control panel.
 #include <FL/Enumerations.H>
+#include <FL/Fl.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Fill_Dial.H>
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
@@ -108,9 +111,17 @@ void nvna_control::create_widgets() {
     btn_acquire_->callback(cb_acquire, this); 
     btn_acquire_->tooltip("Acquire data from the nanoVNA");
 
+	cx = x() + GAP + GAP;
+	// Progress dial for data acquisition.
+	dial_prog_ = new Fl_Fill_Dial(cx, cy, HBUTTON, HBUTTON);
+    dial_prog_->minimum(0.0);
+    dial_prog_->maximum(1.0);
+    dial_prog_->color(FL_BACKGROUND_COLOR);
+    dial_prog_->angles(180, 540);
+    dial_prog_->box(FL_OVAL_BOX);
+
 	scan_group->end();
 
-    
     cy = scan_group->y() + scan_group->h();
 
 	// Add a group box for the nanoVNA connection settings.
@@ -182,6 +193,8 @@ void nvna_control::save_current_settings() const {
     nvna_settings.set("Start Frequency", start_freq_);
     nvna_settings.set("Stop Frequency", stop_freq_);
     nvna_settings.set("Step Frequency", step_freq_);
+    nvna_settings.set<std::string>("Port", nvna_port_);
+    nvna_settings.set("Speed", nvna_speed_);
     settings.flush();
 }
 
@@ -257,6 +270,15 @@ void nvna_control::acquire_data_from_nvna(sp_data_set* data) {
     }
 }
 
+// Update acquisition progress on the progress dial.
+void nvna_control::update_progress(double progress) {
+    if (progress < 0.0) progress = 0.0;
+    if (progress > 1.0) progress = 1.0;
+    dial_prog_->value(progress);
+    dial_prog_->redraw();
+	Fl::check(); // Process FLTK events to update the UI.
+}
+
 // Callback function for the "Acquire Data" button.
 void nvna_control::cb_acquire(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
@@ -264,8 +286,10 @@ void nvna_control::cb_acquire(Fl_Widget* widget, void* data) {
         auto data = sp_data_->get_dataset(0); // Get the first dataset (NVNA).
         if (data) {
             control->acquire_data_from_nvna(&data->data);
+			data->timestamp = zc::now(true, "%Y-%m-%d-%H-%M-%S"); // Set the timestamp to the current time.
 			display_control_->configure_displays(); // Update the displays with the new data.
             display_control_->update_displays();
+			source_control_->configure_widgets(); // Update the source control to reflect the new data.
         }
     }
 }

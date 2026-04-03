@@ -72,6 +72,17 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 	ip_filename_->type(zc_filename_input::FILE);
     ip_filename_->tooltip("Select the file for this data source");
 
+    // Alternate widgets when used as ACTIVE.
+	box_nvna_ = new Fl_Box(cx, cy, WEDIT - HBUTTON, HBUTTON);
+    box_nvna_->box(FL_DOWN_BOX);
+	box_nvna_->color(FL_WHITE);
+	box_nvna_->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    box_nvna_->tooltip("Shows the timestamp of the Active data source from the nanoVNA");
+
+    btn_keep_ = new Fl_Button(cx + WEDIT - HBUTTON, cy, HBUTTON, HBUTTON, "@square");
+    btn_keep_->callback(cb_file_keep, this);
+    btn_keep_->tooltip("Keep the current data for reference.");
+
     cx += ip_filename_->w();
     btn_line_l_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
     btn_line_l_->callback(cb_file_line, (void*)zc_graph::Y_LEFT);
@@ -114,6 +125,8 @@ void source_control::file_source::configure_widgets() {
         ip_filename_->button()->label("@fileopen"); // Show a file open symbol to indicate we want to select a file.
 		ip_filename_->tooltip("Click to add a new file data source.");
 		ip_filename_->value("Add file...");
+		box_nvna_->hide();
+		btn_keep_->hide();
         btn_notes_->hide();
         btn_line_l_->hide();
         btn_line_r_->hide();
@@ -126,10 +139,10 @@ void source_control::file_source::configure_widgets() {
             // TRemove is not availabe
             btn_remove_->hide();
             box_type_->label("@search"); // Show a search symbol to indicate this data source is from the nanoVNA.
-            ip_filename_->show();
-            ip_filename_->button()->label("@square"); // Indicates that we can keep the data.
-            ip_filename_->tooltip("Click to keep the current data for reference.");
-            ip_filename_->value(("nanoVNA " + entry->timestamp).c_str());
+            ip_filename_->hide();
+			box_nvna_->show();
+            box_nvna_->copy_label(("nanoVNA " + entry->timestamp).c_str());
+			btn_keep_->show();
             btn_notes_->show();
             btn_line_l_->show();
             btn_line_l_->value(entry->line_style_l);
@@ -146,6 +159,8 @@ void source_control::file_source::configure_widgets() {
             ip_filename_->button()->label("@filesave"); // Indicates that we can save the data.
 			ip_filename_->tooltip("Click to change the file for this data source.");
             ip_filename_->value(entry->filename.c_str());
+			box_nvna_->hide();
+            btn_keep_->hide();
             btn_notes_->show();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
@@ -161,7 +176,9 @@ void source_control::file_source::configure_widgets() {
             ip_filename_->show();
             ip_filename_->button()->label("@filesave"); // Indicates that we can keep the data.
 			ip_filename_->tooltip("Click to save the current data for this data source.");
-            ip_filename_->value(entry->timestamp.c_str());
+            ip_filename_->value(entry->filename.c_str());
+			box_nvna_->hide();
+			btn_keep_->hide();
             btn_notes_->show();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
@@ -175,6 +192,8 @@ void source_control::file_source::configure_widgets() {
             btn_remove_->hide();
             box_type_->label(""); // No symbol for unknown data source type.
             ip_filename_->hide();
+			box_nvna_->hide();
+			btn_keep_->hide();
             btn_notes_->hide();
             btn_line_l_->hide();
             btn_line_r_->hide();
@@ -278,16 +297,13 @@ void source_control::file_source::cb_file_input(Fl_Widget* widget, void* data) {
         if (entry != nullptr) {
             switch (entry->source)
             {
-            case SPDS_ACTIVE:
-                // This is the active data source for the nanoVNA, so we want to keep the current data for reference.
-                entry->source = SPDS_KEPT;
-                break;
             case SPDS_FILE:
                 // An existing file, so update it.
                 sp_data_->store_data_to_file(entry);
                 break;
             case SPDS_KEPT:
                 // This is a kept dataset, so we want to save the current data for this data source.
+                entry->filename = ((Fl_Input*)widget)->value();
                 sp_data_->store_data_to_file(entry);
                 entry->source = SPDS_FILE;
             default:
@@ -311,6 +327,32 @@ void source_control::file_source::cb_file_input(Fl_Widget* widget, void* data) {
         control->configure_widgets();
         control->data_source_changed();
 	}
+}
+
+// Callback function to keep the latest dataset acquired from the nanoVNA.
+void source_control::file_source::cb_file_keep(Fl_Widget* widget, void* data) {
+    source_control::file_source* file_source = zc::ancestor_view<source_control::file_source>(widget);
+    if (file_source != nullptr) {
+        sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
+        if (entry != nullptr && entry->source == SPDS_ACTIVE) {
+			// Get a new dataset entry for the active data source to allow new data to be acquired from the nanoVNA.
+			int new_index = sp_data_->add_dataset(SPDS_KEPT);
+			sp_data_entry* new_entry = sp_data_->get_dataset(new_index);
+			// Copy salient data from the active dataset to the new kept dataset.
+			new_entry->source = SPDS_KEPT;
+			new_entry->data = entry->data;
+			new_entry->valid_ports = entry->valid_ports;
+			new_entry->filename = "Kept " + entry->timestamp + ".s1p";
+			entry->timestamp = ""; // Clear the timestamp for the active dataset to indicate this is now ready for new data to be acquired.
+            // Update the display to reflect the changed data source.
+            source_control* control = zc::ancestor_view<source_control>(file_source);
+			// Update the control panel to reflect the changed data source.
+			control->configure_widgets();
+            if (control != nullptr) {
+                control->data_source_changed();
+            }
+        }
+    }
 }
 
 // Callback function to enable/disable a file data source when the filename input or enable checkbox is changed.

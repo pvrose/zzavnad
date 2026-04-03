@@ -122,6 +122,7 @@ void sp_data::load_settings() {
 void sp_data::save_settings() {
     zc_settings settings;
     zc_settings sp_settings(&settings, "Data");
+	sp_settings.clear(); // Clear any existing settings for this group before saving the current settings.
     // We only save settings for file datasets.
     int dataset_count = 0;
 	for (auto dataset : datasets_) {;

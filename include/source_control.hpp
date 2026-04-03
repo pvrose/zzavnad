@@ -71,12 +71,13 @@ public:
     //! Destructor for the source control panel.
     ~source_control();
 
-    protected:
+    //! Configure the widgets based on the current settings.
+    void configure_widgets();
+
+protected:
     private:
     //! Create the widgets for the control panel.
     void create_widgets();
-    //! Configure the widgets based on the current settings.
-    void configure_widgets();
 
     // Widgets for the control panel.
     //! Group to select and configure the file data sources.
@@ -105,6 +106,8 @@ public:
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
 		Fl_Box* box_type_; //!< Box to show the type of this data source (e.g. file or nanoVNA)
 		Fl_Button* btn_notes_; //!< Button to open a dialog to edit the notes for this data source.
+		Fl_Box* box_nvna_; //!< Box to show the nanoVNA label for this data source, if applicable.
+		Fl_Button* btn_keep_; //!< Button to keep the current data for this data source, if applicable. 
     private:
         // Callback functions for the widgets in the control panel.
         static void cb_file_input(Fl_Widget* widget, void* data);
@@ -112,6 +115,7 @@ public:
         static void cb_file_line(Fl_Widget* widget, void* data);
         static void cb_file_remove(Fl_Widget* widget, void* data);
 		static void cb_file_note(Fl_Widget* widget, void* data);
+		static void cb_file_keep(Fl_Widget* widget, void* data);
 
         
     };

@@ -264,7 +264,7 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             }
             switch (dataset->source) {
                 case SPDS_ACTIVE:
-                    entry.source = "nanoVNA";
+                    entry.source = "nanoVNA " + dataset->timestamp;
                     break;
 				case SPDS_FILE:
 					entry.source = zc::terminal(dataset->filename);

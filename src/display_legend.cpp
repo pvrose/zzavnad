@@ -55,6 +55,7 @@ void display_legend::create_widgets() {
 	int cw = w() - 2 * GAP;
 	int ch = h() - HTEXT - GAP - Fl::scrollbar_size();
 	scroll_ = new Fl_Scroll(cx, cy, cw, ch);
+	scroll_->type(Fl_Scroll::VERTICAL);
 	end();
 }
 
@@ -94,6 +95,9 @@ void display_legend::add_entry_groups() {
 			cx += WENTRY + GAP;
 		}
 	}
+	scroll_->end();
+	scroll_->scroll_to(0, 0); // Scroll to the top after adding the entries.
+	scroll_->redraw();
 }
 
 // Constructor for entry_group.
@@ -108,5 +112,6 @@ display_legend::entry_group::entry_group(int X, int Y, int W, int H, const legen
 	Fl_Box* label = new Fl_Box(X + WBUTTON / 2, Y, W - WBUTTON / 2, H);
 	label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 	label->label(entry.source.c_str());
+	label->tooltip("Shows the source for this dataset.");
 	end();
 }

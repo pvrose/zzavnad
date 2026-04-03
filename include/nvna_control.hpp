@@ -27,6 +27,7 @@
 // Forward declaration of FLTK widgets.
 class Fl_Button;
 class Fl_Choice;
+class Fl_Fill_Dial;
 class Fl_Float_Input;
 class Fl_Radio_Round_Button;
 class Fl_Widget;
@@ -61,6 +62,9 @@ public:
 
 	//! Check if the nanoVNA is currently enabled for data acquisition.
 	bool is_nvna_enabled() const { return nvna_enabled_; }
+
+	//! Update acquisition progress on the progress dial.
+    void update_progress(double progress);
 
 protected:
     //! Callback function for the "Acquire Data" button.
@@ -99,6 +103,8 @@ protected:
     Fl_Choice* choice_f_unit_;      //!< Dropdown to set frequency unit
 
     Fl_Button* btn_acquire_; //!< Button to acquire data from the nanoVNA.
+
+	Fl_Fill_Dial* dial_prog_; //!< Dial to show the progress of data acquisition from the nanoVNA.
 
     Fl_Choice* choice_nvna_port_; //!< Dropdown to select the nanoVNA serial port
     Fl_Choice* choice_nvna_speed_; //!< Dropdown to select the nanoVNA baud rate

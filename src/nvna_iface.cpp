@@ -18,6 +18,8 @@
 
 #include "nvna_iface.hpp"
 
+#include "nvna_control.hpp"
+
 // Include ZZACOMMON classes.
 #include "zc_serial.h"
 #include "zc_status.h"
@@ -65,6 +67,7 @@ bool nvna_iface::acquire_data(sp_data_set* data, double start, double step, int 
 			points_acquired += batch_size;
 			current_start += step * batch_size;
 			status_->progress(points_acquired, 0);
+			nvna_control_->update_progress(points_acquired / static_cast<double>(steps));
 		}
 		else {
 			status_->misc_status(ST_ERROR, "Failed to acquire data from nanoVNA.");
