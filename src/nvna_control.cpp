@@ -205,9 +205,13 @@ void nvna_control::configure_widgets() {
 	int unit_index = log10(frequency_xier_) / 3; // 0 for Hz, 1 for kHz, 2 for MHz, 3 for GHz
 	choice_f_unit_->value(unit_index);
     // Update the frequency input fields with the current settings.
-    ip_start_freq_->value(std::to_string(start_freq_ / frequency_xier_).c_str());
-    ip_stop_freq_->value(std::to_string(stop_freq_ / frequency_xier_).c_str());
-    ip_step_freq_->value(std::to_string(step_freq_ / frequency_xier_).c_str());
+	char buffer[32];
+	snprintf(buffer, sizeof(buffer), "%g", start_freq_ / frequency_xier_);
+    ip_start_freq_->value(buffer);
+	snprintf(buffer, sizeof(buffer), "%g", stop_freq_ / frequency_xier_);
+    ip_stop_freq_->value(buffer);
+	snprintf(buffer, sizeof(buffer), "%g", step_freq_ / frequency_xier_);
+    ip_step_freq_->value(buffer);
 
     // Disable the acquire button if the nanoVNA is not connected.
     if (!nvna_enabled_) {
@@ -297,7 +301,8 @@ void nvna_control::cb_acquire(Fl_Widget* widget, void* data) {
 // Callback function for the frequency unit radio buttons.
 void nvna_control::cb_freq_unit(Fl_Widget* widget, void* data) {
     nvna_control* control = zc::ancestor_view<nvna_control>(widget);
-    control->frequency_xier_ = (double)(intptr_t)widget->user_data();
+	int unit_index = ((Fl_Choice*)widget)->value();
+	control->frequency_xier_ = pow(1000, unit_index); // Set the multiplier based on the selected unit.
     control->configure_widgets();
 }
 
