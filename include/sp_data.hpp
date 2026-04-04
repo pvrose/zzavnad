@@ -121,6 +121,22 @@ public:
     //! \param entry The dataset to remove.
     void remove_dataset(sp_data_entry* entry);
 
+    //! \brief Return the number of VNA ports.
+	int get_number_ports() const { return number_ports_; }
+
+	//! \brief Set the number of VNA ports and clear all existing datasets since they will no longer be valid.
+    void set_number_ports(int number_ports) {
+        number_ports_ = number_ports;
+        // Clear all existing datasets since they will no longer be valid.
+        for (auto dataset : datasets_) {
+            delete dataset;
+        }
+        datasets_.clear();
+        // Create a new active dataset for acquiring data from the VNA.
+        create_active_dataset();
+	}
+    
+
 private:
 
     //! \brief Load S-parameter data from the specified file.
@@ -161,6 +177,8 @@ private:
     std::vector<sp_data_entry*> datasets_;
 
 	double default_z0_ = 50.0; //!< Default characteristic impedance to use if not specified in the data file.
+
+    int number_ports_ = 1; //!< The number of VNA ports (1 or 2).
 };
 
 extern sp_data* sp_data_; //!< Global pointer to the sp_data instance used by the application.

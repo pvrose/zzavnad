@@ -94,7 +94,19 @@ bool nvna_iface::acquire_data_batch(sp_data_set* data, double start, double step
 	char command[100];
 	uint32_t start_freq = static_cast<uint32_t>(start);
 	uint32_t stop_freq = static_cast<uint32_t>(start + step * (steps - 1));
-	snprintf(command, sizeof(command), "scan %d %d %d 7", start_freq, stop_freq, steps);
+	uint32_t flags;
+	switch (sp_data_->get_number_ports()) {
+	case 1:
+		flags = 3; // Returns Frequency, S11 real, S11 imag.
+		break;
+	case 2:
+		flags = 7; // Returns Frequency, S11 real, S11 imag, S21 real, S21 imag.
+		break;
+	default:
+		flags = 7;
+		break;
+	}
+	snprintf(command, sizeof(command), "scan %d %d %d %d", start_freq, stop_freq, steps, flags);
 	std::string response;
 	if (!write_command(command, response)) {
 		status_->misc_status(ST_ERROR, "Failed to send command to nanoVNA.");
@@ -106,7 +118,19 @@ bool nvna_iface::acquire_data_batch(sp_data_set* data, double start, double step
 	std::stringstream ss(response);
 	while (ss.good()) {
 		double freq, s11_real, s11_imag, s21_real, s21_imag;
-		ss >> freq >> s11_real >> s11_imag >> s21_real >> s21_imag;
+		switch (sp_data_->get_number_ports())
+		{
+		case 1:
+			ss >> freq >> s11_real >> s11_imag;
+			s21_real = 0.0;
+			s21_imag = 0.0;
+			break;
+		case 2:
+			ss >> freq >> s11_real >> s11_imag >> s21_real >> s21_imag;
+			break;
+		default:
+			break;
+		}
 		if (ss.good()) {
 			sp_point point;
 			point.frequency = freq;

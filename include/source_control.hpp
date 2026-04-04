@@ -120,8 +120,14 @@ protected:
         
     };
 
+	//! Callback function for data type selection dropdown.
+	static void cb_data_type(Fl_Widget* widget, void* data);
+
     //! A data source has been changed so data needs to reflect this.
     void data_source_changed();
+
+	//! Dropdown to select the data type to display.
+	Fl_Choice* choice_data_type_;
 
 	file_source* spare_source_; //!< A spare data source control used to add new file data sources.
 	file_source* nanovna_source_; //!< The data source control for the nanoVNA data source.

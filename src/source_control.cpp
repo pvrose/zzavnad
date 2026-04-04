@@ -67,8 +67,6 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
     cx += HBUTTON;
     ip_filename_ = new zc_filename_input(cx, cy, WEDIT, HBUTTON);
     ip_filename_->callback(cb_file_input, this);
-	ip_filename_->title("Select Data File S1P or S2P");
-	ip_filename_->pattern("S-parameter files\t*.{s1p,s2p}");
 	ip_filename_->type(zc_filename_input::FILE);
     ip_filename_->tooltip("Select the file for this data source");
 
@@ -125,6 +123,18 @@ void source_control::file_source::configure_widgets() {
         ip_filename_->button()->label("@fileopen"); // Show a file open symbol to indicate we want to select a file.
 		ip_filename_->tooltip("Click to add a new file data source.");
 		ip_filename_->value("Add file...");
+        switch (sp_data_->get_number_ports()) {
+        case 1:
+            ip_filename_->pattern("S1P files\t*.s1p");
+            ip_filename_->title("Select an S1P file to add as a data source");
+            break;
+        case 2:
+            ip_filename_->pattern("S2P files\t*.s2p");
+            ip_filename_->title("Select an S2P file to add as a data source");
+            break;
+        default:
+            break;
+        }
 		box_nvna_->hide();
 		btn_keep_->hide();
         btn_notes_->hide();
@@ -159,7 +169,19 @@ void source_control::file_source::configure_widgets() {
             ip_filename_->button()->label("@filesave"); // Indicates that we can save the data.
 			ip_filename_->tooltip("Click to change the file for this data source.");
             ip_filename_->value(entry->filename.c_str());
-			box_nvna_->hide();
+            switch (sp_data_->get_number_ports()) {
+            case 1:
+                ip_filename_->pattern("S1P files\t*.s1p");
+                ip_filename_->title("Select an S1P file to add as a data source");
+                break;
+            case 2:
+                ip_filename_->pattern("S2P files\t*.s2p");
+                ip_filename_->title("Select an S2P file to add as a data source");
+                break;
+            default:
+                break;
+            }
+            box_nvna_->hide();
             btn_keep_->hide();
             btn_notes_->show();
             btn_line_l_->show();
@@ -177,7 +199,19 @@ void source_control::file_source::configure_widgets() {
             ip_filename_->button()->label("@filesave"); // Indicates that we can keep the data.
 			ip_filename_->tooltip("Click to save the current data for this data source.");
             ip_filename_->value(entry->filename.c_str());
-			box_nvna_->hide();
+            switch (sp_data_->get_number_ports()) {
+            case 1:
+                ip_filename_->pattern("S1P files\t*.s1p");
+                ip_filename_->title("Select an S1P file to add as a data source");
+                break;
+            case 2:
+                ip_filename_->pattern("S2P files\t*.s2p");
+                ip_filename_->title("Select an S2P file to add as a data source");
+                break;
+            default:
+                break;
+            }
+            box_nvna_->hide();
 			btn_keep_->hide();
             btn_notes_->show();
             btn_line_l_->show();
@@ -218,8 +252,20 @@ source_control::~source_control() {
 
 // Create the widgets for the control panel.
 void source_control::create_widgets() {
-    int cx = x() + GAP;
-    int cy = y() + HTEXT;
+    int cx = x() + WLABEL + WLABEL;
+    int cy = y() + GAP;
+
+    // Add the dropdown to select the data type for this session.
+    choice_data_type_ = new Fl_Choice(cx, cy, WSMEDIT, HBUTTON, "VNA ports");
+	choice_data_type_->add("1-port");
+	choice_data_type_->add("2-port");
+    choice_data_type_->align(FL_ALIGN_LEFT);
+	choice_data_type_->callback(cb_data_type, this);
+	choice_data_type_->tooltip("Select the data type for this session.\n This will affect how the data can be displayed and analyzed.");
+	choice_data_type_->value(sp_data_->get_number_ports() - 1);
+
+    cx = x() + GAP;
+	cy += HBUTTON + GAP;
 
     // Add the spare data source control for adding new file data sources. 
 	spare_source_ = new file_source(cx, cy, WCONTROL, HBUTTON);
@@ -420,3 +466,13 @@ void source_control::file_source::cb_file_note(Fl_Widget* widget, void* data) {
     }
 }
 
+// Callback function for data type selection dropdown.
+void source_control::cb_data_type(Fl_Widget* widget, void* data) {
+    source_control* control = zc::ancestor_view<source_control>(widget);
+    if (control != nullptr) {
+        int selected = ((Fl_Choice*)widget)->value();
+        sp_data_->set_number_ports(selected + 1);
+        control->configure_widgets();
+        control->data_source_changed();
+    }
+}

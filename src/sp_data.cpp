@@ -74,7 +74,7 @@ void sp_data::create_active_dataset() {
     }
     sp_data_entry* entry = get_dataset(add_index);
 	entry->enabled = false;
-    entry->valid_ports = 2;
+	entry->valid_ports = get_number_ports();
     entry->z0 = default_z0_;
     entry->line_style_l = zc_line_style(COLOUR_CODE[0], 2, FL_SOLID);
     entry->line_style_r = zc_line_style(COLOUR_CODE[0], 1, FL_SOLID);
@@ -116,6 +116,8 @@ void sp_data::load_settings() {
         nvna_settings.get("Right Width", nvna_entry->line_style_r.width);
         nvna_settings.get("Right Style", nvna_entry->line_style_r.style);
     }
+	// Get the data type (S1P or S2P) if it exists, default to S1P if not.
+	sp_settings.get("Number VNA Ports", number_ports_, 1);
 }
 
 // Save current settings for future sessions.
@@ -153,6 +155,7 @@ void sp_data::save_settings() {
 		}
     }
 	sp_settings.set("Dataset Count", dataset_count);
+	sp_settings.set("Number VNA Ports", number_ports_);
 }
 
 // Reserve a new file dataset and return its index.
@@ -200,13 +203,21 @@ bool sp_data::read_data_from_file(sp_data_entry* entry) {
 //! \param sp_data_entry* entry The data entry to store the data in.
 //! \return True if the data was successfully read and stored, false otherwise.
 bool sp_data::load_data_from_file(const std::string& filename, sp_data_entry* entry) {
-    // Set S1P or S2P based on the filename extension.
+	// Check the file extension to check it's compatible.
     if (filename.size() >= 4) {
         std::string extension = filename.substr(filename.size() - 4);
         if (extension == ".s1p") {
+            if (number_ports_ != 1) {
+                // Raise a warning - the file extension indicates S1P data but the current data type is S2P. We will attempt to read it as S1P data but it may not be displayed correctly.
+                if (status_) status_->misc_status(ST_ERROR, "File extension indicates S1P data but current data type is S2P: %s", filename.c_str());
+            }
             entry->valid_ports = 1;
         }
         else if (extension == ".s2p") {
+            if (number_ports_ != 2) {
+                // Raise a warning - the file extension indicates S2P data but the current data type is S1P. We will attempt to read it as S2P data but it may not be displayed correctly.
+                if (status_) status_->misc_status(ST_ERROR, "File extension indicates S2P data but current data type is S1P: %s", filename.c_str());
+            }
             entry->valid_ports = 2;
         }
         else {
@@ -434,10 +445,13 @@ bool sp_data::store_data_to_file(sp_data_entry* entry) {
     // Write the data lines.
     for (const auto& point : entry->data) {
         file << point.frequency << " "
-             << point.sparams.s11.real() << " " << point.sparams.s11.imag() << " "
-             << point.sparams.s21.real() << " " << point.sparams.s21.imag() << " "
-             << point.sparams.s12.real() << " " << point.sparams.s12.imag() << " "
-             << point.sparams.s22.real() << " " << point.sparams.s22.imag() << "\n";
+            << point.sparams.s11.real() << " " << point.sparams.s11.imag();
+        if (entry->valid_ports >= 2) {
+            file << " "
+            << point.sparams.s21.real() << " " << point.sparams.s21.imag() << " "
+            << point.sparams.s12.real() << " " << point.sparams.s12.imag() << " "
+            << point.sparams.s22.real() << " " << point.sparams.s22.imag() << "\n";
+        }
     }
     file.close();
     return true;
