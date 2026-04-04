@@ -37,6 +37,7 @@
 
 // Include C++ standard library headers.
 #include <complex>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -166,12 +167,14 @@ void display::configure_graph() {
     // Get the number of S-parameter datasets to plot.
     int num_datasets = 0;
     std::set<int> dataset_indices;
-    for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
-        if (sp_data_->get_dataset(i)->enabled) {
+     for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
+		auto dataset = sp_data_->get_dataset(i);
+        if (dataset->enabled) {
             num_datasets++;
             dataset_indices.insert(i);
         }
     }
+
     // Get the number of sets of coordinates to plot for the current display mode.
     // Clear the existing graph data.
     // Map the enabled datasets to graph data sets and add them to the graph.
@@ -211,6 +214,13 @@ void display::configure_graph() {
 
 // Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
 void display::update_graph() {
+	// Keep track of the minimum and maximum values across all datasets for each axis, so we can adjust the graph scales to fit the new data.
+	float min_x = std::numeric_limits<float>::max();
+	float max_x = std::numeric_limits<float>::lowest();
+	float min_y_l = std::numeric_limits<float>::max();
+	float max_y_l = std::numeric_limits<float>::lowest();
+	float min_y_r = std::numeric_limits<float>::max();
+	float max_y_r = std::numeric_limits<float>::lowest();
     for (const auto& dataset_map : dataset_to_graph_map_) {
         int dataset_index = dataset_map.first;
         auto dataset = sp_data_->get_dataset(dataset_index);
@@ -222,6 +232,14 @@ void display::update_graph() {
                 zc_graph::coord point_r;
 				dm_params_t& params = display_mode_params_.at(display_mode_);
                 params.convert_sp_point(sp_point, *dataset, point_l, point_r);
+                min_x = std::min(min_x, point_l.x);
+                max_x = std::max(max_x, point_l.x);
+                min_y_l = std::min(min_y_l, point_l.y);
+                max_y_l = std::max(max_y_l, point_l.y);
+                if (dual_axes_) {
+                    min_y_r = std::min(min_y_r, point_r.y);
+                    max_y_r = std::max(max_y_r, point_r.y);
+                }
                 graph_points_l->push_back(point_l);
                 if (dual_axes_) {
                     graph_points_r->push_back(point_r);
@@ -237,11 +255,11 @@ void display::update_graph() {
     }
 	// After updating the data, we need to adjust the graph scales to fit the new data.
     graph_->set_drawing_area();
-    graph_->adjust_scale_x();
-    //graph_->adjust_scale_y(zc_graph::Y_LEFT);
-    //if (dual_axes_) {
-    //    graph_->adjust_scale_y(zc_graph::Y_RIGHT);
-    //}
+	graph_->get_x_options()->set_range(min_x, max_x, true);
+	graph_->get_y_options(zc_graph::Y_LEFT)->set_range(min_y_l, max_y_l, true);
+    if (dual_axes_) {
+        graph_->get_y_options(zc_graph::Y_RIGHT)->set_range(min_y_r, max_y_r, true);
+    }
     redraw();
 }
 
