@@ -55,6 +55,7 @@ void display_legend::create_widgets() {
 	int cw = w() - 2 * GAP;
 	int ch = h() - HTEXT - GAP - Fl::scrollbar_size();
 	scroll_ = new Fl_Scroll(cx, cy, cw, ch);
+	scroll_->box(FL_FLAT_BOX);
 	scroll_->type(Fl_Scroll::VERTICAL);
 	end();
 }
