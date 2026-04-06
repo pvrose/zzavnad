@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ZZANVAD VERSION 0.0.1) 
+project(ZZAVNAD VERSION 0.0.1) 
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,25 +15,25 @@ endif()
 
 ## Set program details
 set(APP_VENDOR "GM3ZZA")
-set(APP_NAME "ZZANVAD")
+set(APP_NAME "ZZAVNAD")
 string(TIMESTAMP APP_TIMESTAMP UTC)
-set(ZZANVAD_RC_VALUE "")
-set(APP_VERSION "${ZZANVAD_VERSION}${ZZANVAD_RC_VALUE}")
-
-set (TARGET zzanvad )
+set(ZZAVNAD_RC_VALUE "")
+set(APP_VERSION "${ZZAVNAD_VERSION}${ZZAVNAD_RC_VALUE}")
+  
+set (TARGET zzavnad )
 if (NOT MSVC)
   set(BUILD_SHARED_LIBS OFF)
 endif()
 
 set(CPPFILES 
-  ${ZZANVAD_SOURCE_DIR}/src/display.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/display_control.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/display_legend.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/main.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/nvna_control.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/source_control.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/sp_data.cpp
-  ${ZZANVAD_SOURCE_DIR}/src/window.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/display.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/main.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/nvna_control.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/source_control.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/sp_data.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/window.cpp
 )
 
 # set directory to install executable, reference data and documents.
@@ -57,7 +57,7 @@ message(STATUS "FLTK libs - ${FLTK_LIBRARIES}")
 
 ## Reference data
 set(DATAFILES
-  ${ZZANVAD_SOURCE_DIR}/rose.png 
+  ${ZZAVNAD_SOURCE_DIR}/rose.png 
 )
 
 add_executable(${TARGET})
@@ -68,7 +68,7 @@ else()
 endif()
 
 target_include_directories(${TARGET} PRIVATE 
-  ${ZZANVAD_SOURCE_DIR}/include
+  ${ZZAVNAD_SOURCE_DIR}/include
   ${ZZACOMMON_INCLUDE_DIR}
   ${ZC_APP_LIBRARY}
   ${FLTK_INCLUDE_DIR}
@@ -112,8 +112,8 @@ add_custom_target(reference_data ALL)
 message(STATUS "Reference data: ${DATAFILES}")
 foreach(F ${DATAFILES})
   add_custom_command(TARGET reference_data POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${F} ${ZZANVAD_BINARY_DIR}
-    COMMENT "Copying ${F} to ${ZZANVAD_BINARY_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy ${F} ${ZZAVNAD_BINARY_DIR}
+    COMMENT "Copying ${F} to ${ZZAVNAD_BINARY_DIR}"
   )
 endforeach()
 
