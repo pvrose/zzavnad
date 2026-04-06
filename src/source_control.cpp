@@ -154,6 +154,8 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->copy_label(("nanoVNA " + entry->timestamp).c_str());
 			btn_keep_->show();
             btn_notes_->show();
+            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
+			btn_notes_->deactivate();
             btn_line_l_->show();
             btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();
@@ -184,6 +186,8 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->hide();
             btn_keep_->hide();
             btn_notes_->show();
+            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
+            btn_notes_->deactivate();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();
@@ -214,6 +218,8 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->hide();
 			btn_keep_->hide();
             btn_notes_->show();
+            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
+            btn_notes_->deactivate();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();

@@ -209,9 +209,12 @@ void display::update_graph() {
 	// After updating the data, we need to adjust the graph scales to fit the new data.
     graph_->set_drawing_area();
 	graph_->get_x_options()->set_range(min_x, max_x, true);
+    graph_->get_x_options()->set_factors(true);
 	graph_->get_y_options(zc_graph::Y_LEFT)->set_range(min_y_l, max_y_l, true);
+    graph_->get_y_options(zc_graph::Y_LEFT)->set_factors(true);
     if (params_.dual_axes) {
         graph_->get_y_options(zc_graph::Y_RIGHT)->set_range(min_y_r, max_y_r, true);
+        graph_->get_y_options(zc_graph::Y_RIGHT)->set_factors(true);
     }
     redraw();
 }
