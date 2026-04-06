@@ -19,7 +19,6 @@ set(APP_NAME "ZZAVNAD")
 string(TIMESTAMP APP_TIMESTAMP UTC)
 set(ZZAVNAD_RC_VALUE "")
 set(APP_VERSION "${ZZAVNAD_VERSION}${ZZAVNAD_RC_VALUE}")
-  
 set (TARGET zzavnad )
 if (NOT MSVC)
   set(BUILD_SHARED_LIBS OFF)
@@ -31,6 +30,7 @@ set(CPPFILES
   ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/main.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/nvna_control.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/nvna_iface.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/source_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/sp_data.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/window.cpp
@@ -73,6 +73,12 @@ target_include_directories(${TARGET} PRIVATE
   ${ZC_APP_LIBRARY}
   ${FLTK_INCLUDE_DIR}
 )
+# Needed for boost::asio on Windows.
+# This is set in zzacommon, but we need it here too for the executable target.
+# TODO: How can we set this in zzacommon/CMakeLists.txt to propagate it to this target?
+target_compile_definitions(${TARGET} PRIVATE
+  _WIN32_WINNT=0x0601
+)
 ## Extra include directories required on MSVC
 if (MSVC)
   message(STATUS "Including other libraries for MSVC from ${USER_HOME_DIR}")
@@ -81,7 +87,7 @@ if (MSVC)
   )
 endif()
 
-target_sources(${TARGET} PRIVATE ${CPPFILES} )
+target_sources(${TARGET} PRIVATE ${CPPFILES}  "src/nvna_iface.cpp")
 
 target_link_libraries(${TARGET} PRIVATE
     ${ZZACOMMON_LIBRARIES}

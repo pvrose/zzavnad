@@ -17,6 +17,8 @@
 */
 #include "sp_data.hpp"
 
+#include "nvna_control.hpp"
+
 // Include ZZACOMMON items.
 #include "zc_graph.h"
 #include "zc_settings.h"
@@ -39,18 +41,15 @@
 
 // Constructor for the S-parameter data manager.
 sp_data::sp_data() {
+	datasets_.clear();
+	create_active_dataset();
     load_settings();
 	// If any datasets were loaded from settings, attempt to read the data for them.
     for (int i = 0; i < datasets_.size(); i++) {
         sp_data_entry* entry = datasets_[i];
-        if (entry->source == SP_DATA_SOURCE_FILE) {
-            if (!read_data_from_file(i)) {
+        if (entry->source == SPDS_FILE) {
+            if (!read_data_from_file(entry)) {
                 if (status_) status_->misc_status(ST_ERROR, "Failed to read data from file: %s", entry->filename.c_str());
-            }
-        }
-        else if (entry->source == SP_DATA_SOURCE_VNA) {
-            if (!acquire_data_from_vna()) {
-                if (status_) status_->misc_status(ST_ERROR, "Failed to acquire data from VNA");
             }
         }
 	}
@@ -66,6 +65,21 @@ sp_data::~sp_data() {
     datasets_.clear();
 }
 
+// Create an active dataset for acquiring data from the VNA.
+void sp_data::create_active_dataset() {
+	int add_index = add_dataset(SPDS_ACTIVE);
+	if (add_index != NANO_VNA_INDEX) {
+        // Raise an error - the active dataset must be at the nanoVNA index.
+        throw std::logic_error("Active dataset must be at index " + std::to_string(NANO_VNA_INDEX));
+    }
+    sp_data_entry* entry = get_dataset(add_index);
+	entry->enabled = false;
+	entry->valid_ports = get_number_ports();
+    entry->z0 = default_z0_;
+    entry->line_style_l = zc_line_style(COLOUR_CODE[0], 2, FL_SOLID);
+    entry->line_style_r = zc_line_style(COLOUR_CODE[0], 1, FL_SOLID);
+}
+
 // Load settings from previous sessions.
 void sp_data::load_settings() {
     zc_settings settings;
@@ -74,69 +88,89 @@ void sp_data::load_settings() {
     int dataset_count;
 	sp_settings.get("Dataset Count", dataset_count, 0);
     for (int i = 0; i < dataset_count; i++) {
-		std::string dataset_name = i == 0 ? "nanoVNA" : "Dataset " + std::to_string(i);
+		std::string dataset_name = "Dataset " + std::to_string(i);
         zc_settings dataset_settings(&sp_settings, dataset_name);
-        sp_data_entry* entry = new sp_data_entry;
-        if (i != 0) {
-            entry->source = SP_DATA_SOURCE_FILE;
-            dataset_settings.get("Filename", entry->filename, std::string(""));
-        }
-        else {
-            entry->source = SP_DATA_SOURCE_VNA;
-            nanoVNA_index_ = i;
-        }
+		int index = add_dataset(SPDS_FILE);
+		sp_data_entry* entry = get_dataset(index);
+		dataset_settings.get<std::string>("Filename", entry->filename, "");
+		dataset_settings.get("Enabled", entry->enabled, true);
         dataset_settings.get("Valid Ports", entry->valid_ports, 2);
-        dataset_settings.get("Left Colour", entry->line_style_l.colour, FL_BLUE);
+        dataset_settings.get("Left Colour", entry->line_style_l.colour, COLOUR_CODE[index % 9]);
 		dataset_settings.get("Left Width", entry->line_style_l.width, 2);
 		dataset_settings.get("Left Style", entry->line_style_l.style, (int)FL_SOLID);
-		dataset_settings.get("Right Colour", entry->line_style_r.colour, FL_GREEN);
+		dataset_settings.get("Right Colour", entry->line_style_r.colour, COLOUR_CODE[index % 9]);
 		dataset_settings.get("Right Width", entry->line_style_r.width, 2);
-		dataset_settings.get("Right Style", entry->line_style_r.style, (int)FL_SOLID);
-        datasets_.push_back(entry);
+		dataset_settings.get("Right Style", entry->line_style_r.style, (int)FL_DASH);
     }
-    if (datasets_.size() == 0) {
-        sp_data_entry* entry = new sp_data_entry;
-        entry->source = SP_DATA_SOURCE_VNA;
-        entry->valid_ports = 2;
-        entry->line_style_l = { FL_BLUE, 2, 0 };
-        datasets_.push_back(entry);
+	// Get settings for the nanoVNA dataset if it exists.
+	zc_settings nvna_settings(&sp_settings, "nanoVNA");
+	sp_data_entry* nvna_entry = get_dataset(NANO_VNA_INDEX);
+    if (nvna_entry) {
+        nvna_settings.get("Z0", nvna_entry->z0);
+		nvna_settings.get("Enabled", nvna_entry->enabled);
+		nvna_settings.get("Valid Ports", nvna_entry->valid_ports);
+		nvna_settings.get("Left Colour", nvna_entry->line_style_l.colour);
+		nvna_settings.get("Left Width", nvna_entry->line_style_l.width);
+        nvna_settings.get("Left Style", nvna_entry->line_style_l.style);
+        nvna_settings.get("Right Colour", nvna_entry->line_style_r.colour);
+        nvna_settings.get("Right Width", nvna_entry->line_style_r.width);
+        nvna_settings.get("Right Style", nvna_entry->line_style_r.style);
     }
+	// Get the data type (S1P or S2P) if it exists, default to S1P if not.
+	sp_settings.get("Number VNA Ports", number_ports_, 1);
 }
 
 // Save current settings for future sessions.
 void sp_data::save_settings() {
     zc_settings settings;
     zc_settings sp_settings(&settings, "Data");
-    int dataset_count = datasets_.size();
-    sp_settings.set("Dataset Count", dataset_count);
-    for (int i = 0; i < dataset_count; i++) {
-        sp_data_entry* entry = datasets_[i];
+	sp_settings.clear(); // Clear any existing settings for this group before saving the current settings.
+    // We only save settings for file datasets.
+    int dataset_count = 0;
+	for (auto dataset : datasets_) {;
         zc_settings* dataset_settings;
-        if (entry->source == SP_DATA_SOURCE_VNA) {
+        if (dataset->source == SPDS_FILE) {
+            dataset_settings = new zc_settings(&sp_settings, "Dataset " + std::to_string(dataset_count));
+            dataset_settings->set("Filename", dataset->filename);
+			dataset_settings->set("Enabled", dataset->enabled);
+            dataset_settings->set("Valid Ports", dataset->valid_ports);
+            dataset_settings->set("Left Colour", dataset->line_style_l.colour);
+            dataset_settings->set("Left Width", dataset->line_style_l.width);
+            dataset_settings->set("Right Colour", dataset->line_style_r.colour);
+            dataset_settings->set("Right Width", dataset->line_style_r.width);
+            dataset_settings->set("Left Style", dataset->line_style_l.style);
+            dataset_settings->set("Right Style", dataset->line_style_r.style);
+            dataset_count++;
+        } else if (dataset->source == SPDS_ACTIVE) {
             dataset_settings = new zc_settings(&sp_settings, "nanoVNA");
-        }
-        else {
-            dataset_settings = new zc_settings(&sp_settings, "Dataset " + std::to_string(i));
-            dataset_settings->set("Filename", entry->filename);
-        }
-        dataset_settings->set("Valid Ports", entry->valid_ports);
-        dataset_settings->set("Left Colour", entry->line_style_l.colour);
-        dataset_settings->set("Left Width", entry->line_style_l.width);
-        dataset_settings->set("Right Colour", entry->line_style_r.colour);
-        dataset_settings->set("Right Width", entry->line_style_r.width);
+            dataset_settings->set("Z0", dataset->z0);
+			dataset_settings->set("Enabled", dataset->enabled);
+            dataset_settings->set("Valid Ports", dataset->valid_ports);
+            dataset_settings->set("Left Colour", dataset->line_style_l.colour);
+            dataset_settings->set("Left Width", dataset->line_style_l.width);
+            dataset_settings->set("Right Colour", dataset->line_style_r.colour);
+            dataset_settings->set("Right Width", dataset->line_style_r.width);
+            dataset_settings->set("Left Style", dataset->line_style_l.style);
+            dataset_settings->set("Right Style", dataset->line_style_r.style);
+		}
     }
+	sp_settings.set("Dataset Count", dataset_count);
+	sp_settings.set("Number VNA Ports", number_ports_);
 }
 
 // Reserve a new file dataset and return its index.
-int sp_data::add_dataset() {
+int sp_data::add_dataset(sp_data_source source) {
     sp_data_entry* entry = new sp_data_entry;
-    entry->source = SP_DATA_SOURCE_FILE;
+    datasets_.push_back(entry);
+	size_t index = datasets_.size() - 1;
+    entry->source = source;
     entry->filename = "";
     entry->valid_ports = 2;
-    entry->line_style_l = zc_line_style(FL_BLUE, 2, FL_SOLID);
-    entry->line_style_r = zc_line_style(FL_RED, 2, FL_SOLID);
-    datasets_.push_back(entry);
-    return datasets_.size() - 1;
+    // Do not use COLOUR_CODE[9] as this is white!
+    entry->line_style_l = zc_line_style(COLOUR_CODE[index % 9], 2, FL_SOLID);
+    entry->line_style_r = zc_line_style(COLOUR_CODE[index % 9], 1, FL_SOLID);
+    entry->z0 = default_z0_;
+    return index;
 }
 
 // Get a reference to file dataset by index.
@@ -156,39 +190,34 @@ int sp_data::get_dataset_count() const {
 //! Read S-parameter data from a file and store it in the dataset.
 //! \param index The index of the dataset to store the data in.
 //! \return True if the data was successfully read and stored, false otherwise.
-bool sp_data::read_data_from_file(int index) {
-    if (index < 0 || index >= datasets_.size()) {
-        // Raise an error.
-        throw std::out_of_range("Dataset index out of range");
-    }
-    sp_data_entry* entry = datasets_[index];
-    if (entry->source != SP_DATA_SOURCE_FILE) {
+bool sp_data::read_data_from_file(sp_data_entry* entry) {
+    if (entry->source != SPDS_FILE) {
         // Raise an error.
         throw std::invalid_argument("Dataset at index is not a file dataset");
     }
     return load_data_from_file(entry->filename, entry);
 }
 
-//! Acquire S-parameter data from a VNA and store it in the dataset.
-//! \return True if the data was successfully acquired and stored, false otherwise.
-bool sp_data::acquire_data_from_vna() {
-    // TODO: Implement VNA data acquisition.
-    return false;
-}
-
-
 //! \brief Load S-parameter data from the specified file.
 //! \param std::string filename The name of the file to read the data from.
 //! \param sp_data_entry* entry The data entry to store the data in.
 //! \return True if the data was successfully read and stored, false otherwise.
 bool sp_data::load_data_from_file(const std::string& filename, sp_data_entry* entry) {
-    // Set S1P or S2P based on the filename extension.
+	// Check the file extension to check it's compatible.
     if (filename.size() >= 4) {
         std::string extension = filename.substr(filename.size() - 4);
         if (extension == ".s1p") {
+            if (number_ports_ != 1) {
+                // Raise a warning - the file extension indicates S1P data but the current data type is S2P. We will attempt to read it as S1P data but it may not be displayed correctly.
+                if (status_) status_->misc_status(ST_ERROR, "File extension indicates S1P data but current data type is S2P: %s", filename.c_str());
+            }
             entry->valid_ports = 1;
         }
         else if (extension == ".s2p") {
+            if (number_ports_ != 2) {
+                // Raise a warning - the file extension indicates S2P data but the current data type is S1P. We will attempt to read it as S2P data but it may not be displayed correctly.
+                if (status_) status_->misc_status(ST_ERROR, "File extension indicates S2P data but current data type is S1P: %s", filename.c_str());
+            }
             entry->valid_ports = 2;
         }
         else {
@@ -210,11 +239,16 @@ bool sp_data::load_data_from_file(const std::string& filename, sp_data_entry* en
     double multiplier = 1.0;
     sxp_data_format format = SXP_FORMAT_SDB;
 
-    // Skip comment lines.
+    // Add comment lines.
+	entry->notes = "";
     std::string line;
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '!') {
-            // This is a comment line, skip it.
+            if (line.length() > 2) {
+                // This is a comment line, add it to the notes for this dataset (removing the leading '!' and any leading whitespace).
+                std::string comment = line.substr(2);
+                entry->notes += comment + "\n";
+			}
             continue;
         }
         else if (line[0] == '#') {
@@ -226,6 +260,7 @@ bool sp_data::load_data_from_file(const std::string& filename, sp_data_entry* en
                 return false;
             }
             // Header successfully parsed, break out of the loop to start reading data lines.
+			// We assume the header is after all pertinent comment lines.
             break;
         }
         else {
@@ -312,9 +347,9 @@ bool sp_data::parse_sxp_header(const std::string& header_line, double& multiplie
         status_->misc_status(ST_WARNING, "Invalid impedance value in header: %s", token.c_str());
         return false;
     }
-    if (std::abs(impedance - 50.0) > 1e-6) {
-        // Impedance is not 50 ohms, raise a warning.
-        status_->misc_status(ST_WARNING, "Impedance in header is not 50 ohms: %f", impedance);
+    if (std::abs(impedance - default_z0_) > 1e-6) {
+        // Impedance is not the default Z0, raise a warning.
+        status_->misc_status(ST_WARNING, "Impedance in header is not the default Z0: %f vs %f", impedance, default_z0_);
         return false;
     }
     z0 = impedance;
@@ -342,7 +377,11 @@ sp_point sp_data::parse_sxp_data_line(const std::string& data_line, int ports, d
         point.sparams.s12 = convert_sparam(param1, param2, format);
         data_stream >> param1 >> param2;
         point.sparams.s22 = convert_sparam(param1, param2, format);
-    }
+    } else {
+        point.sparams.s21 = { 0.0, 0.0 };
+        point.sparams.s12 = { 0.0, 0.0 };
+        point.sparams.s22 = { 0.0, 0.0 };
+	}
     return point;
 }
 
@@ -371,32 +410,6 @@ std::complex<double> sp_data::convert_sparam(double param1, double param2, sxp_d
     }
 }
 
-//! \brief Remove all file datasets.
-void sp_data::clear_file_datasets() {
-    for (auto it = datasets_.begin(); it != datasets_.end();) {
-        if ((*it)->source == SP_DATA_SOURCE_FILE) {
-            delete *it;
-            it = datasets_.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
-//! \brief Remove all undisplayed file datasets.
-void sp_data::clear_undisplayed_file_datasets() {
-    for (auto it = datasets_.begin(); it != datasets_.end();) {
-        if ((*it)->source == SP_DATA_SOURCE_FILE && !(*it)->enabled) {
-            delete *it;
-            it = datasets_.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
 //! \brief Remove specified dataset by pointer.
 //! \param entry The dataset to remove.
 void sp_data::remove_dataset(sp_data_entry* entry) {
@@ -410,4 +423,40 @@ void sp_data::remove_dataset(sp_data_entry* entry) {
             ++it;
         }
     }
+}
+
+//! \brief Store the specified dataset as a file.
+//! \param index The index of the dataset to store.
+//! \return True if the data was successfully stored, false otherwise.
+bool sp_data::store_data_to_file(sp_data_entry* entry) {
+    if (entry->source != SPDS_FILE && entry->source != SPDS_KEPT) {
+        // Raise an error.
+        throw std::invalid_argument("Dataset at index is not a valid dataset for writing");
+    }
+    // We will write the data in SRI format with a header line.
+    std::ofstream file(entry->filename);
+    if (!file.is_open()) {
+        return false;
+    }
+    // Write comment lines with the notes for this dataset.
+    std::istringstream notes_stream(entry->notes);
+    std::string note_line;
+    while (std::getline(notes_stream, note_line)) {
+        file << "! " << note_line << "\n";
+    }
+    // Write header line.
+    file << "# HZ S RI R " << entry->z0 << "\n";
+    // Write the data lines.
+    for (const auto& point : entry->data) {
+        file << point.frequency << " "
+            << point.sparams.s11.real() << " " << point.sparams.s11.imag();
+        if (entry->valid_ports >= 2) {
+            file << " "
+            << point.sparams.s21.real() << " " << point.sparams.s21.imag() << " "
+            << point.sparams.s12.real() << " " << point.sparams.s12.imag() << " "
+            << point.sparams.s22.real() << " " << point.sparams.s22.imag() << "\n";
+        }
+    }
+    file.close();
+    return true;
 }

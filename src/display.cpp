@@ -36,7 +36,10 @@
 #include <FL/Fl_Window.H>
 
 // Include C++ standard library headers.
+#include <algorithm>
+#include <cmath>
 #include <complex>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -47,9 +50,9 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "SWR",
         "SWR vs frequency",
         false,
-    	{ 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
-        { 1.0F, 15.0F, "SWR", zc_graph::axis_xier_t::NONE, 20 },
+    	{ 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { 1.0F, 15.0F, false, "SWR", zc_graph::axis_xier_t::NONE, 30, true, 1.0F },
+        { 1.0F, 15.0F, false, "SWR", zc_graph::axis_xier_t::NONE, 30, true, 1.0F },
 		"Standing Wave Ratio",
         "",
         display::convert_sp_point_swr
@@ -58,9 +61,9 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 Raw",
         "S11 Raw data",
         true,
-        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { -1.0F, 1.0F, "Sr", zc_graph::axis_xier_t::NONE, 20 },
-        { -1.0F, 1.0F, "Si", zc_graph::axis_xier_t::NONE, 20 },
+        { 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { -1.0F, 1.0F, true, "Sr", zc_graph::axis_xier_t::NONE, 30, true },
+        { -1.0F, 1.0F, true, "Si", zc_graph::axis_xier_t::NONE, 30, true },
         "S11 Real data",
 		"S11 Imaginary data",
         display::convert_sp_point_s11
@@ -69,9 +72,9 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 R+jX",
         "S11 Resistance and Reactance vs frequency",
         true,
-        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { 0.0F, 1000.0F, "\xCE\xA9(R)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        {  -1000.0F, 1000.0F, "\xCE\xA9(X)", zc_graph::axis_xier_t::SI_PREFIX, 20 },
+        { 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { 0.0F, 1000.0F, true, "\xCE\xA9(R)", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        {  -1000.0F, 1000.0F, true, "\xCE\xA9(X)", zc_graph::axis_xier_t::SI_PREFIX, 30, true },
 		"S11 Resistance",
 		"S11 Reactance",
         display::convert_sp_point_s11_rx
@@ -80,12 +83,23 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
         "S11 M+A",
         "S11 Magnitude and angle vs frequency",
         true,
-        { 1e6, 30e6, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 20 },
-        { 0.0F, 1.0F, "Mag", zc_graph::axis_xier_t::NONE, 20 },
-        { -180.0F, 180.0F, "degree", zc_graph::axis_xier_t::NONE, 60 },
+        { 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { 0.0F, 1.0F, true, "Mag", zc_graph::axis_xier_t::NONE, 30, true },
+        { -180.0F, 180.0F, true, "degree", zc_graph::axis_xier_t::NONE, 60, true, -180.0F, 180.0F },
 		"S11 Magnitude",
 		"S11 Angle",
         display::convert_sp_point_s11_ma
+    }},
+    {  DM_S21_GAIN, {
+        "S21 Gain",
+        "S21 Gain (dB magnitude and phase) vs frequency",
+        true,
+        { 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { -60.0F, 10.0F, true, "dB", zc_graph::axis_xier_t::NONE, 30, true },
+        { -180.0F, 180.0F, true, "degree", zc_graph::axis_xier_t::NONE, 60, true, -180.0F, 180.0F },
+        "S21 Gain (dB)",
+        "S21 Phase",
+        display::convert_sp_point_s21_gain
     }}
 };
 
@@ -125,6 +139,7 @@ void display::create_widgets() {
     // Add the graph widget for plotting the data.
     graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT - HLEGEND);
     graph_->box(FL_BORDER_BOX);
+	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
 
     cy += graph_->h();
@@ -135,6 +150,8 @@ void display::create_widgets() {
 	legend_l_->tooltip("Legend for the left Y-axis");
     legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
+    legend_l_->resizable(nullptr);
+
 	// Add the right axis legend.
     cx += legend_l_->w();
 	legend_r_ = new display_legend(cx, cy, w() / 2 - GAP, HLEGEND);
@@ -142,7 +159,8 @@ void display::create_widgets() {
     legend_r_->tooltip("Legend for the right Y-axis");
     legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 
-	size(w(), cy + legend_l_->h() + GAP);
+	legend_r_->resizable(nullptr);
+
 	resizable(graph_);
 
     end();
@@ -162,12 +180,14 @@ void display::configure_graph() {
     // Get the number of S-parameter datasets to plot.
     int num_datasets = 0;
     std::set<int> dataset_indices;
-    for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
-        if (sp_data_->get_dataset(i)->enabled) {
+     for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
+		auto dataset = sp_data_->get_dataset(i);
+        if (dataset->enabled) {
             num_datasets++;
             dataset_indices.insert(i);
         }
     }
+
     // Get the number of sets of coordinates to plot for the current display mode.
     // Clear the existing graph data.
     // Map the enabled datasets to graph data sets and add them to the graph.
@@ -207,6 +227,13 @@ void display::configure_graph() {
 
 // Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
 void display::update_graph() {
+	// Keep track of the minimum and maximum values across all datasets for each axis, so we can adjust the graph scales to fit the new data.
+	float min_x = std::numeric_limits<float>::max();
+	float max_x = std::numeric_limits<float>::lowest();
+	float min_y_l = std::numeric_limits<float>::max();
+	float max_y_l = std::numeric_limits<float>::lowest();
+	float min_y_r = std::numeric_limits<float>::max();
+	float max_y_r = std::numeric_limits<float>::lowest();
     for (const auto& dataset_map : dataset_to_graph_map_) {
         int dataset_index = dataset_map.first;
         auto dataset = sp_data_->get_dataset(dataset_index);
@@ -218,6 +245,14 @@ void display::update_graph() {
                 zc_graph::coord point_r;
 				dm_params_t& params = display_mode_params_.at(display_mode_);
                 params.convert_sp_point(sp_point, *dataset, point_l, point_r);
+                min_x = std::min(min_x, point_l.x);
+                max_x = std::max(max_x, point_l.x);
+                min_y_l = std::min(min_y_l, point_l.y);
+                max_y_l = std::max(max_y_l, point_l.y);
+                if (dual_axes_) {
+                    min_y_r = std::min(min_y_r, point_r.y);
+                    max_y_r = std::max(max_y_r, point_r.y);
+                }
                 graph_points_l->push_back(point_l);
                 if (dual_axes_) {
                     graph_points_r->push_back(point_r);
@@ -233,11 +268,11 @@ void display::update_graph() {
     }
 	// After updating the data, we need to adjust the graph scales to fit the new data.
     graph_->set_drawing_area();
-    graph_->adjust_scale_x();
-    //graph_->adjust_scale_y(zc_graph::Y_LEFT);
-    //if (dual_axes_) {
-    //    graph_->adjust_scale_y(zc_graph::Y_RIGHT);
-    //}
+	graph_->get_x_options()->set_range(min_x, max_x, true);
+	graph_->get_y_options(zc_graph::Y_LEFT)->set_range(min_y_l, max_y_l, true);
+    if (dual_axes_) {
+        graph_->get_y_options(zc_graph::Y_RIGHT)->set_range(min_y_r, max_y_r, true);
+    }
     redraw();
 }
 
@@ -258,7 +293,17 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             else {
                 entry.style = dataset->line_style_r;
             }
-            entry.source = zc::terminal(dataset->filename);
+            switch (dataset->source) {
+                case SPDS_ACTIVE:
+                    entry.source = "nanoVNA " + dataset->timestamp;
+                    break;
+				case SPDS_FILE:
+					entry.source = zc::terminal(dataset->filename);
+                    break;
+                case SPDS_KEPT:
+                    entry.source = dataset->timestamp;
+                    break;
+            }
             // Set the legend entry for this dataset.
             legend_entries.push_back(entry);
         }
@@ -331,4 +376,13 @@ void display::convert_sp_point_swr(const sp_point& point, const sp_data_entry& d
     point_l.x = point.frequency;
     double s11_mag = std::abs(point.sparams.s11);
     point_l.y = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
+}
+
+// Convert sp_point into 2 coordinates for plotting S21 as magnitude and phase
+void display::convert_sp_point_s21_gain(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
+    point_l.x = point.frequency;
+    std::complex<double> s21 = point.sparams.s21;
+    point_l.y = 20 * std::log10(std::abs(s21)); // S21 gain in dB
+    point_r.x = point.frequency;
+    point_r.y = std::arg(s21) * zc::RADIAN_DEGREE; // S21 phase in degrees
 }

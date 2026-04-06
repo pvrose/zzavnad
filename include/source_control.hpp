@@ -39,9 +39,11 @@
 #include <vector>
 
 // Forward declaration of FLTK widgets.
+class Fl_Box;
 class Fl_Button;
 class Fl_Check_Button;
 class Fl_Choice;
+class Fl_Scroll;
 
 // Forward declaration of zzacommon widgets
 class zc_filename_input;
@@ -69,28 +71,13 @@ public:
     //! Destructor for the source control panel.
     ~source_control();
 
-    protected:
-    // Callback functions for the widgets in the control panel.
-	static void cb_file_source_add(Fl_Widget* widget, void* data);
-    static void cb_file_input(Fl_Widget* widget, void* data);
-    static void cb_file_enable(Fl_Widget* widget, void* data);
-    static void cb_file_line(Fl_Widget* widget, void* data);
-    static void cb_file_remove(Fl_Widget* widget, void* data);
-    static void cb_file_clear(Fl_Widget* widget, void* data);
-    static void cb_file_clear_undisplayed(Fl_Widget* widget, void* data);
-
-    private:
-    //! Create the widgets for the control panel.
-    void create_widgets();
-    //! Load the previous settings for the control panel.
-    void load_default_settings();
-    //! Save the current settings for the control panel.
-    void save_current_settings();
     //! Configure the widgets based on the current settings.
     void configure_widgets();
 
-    //! Configure a linestyle button based on the given colour and thickness.
-    static void configure_line_button(line_style_button* button, zc_line_style line_style);
+protected:
+    private:
+    //! Create the widgets for the control panel.
+    void create_widgets();
 
     // Widgets for the control panel.
     //! Group to select and configure the file data sources.
@@ -99,45 +86,53 @@ public:
         file_source(int X, int Y, int W, int H, const char* L = nullptr);
         ~file_source();
 
+		// Configure the widgets based on the current settings for this data source.
         void configure_widgets();
 
-        void type(sp_data_source source) { source_ = source; }
-
-        sp_data_source type() const { return source_; }
-
-        void set_entry(sp_data_entry* entry, int index) { 
-            data_entry_ = entry; 
-            file_index_ = index;
-            configure_widgets(); 
+		// Set the userdata for this group to the data entry and reconfigure.
+        virtual void user_data(void* data) {
+			Fl_Group::user_data(data);
+            configure_widgets();
         }
+		// Need the get user_data function to access the data entry pointer.
+        virtual void* user_data() {
+            return Fl_Group::user_data();
+		}
 
         zc_filename_input* ip_filename_; //!< Widget to input the filename for this data source
         line_style_button* btn_line_l_; //!< Button to open line configuration dialog for left axis data.
         line_style_button* btn_line_r_; //!< Button to open line configuration dialog for right axis data.
         Fl_Check_Button* ckb_enable_; //!< Checkbox to enable/disable this data source
         Fl_Button* btn_remove_; //!< Button to remove this data source from the control panel
-		Fl_Button* btn_add_; //!< Button to add a new file data source to the control panel    
-        sp_data_entry* data_entry_ = nullptr; //!< Pointer to the data entry associated with this file source.
- 
-        static bool show_add_;  //!< Indicates whether to show the add button. 
-
+		Fl_Box* box_type_; //!< Box to show the type of this data source (e.g. file or nanoVNA)
+		Fl_Button* btn_notes_; //!< Button to open a dialog to edit the notes for this data source.
+		Fl_Box* box_nvna_; //!< Box to show the nanoVNA label for this data source, if applicable.
+		Fl_Button* btn_keep_; //!< Button to keep the current data for this data source, if applicable. 
     private:
-        sp_data_source source_ = static_cast<sp_data_source>(0); 
-             //!< The source type for this data source (e.g. file or nanoVNA)
+        // Callback functions for the widgets in the control panel.
+        static void cb_file_input(Fl_Widget* widget, void* data);
+        static void cb_file_enable(Fl_Widget* widget, void* data);
+        static void cb_file_line(Fl_Widget* widget, void* data);
+        static void cb_file_remove(Fl_Widget* widget, void* data);
+		static void cb_file_note(Fl_Widget* widget, void* data);
+		static void cb_file_keep(Fl_Widget* widget, void* data);
 
-        int file_index_ = -1; //!< The index into the list of file sources.
-
+        
     };
 
+	//! Callback function for data type selection dropdown.
+	static void cb_data_type(Fl_Widget* widget, void* data);
+
     //! A data source has been changed so data needs to reflect this.
-    //! \param source The data source that has been changed. 
-    //! \note If \p source is nullptr, all data sources should be reloaded.
-    void data_source_changed(file_source* source);
+    void data_source_changed();
 
-    file_source* nvna_source_; //!< Control for the nanoVNA data source
+	//! Dropdown to select the data type to display.
+	Fl_Choice* choice_data_type_;
 
-    Fl_Group* file_group_; //!< Group to contain the file data source controls
-	std::array<file_source*, NUM_FILE_SOURCES> file_sources_; //!< Array to hold the file data source controls
+	file_source* spare_source_; //!< A spare data source control used to add new file data sources.
+	file_source* nanovna_source_; //!< The data source control for the nanoVNA data source.
+
+    Fl_Scroll* file_group_; //!< Scrollable group to contain the file data source controls
 
 };
 
