@@ -56,6 +56,7 @@ void display_legend::create_widgets() {
 	scroll_ = new Fl_Scroll(cx, cy, cw, ch);
 	scroll_->box(FL_FLAT_BOX);
 	scroll_->type(Fl_Scroll::VERTICAL);
+	resizable(scroll_);
 	end();
 }
 
@@ -80,9 +81,9 @@ void display_legend::add_entry_groups() {
 	}
 	Fl::check(); // Ensure that the widgets are deleted before we add new ones.
 	// Add the entry groups to the scroll widget, arranging them in rows and columns.
-	int cx = x() + GAP;
-	int cy = y() + GAP;
-	const int WENTRY = WBUTTON / 2 + WLLABEL;
+	int cx = scroll_->x();
+	int cy = scroll_->y();
+	const int WENTRY = (scroll_->w() - Fl::scrollbar_size()) / 2;
 	for (size_t i = 0; i < entries_.size(); i++) {
 		entry_group* entry = new entry_group(cx, cy, WENTRY, HBUTTON, entries_[i]);
 		scroll_->add(*entry);
@@ -96,7 +97,6 @@ void display_legend::add_entry_groups() {
 		}
 	}
 	scroll_->end();
-	scroll_->scroll_to(0, 0); // Scroll to the top after adding the entries.
 	scroll_->redraw();
 }
 

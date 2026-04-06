@@ -88,11 +88,16 @@ public:
 
 private:
 
+	//! \brief create display for mode
+	display* create_display(display_mode mode, int W, int H);
+
 	//! \brief Map of display mode to corresponding checkbox widget.
 	std::map<display_mode, Fl_Check_Button*> display_mode_checkboxes_;
+
+	//! \brief Map of displays by display mode.
+	std::map<display_mode, display*> displays_;
 
 
 };
 
 extern display_control* display_control_; //!< Global pointer to the display control instance.
-extern std::map<display_mode, dm_params_t> display_mode_params_;

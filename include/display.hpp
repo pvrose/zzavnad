@@ -39,6 +39,8 @@ class display_legend;
 enum display_mode : uint8_t;
 
 //! \brief Various parameters for the display modes.
+//! This structure holds all the parameters for each display mode,
+//! and will be set by the individual overloads.
 struct dm_params_t {
     std::string serial_name = "";        //!< Name for use in serialisation.
 	std::string title = "";              //!< Title of the display window for this mode.
@@ -48,19 +50,12 @@ struct dm_params_t {
     zc_graph::options_t axis_r_options;  //!< Options for right y axis
 	std::string legend_l = "";              //!< Legend for left y axis data.
 	std::string legend_r = "";              //!< Legend for right y axis data.
-    void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
-                                         //!< Function to convert sp_point into coordinates for plotting.
 	int number_ports = 1;                 //!< Number of valid ports required for this display mode (1 or 2).
     bool enabled = false;                //!< Whether this display mode is being shown.
-	int width = 800;                     //!< The width of the display window for this mode.
-	int height = 600;                    //!< The height of the display window for this mode.
-    display* window = nullptr;           //!< Pointer to the display window for this mode.
 };
 
-//! \brief Map of mode parameters - external declaration.
-extern std::map<display_mode, dm_params_t> display_mode_params_;
-
 //! \brief The display class manages the plotting of S-parameter data on the graph.
+//! It will form the base calss for the various display modes.
 class display : public Fl_Double_Window {
 public:
     
@@ -73,14 +68,6 @@ public:
     //! Destructor for the display class.
     ~display();
 
-    //! Set the display mode for the graph.
-    //! \param mode The display mode to set.
-    void set_display_mode(display_mode mode);
-
-    //! Get the current display mode for the graph.
-    //! \return The current display mode.
-    display_mode get_display_mode() const { return display_mode_; }
-
     //! \brief Configure the graph data.
     void configure_graph();
 
@@ -92,13 +79,21 @@ public:
     //! \param dataset The dataset to which this point belongs, which may be needed for some display modes.
     //! \param point_l The first coordinate to plot for this point (e.g. SWR, or S11 magnitude).
     //! \param point_r The second coordinate to plot for this point (e.g. S11 phase).
-    static void convert_sp_point_swr(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
-    static void convert_sp_point_s11(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
-    static void convert_sp_point_s11_rx(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
-    static void convert_sp_point_s11_ma(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
-	static void convert_sp_point_s21_gain(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
+	virtual void convert_sp_point(
+        const sp_point& point,
+        const sp_data_entry& dataset,
+        zc_graph::coord& point_l,
+        zc_graph::coord& point_r) const = 0;
 
-private:
+	dm_params_t& get_params() { return params_; }
+
+protected:
+
+    dm_params_t params_ = {}; //!< The parameters for this display mode, set by the individual overloads.
+
+    //! The current display mode.
+    display_mode display_mode_ = static_cast<display_mode>(0);
+
     //! Create the widgets for the display window.
     void create_widgets();
     //! Load the previous settings for the display.
@@ -108,14 +103,12 @@ private:
     //! Configure the widgets based on the current settings.
     void configure_widgets();
 
+    //! The create methods to be run after configuration with
+    //! theinherited display mode parameters.
+    void create();
+
     //! Update the legend for each axis based on the current display mode and data.
 	void update_legend(zc_graph::y_axis_t axis);
-
-    //! The current display mode.
-    display_mode display_mode_ = static_cast<display_mode>(0);
-
-    //! The display has both a left and right Y-axis. 
-    bool dual_axes_ = false;
 
     //! Each sp_data dataset can be mapped to 1 or 2 graph data sets for plotting.
     struct graph_datasets_t {

@@ -331,6 +331,7 @@ void source_control::configure_widgets() {
 void source_control::data_source_changed() {
     // Update the display to reflect the changed data source.
     if (display_control_ != nullptr) {
+        display_control_->configure_widgets();
         display_control_->configure_displays();
         display_control_->update_displays();
     }
