@@ -50,7 +50,8 @@ struct dm_params_t {
 	std::string legend_r = "";              //!< Legend for right y axis data.
     void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) = nullptr; 
                                          //!< Function to convert sp_point into coordinates for plotting.
-	bool enabled = false;                //!< Whether this display mode is being shown.
+	int number_ports = 1;                 //!< Number of valid ports required for this display mode (1 or 2).
+    bool enabled = false;                //!< Whether this display mode is being shown.
 	int width = 800;                     //!< The width of the display window for this mode.
 	int height = 600;                    //!< The height of the display window for this mode.
     display* window = nullptr;           //!< Pointer to the display window for this mode.
@@ -95,7 +96,7 @@ public:
     static void convert_sp_point_s11(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
     static void convert_sp_point_s11_rx(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
     static void convert_sp_point_s11_ma(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
-
+	static void convert_sp_point_s21_gain(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r);
 
 private:
     //! Create the widgets for the display window.

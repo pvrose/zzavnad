@@ -377,7 +377,11 @@ sp_point sp_data::parse_sxp_data_line(const std::string& data_line, int ports, d
         point.sparams.s12 = convert_sparam(param1, param2, format);
         data_stream >> param1 >> param2;
         point.sparams.s22 = convert_sparam(param1, param2, format);
-    }
+    } else {
+        point.sparams.s21 = { 0.0, 0.0 };
+        point.sparams.s12 = { 0.0, 0.0 };
+        point.sparams.s22 = { 0.0, 0.0 };
+	}
     return point;
 }
 

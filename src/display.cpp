@@ -36,6 +36,8 @@
 #include <FL/Fl_Window.H>
 
 // Include C++ standard library headers.
+#include <algorithm>
+#include <cmath>
 #include <complex>
 #include <limits>
 #include <map>
@@ -87,6 +89,17 @@ std::map<display_mode, dm_params_t> display_mode_params_ = {
 		"S11 Magnitude",
 		"S11 Angle",
         display::convert_sp_point_s11_ma
+    }},
+    {  DM_S21_GAIN, {
+        "S21 Gain",
+        "S21 Gain (dB magnitude and phase) vs frequency",
+        true,
+        { 1e6, 30e6, true, "Hz", zc_graph::axis_xier_t::SI_PREFIX, 30, true, 0.0F },
+        { -60.0F, 10.0F, true, "dB", zc_graph::axis_xier_t::NONE, 30, true },
+        { -180.0F, 180.0F, true, "degree", zc_graph::axis_xier_t::NONE, 60, true, -180.0F, 180.0F },
+        "S21 Gain (dB)",
+        "S21 Phase",
+        display::convert_sp_point_s21_gain
     }}
 };
 
@@ -215,12 +228,12 @@ void display::configure_graph() {
 // Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
 void display::update_graph() {
 	// Keep track of the minimum and maximum values across all datasets for each axis, so we can adjust the graph scales to fit the new data.
-	float min_x = std::numeric_limits<float>::max();
-	float max_x = std::numeric_limits<float>::lowest();
-	float min_y_l = std::numeric_limits<float>::max();
-	float max_y_l = std::numeric_limits<float>::lowest();
-	float min_y_r = std::numeric_limits<float>::max();
-	float max_y_r = std::numeric_limits<float>::lowest();
+	double min_x = std::numeric_limits<double>::max();
+	double max_x = std::numeric_limits<double>::lowest();
+	double min_y_l = std::numeric_limits<double>::max();
+	double max_y_l = std::numeric_limits<double>::lowest();
+	double min_y_r = std::numeric_limits<double>::max();
+	double max_y_r = std::numeric_limits<double>::lowest();
     for (const auto& dataset_map : dataset_to_graph_map_) {
         int dataset_index = dataset_map.first;
         auto dataset = sp_data_->get_dataset(dataset_index);
@@ -363,4 +376,13 @@ void display::convert_sp_point_swr(const sp_point& point, const sp_data_entry& d
     point_l.x = point.frequency;
     double s11_mag = std::abs(point.sparams.s11);
     point_l.y = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
+}
+
+// Convert sp_point into 2 coordinates for plotting S21 as magnitude and phase
+void display::convert_sp_point_s21_gain(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r) {
+    point_l.x = point.frequency;
+    std::complex<double> s21 = point.sparams.s21;
+    point_l.y = 20 * std::log10(std::abs(s21)); // S21 gain in dB
+    point_r.x = point.frequency;
+    point_r.y = std::arg(s21) * zc::RADIAN_DEGREE; // S21 phase in degrees
 }
