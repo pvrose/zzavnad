@@ -279,6 +279,9 @@ bool sp_data::load_data_from_file(const std::string& filename, sp_data_entry* en
             entry->data.insert(point);
         }
     }
+    if (!file.eof()) {
+		status_->misc_status(ST_WARNING, "Error reading file: %s", filename.c_str());
+    }
     file.close();
     return true;
 }
@@ -448,13 +451,18 @@ bool sp_data::store_data_to_file(sp_data_entry* entry) {
     file << "# HZ S RI R " << entry->z0 << "\n";
     // Write the data lines.
     for (const auto& point : entry->data) {
-        file << point.frequency << " "
-            << point.sparams.s11.real() << " " << point.sparams.s11.imag();
+        file << 
+            std::setprecision(0) << std::fixed << point.frequency << " " << 
+            std::setprecision(9) << std::fixed <<
+            point.sparams.s11.real() << " " << point.sparams.s11.imag();
         if (entry->valid_ports >= 2) {
             file << " "
             << point.sparams.s21.real() << " " << point.sparams.s21.imag() << " "
             << point.sparams.s12.real() << " " << point.sparams.s12.imag() << " "
             << point.sparams.s22.real() << " " << point.sparams.s22.imag() << "\n";
+        }
+        else {
+            file << "\n";
         }
     }
     file.close();
