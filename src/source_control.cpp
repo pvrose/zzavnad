@@ -154,8 +154,6 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->copy_label(("nanoVNA " + entry->timestamp).c_str());
 			btn_keep_->show();
             btn_notes_->show();
-            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
-			btn_notes_->deactivate();
             btn_line_l_->show();
             btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();
@@ -186,8 +184,6 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->hide();
             btn_keep_->hide();
             btn_notes_->show();
-            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
-            btn_notes_->deactivate();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();
@@ -218,8 +214,6 @@ void source_control::file_source::configure_widgets() {
             box_nvna_->hide();
 			btn_keep_->hide();
             btn_notes_->show();
-            // TODO: Deactivate notes as it requires editing notes and fileviewer is wrong.
-            btn_notes_->deactivate();
             btn_line_l_->show();
 			btn_line_l_->value(entry->line_style_l);
             btn_line_r_->show();
@@ -469,7 +463,8 @@ void source_control::file_source::cb_file_note(Fl_Widget* widget, void* data) {
         sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
         // Open a dialog to edit the notes for this data source.
 		zc_file_viewer* note_viewer = new zc_file_viewer(400, 300, "Edit Notes");
-        note_viewer->load_file(entry->notes);
+		note_viewer->type(zc_file_viewer::VT_DATA);
+        note_viewer->set_data(&entry->notes);
     }
 }
 
