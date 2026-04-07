@@ -344,12 +344,12 @@ void source_control::file_source::cb_file_input(Fl_Widget* widget, void* data) {
     if (file_source != nullptr) {
 		sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
 		std::string save_filename = filename_input->value();
-        if (save_filename != entry->filename) {
-			// The filename has changed, so we need to update the data source with the new filename and save the data if this is an existing file data source.
-			status_->misc_status(ST_NOTE, "Saving %s as %s", entry->filename.c_str(), save_filename.c_str());
-			entry->filename = save_filename;
-        }
         if (entry != nullptr) {
+            if (save_filename != entry->filename) {
+                // The filename has changed, so we need to update the data source with the new filename and save the data if this is an existing file data source.
+                status_->misc_status(ST_NOTE, "Saving %s as %s", entry->filename.c_str(), save_filename.c_str());
+                entry->filename = save_filename;
+            }
             switch (entry->source)
             {
             case SPDS_FILE:

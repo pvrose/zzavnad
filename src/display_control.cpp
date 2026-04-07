@@ -79,7 +79,7 @@ void display_control::load_settings() {
 		params.enabled = enabled;
 		int width, height;
 		mode_settings.get("Width", width, 400);
-		mode_settings.get("Height", height, 300);
+		mode_settings.get("Height", height, 400);
 		window->size(width, height);
 	}
 	Fl_Group::current(save_current);

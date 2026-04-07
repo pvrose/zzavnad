@@ -51,8 +51,8 @@ display_legend::~display_legend() {
 void display_legend::create_widgets() {
 	int cx = x() + GAP;
 	int cy = y() + HTEXT;
-	int cw = w() - 2 * GAP;
-	int ch = h() - HTEXT - GAP - Fl::scrollbar_size();
+	int cw = w() - GAP - Fl::scrollbar_size();
+	int ch = h() - HTEXT - GAP;
 	scroll_ = new Fl_Scroll(cx, cy, cw, ch);
 	scroll_->box(FL_FLAT_BOX);
 	scroll_->type(Fl_Scroll::VERTICAL);
@@ -83,17 +83,25 @@ void display_legend::add_entry_groups() {
 	// Add the entry groups to the scroll widget, arranging them in rows and columns.
 	int cx = scroll_->x();
 	int cy = scroll_->y();
-	const int WENTRY = (scroll_->w() - Fl::scrollbar_size()) / 2;
+	int avail_w = scroll_->w() - Fl::scrollbar_size() - GAP;
+	int WENTRY = WBUTTON + WLLABEL;
+	int num_cols = avail_w / WENTRY;
 	for (size_t i = 0; i < entries_.size(); i++) {
 		entry_group* entry = new entry_group(cx, cy, WENTRY, HBUTTON, entries_[i]);
 		scroll_->add(*entry);
-		// Add them in two columsn
-		if (i % 2) {
-			cx = x() + GAP;
-			cy += HBUTTON;
+		if (num_cols > 1) {
+			// Add them in two columsn
+			if (i % num_cols) {
+				cx = x() + GAP;
+				cy += HBUTTON;
+			}
+			else {
+				cx += WENTRY;
+			}
 		}
 		else {
-			cx += WENTRY + GAP;
+			// Add them in a single column
+			cy += HBUTTON;
 		}
 	}
 	scroll_->end();

@@ -81,11 +81,11 @@ display::~display() {
 // Create the widgets for the display window.
 void display::create_widgets() {
     int cx = x() + GAP;
-    int cy = y() + HTEXT;
-	const int HLEGEND = HBUTTON * 7; // Height of the legend widgets.
+    int cy = y() + GAP;
+	const int HLEGEND = HBUTTON * 3 + HTEXT; // Height of the legend widgets.
 
     // Add the graph widget for plotting the data.
-    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - HTEXT - HLEGEND);
+    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - GAP - HLEGEND - GAP);
     graph_->box(FL_BORDER_BOX);
 	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
@@ -238,11 +238,19 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             }
             switch (dataset->source) {
                 case SPDS_ACTIVE:
-                    entry.source = "nanoVNA " + dataset->timestamp;
+                    entry.source = "nanoVNA";
                     break;
-				case SPDS_FILE:
-					entry.source = zc::terminal(dataset->filename);
+                case SPDS_FILE: {
+                    std::string filename = zc::terminal(dataset->filename);
+                    // Remove the file extension from the filename for
+                    // display in the legend.
+                    size_t last_dot = filename.find_last_of(".");
+                    if (last_dot != std::string::npos) {
+                        filename = filename.substr(0, last_dot);
+                    }
+                    entry.source = filename;
                     break;
+                }
                 case SPDS_KEPT:
                     entry.source = dataset->timestamp;
                     break;
