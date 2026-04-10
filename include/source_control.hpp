@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include "zc_graph.h"
-
 #include "zc_line_style.h"
 #include "zc_button_dialog.h"
 

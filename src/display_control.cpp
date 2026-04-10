@@ -246,6 +246,8 @@ display* display_control::create_display(display_mode mode, int W, int H) {
 		default:
 			break;
 	}
+	// Call create() after the derived class is fully constructed to avoid pure virtual function calls
+	window->create();
 	window->copy_label(window->get_params().title.c_str());
 	displays_[mode] = window;
 	return window;

@@ -22,21 +22,25 @@
 
 #include "sp_data.hpp"
 
-#include "zc_graph.h"
+#include "zc_graph_axis.h"
+#include "zc_graph_base.h"
 
 #include <FL/Fl_Double_Window.H>
 
 #include <cstdint>
 #include <map>
+#include <string>
+#include <vector>
 
 //! Forward declarations.
 class Fl_Choice;
 class Fl_Group;
 class Fl_Widget;
-class zc_graph;
 class display;
 class display_legend;
 enum display_mode : uint8_t;
+
+typedef std::map<zc_graph_axis::orientation_t, zc_graph_axis::axis_params_t> axis_params_map_t;
 
 //! \brief Various parameters for the display modes.
 //! This structure holds all the parameters for each display mode,
@@ -44,13 +48,8 @@ enum display_mode : uint8_t;
 struct dm_params_t {
     std::string serial_name = "";        //!< Name for use in serialisation.
 	std::string title = "";              //!< Title of the display window for this mode.
-    bool dual_axes = false;              //!< Has both left and right axes.
-	zc_graph::options_t axis_x_options;  //!< Options for x axis
-    zc_graph::options_t axis_l_options;  //!< Options for left y axis
-    zc_graph::options_t axis_r_options;  //!< Options for right y axis
-	std::string legend_l = "";              //!< Legend for left y axis data.
-	std::string legend_r = "";              //!< Legend for right y axis data.
-	int number_ports = 1;                 //!< Number of valid ports required for this display mode (1 or 2).
+	axis_params_map_t axis_params;       //!< Map of axis parameters for each axis in this display mode.
+	int number_ports = 1;                //!< Number of valid VNA ports required for this display mode (1 or 2).
     bool enabled = false;                //!< Whether this display mode is being shown.
 };
 
@@ -74,20 +73,55 @@ public:
     //! \brief Update the graph with the current S-parameter data.
     void update_graph();
 
-    //! Convert sp_point into 1 or 2 sets of coordinates for plotting based on the current display mode.
-    //! \param sp_point The sp_point to convert.
+    //! \brief Data definition for the entirety of graph data.
+    typedef std::map<zc_graph_axis::orientation_t, zc_graph_base::data_set_t*> graph_data_map_t;
+
+    //! \brief data ranges for each data type,
+	typedef std::map<zc_graph_base::data_type_t, zc_graph_axis::range> graph_data_ranges_t;
+
+	//! Convert sp_data into graph coordinates for plotting, based on the current display mode.
     //! \param dataset The dataset to which this point belongs, which may be needed for some display modes.
-    //! \param point_l The first coordinate to plot for this point (e.g. SWR, or S11 magnitude).
-    //! \param point_r The second coordinate to plot for this point (e.g. S11 phase).
-	virtual void convert_sp_point(
-        const sp_point& point,
+    //! \param coords The coordinates to plot for this point (e.g. SWR, or S11 magnitude and phase).
+	virtual void convert_sp_to_coords(
         const sp_data_entry& dataset,
-        zc_graph::coord& point_l,
-        zc_graph::coord& point_r) const = 0;
+        graph_data_map_t& coords,
+        graph_data_ranges_t& ranges) const = 0;
 
 	dm_params_t& get_params() { return params_; }
 
+    void update_range_point(
+        zc_graph_axis::range& range,
+        float value
+    ) const {
+        if (value < range.min) {
+            range.min = value;
+        }
+        if (value > range.max) {
+            range.max = value;
+        }
+    }
+
+    //! The create method to be run after construction.
+    //! This must be called after the derived class is fully constructed to avoid pure virtual function calls.
+    //! It will configure display mode parameters and create all widgets.
+    void create();
+
+    //! \brief Get the range of data supported by the axis for the data.
+    virtual zc_graph_axis::range get_range(
+        zc_graph_base::data_type_t data_type
+    ) = 0;
+
+	//! \brief Get all data ranges for the current display mode.
+	virtual graph_data_ranges_t get_all_data_ranges() = 0;
+
+
 protected:
+
+    //! \brief Add the specific graph widget for this display mode.
+	virtual zc_graph_base* create_graph(int X, int Y, int W, int H) = 0;
+
+	//! \brief Configure the display mode parameters for this display mode.
+	virtual void configure_dm_params() = 0;
 
     dm_params_t params_ = {}; //!< The parameters for this display mode, set by the individual overloads.
 
@@ -103,27 +137,19 @@ protected:
     //! Configure the widgets based on the current settings.
     void configure_widgets();
 
-    //! The create methods to be run after configuration with
-    //! theinherited display mode parameters.
-    void create();
-
     //! Update the legend for each axis based on the current display mode and data.
-	void update_legend(zc_graph::y_axis_t axis);
+	void update_legend(zc_graph_axis::orientation_t axis);
 
-    //! Each sp_data dataset can be mapped to 1 or 2 graph data sets for plotting.
-    struct graph_datasets_t {
-        int index_l = -1; //!< The index of the first graph data set for this sp_data dataset (e.g. for SWR or S11 magnitude).
-        int index_r = -1; //!< The index of the second graph data set for this sp_data dataset (e.g. for S11 phase). This may be -1 if only one graph data set is needed for this display mode.
-    };
+    //! Each sp_data dataset can be mapped to a number of graph data sets for plotting.
+	typedef std::map<zc_graph_axis::orientation_t, int> graph_data_indices_t; //!< The indices of the graph data sets for a given sp_data dataset.
     //! Map sp_data datasets to graph data sets for plotting. 
-    std::map<int, graph_datasets_t> dataset_to_graph_map_ = {};
+    std::map<int, graph_data_indices_t> dataset_to_graph_map_ = {};
 
     //! The graph widget for plotting the data.
-    zc_graph* graph_ = nullptr;
+    zc_graph_base* graph_ = nullptr;
 
 	//! The legend widgets for the left and right axes.
-	display_legend* legend_l_ = nullptr;
-    display_legend* legend_r_ = nullptr;
+	std::map<zc_graph_axis::orientation_t, display_legend*> legends_ = {};
 };
 
 extern display* display_;

@@ -21,11 +21,11 @@
 //! \brief Provides a legend for use with the display windows.
 
 //! Include zzacommon items.
-#include "zc_graph.h"
+#include "zc_button_dialog.h"
+#include "zc_graph_axis.h"
+#include "zc_line_style.h"
 
 //! Include FLTK headers for the widgets used in the display legend.
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
 #include <FL/Fl_Group.H>
 
 //! Include C++ standard library headers.
@@ -42,7 +42,7 @@ class Fl_Scroll;
 
 //! \brief Data needed to display the legend for a display.
 struct legend_entry_t {
-	zc_graph::y_axis_t axis; //!< Y-axis for this entry.
+	zc_graph_axis::orientation_t axis; //!< Y-axis for this entry.
 	zc_line_style style; //!< Line style to show for this entry.
 	std::string source; //!< Source for this entry.
 };

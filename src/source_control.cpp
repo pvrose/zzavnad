@@ -26,7 +26,9 @@
 #include "zc_drawing.h"
 #include "zc_file_viewer.h"
 #include "zc_filename_input.h"
-#include "zc_graph.h"
+#include "zc_graph_axis.h"
+#include "zc_graph_base.h"
+#include "zc_line_style.h"
 #include "zc_settings.h"
 #include "zc_status.h"
 #include "zc_utils.h"
@@ -34,6 +36,7 @@
 // Include FLTK headers for the widgets used in the control panel.
 #include <FL/Enumerations.H>
 #include <FL/Fl.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
@@ -84,13 +87,13 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 
     cx += ip_filename_->w();
     btn_line_l_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
-    btn_line_l_->callback(cb_file_line, (void*)zc_graph::Y_LEFT);
+    btn_line_l_->callback(cb_file_line, (void*)zc_graph_axis::YL_AXIS);
     btn_line_l_->tooltip("Configure the line style for this data source");
     btn_line_l_->color(FL_WHITE);
 
     cx += HBUTTON;
     btn_line_r_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
-    btn_line_r_->callback(cb_file_line, (void*)zc_graph::Y_RIGHT);
+    btn_line_r_->callback(cb_file_line, (void*)zc_graph_axis::YR_AXIS);
     btn_line_r_->tooltip("Configure the line style for this data source");
 	btn_line_r_->color(FL_WHITE);
 
@@ -361,6 +364,7 @@ void source_control::file_source::cb_file_input(Fl_Widget* widget, void* data) {
                 entry->filename = ((Fl_Input*)widget)->value();
                 sp_data_->store_data_to_file(entry);
                 entry->source = SPDS_FILE;
+                break;
             default:
                 break;
             }
@@ -430,11 +434,11 @@ void source_control::file_source::cb_file_line(Fl_Widget* widget, void* data) {
     if (file_source != nullptr) {
 		zc_line_style* line_style = nullptr;
 		sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
-        switch ((zc_graph::y_axis_t)(intptr_t)data) {
-		case zc_graph::Y_LEFT:
+        switch ((zc_graph_axis::orientation_t)(intptr_t)data) {
+		case zc_graph_axis::YL_AXIS:
 			line_style = &entry->line_style_l;
             break;
-		case zc_graph::Y_RIGHT:
+		case zc_graph_axis::YR_AXIS:
 			line_style = &entry->line_style_r;
 			break;
         }

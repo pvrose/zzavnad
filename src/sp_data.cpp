@@ -20,7 +20,8 @@
 #include "nvna_control.hpp"
 
 // Include ZZACOMMON items.
-#include "zc_graph.h"
+#include "zc_drawing.h"
+#include "zc_line_style.h"
 #include "zc_settings.h"
 #include "zc_status.h"
 #include "zc_utils.h"
@@ -30,7 +31,11 @@
 #include <FL/fl_draw.H>
 
 // Include C++ standard library headers.
+#include <cmath>
 #include <complex>
+#include <cstdint>
+#include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream> 
 #include <istream>

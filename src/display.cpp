@@ -23,7 +23,8 @@
 
 // Include ZZACOMMON drawing constants
 #include "zc_drawing.h"
-#include "zc_graph.h"
+#include "zc_graph_axis.h"
+#include "zc_graph_base.h"
 #include "zc_settings.h"
 #include "zc_utils.h"
 
@@ -68,6 +69,7 @@ void display::create() {
     // that needs to be run before the widgets are created, 
     // such as setting display mode parameters that are 
     // needed for widget configuration.
+	configure_dm_params();
     create_widgets();
     load_default_settings();
     configure_widgets();
@@ -85,29 +87,24 @@ void display::create_widgets() {
 	const int HLEGEND = HBUTTON * 3 + HTEXT; // Height of the legend widgets.
 
     // Add the graph widget for plotting the data.
-    graph_ = new zc_graph(cx, cy, w() - 2 * GAP, h() - GAP - HLEGEND - GAP);
+    graph_ = create_graph(cx, cy, w() - 2 * GAP, h() - GAP - HLEGEND - GAP);
     graph_->box(FL_BORDER_BOX);
 	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
 
     cy += graph_->h();
 
-    // Put a group around the two legends so they will be resized together.
+    // Put a group around the legends so they will be resized together.
 	Fl_Group* legend_group = new Fl_Group(cx, cy, graph_->w(), HLEGEND);
 
-	// Add the left axis legend.
-	legend_l_ = new display_legend(cx, cy, legend_group->w() / 2, HLEGEND);
-    legend_l_->box(FL_BORDER_BOX);
-	legend_l_->tooltip("Legend for the left Y-axis");
-    legend_l_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
-
-	// Add the right axis legend.
-    cx += legend_l_->w();
-	legend_r_ = new display_legend(cx, cy, legend_group->w() / 2, HLEGEND);
-	legend_r_->box(FL_BORDER_BOX);
-    legend_r_->tooltip("Legend for the right Y-axis");
-    legend_r_->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
-
+	int number_legends = params_.axis_params.size();
+	int w_legend = legend_group->w() / number_legends;
+    for (auto& axis : params_.axis_params) {
+        legends_[axis.first] = new display_legend(cx, cy, w_legend, HLEGEND);
+        legends_[axis.first]->box(FL_BORDER_BOX);
+        legends_[axis.first]->copy_tooltip(("Legend for the " + axis.second.label + " axis").c_str());
+        legends_[axis.first]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
+    };
     legend_group->end();
     legend_group->resizable(legend_group);
 
@@ -119,108 +116,61 @@ void display::create_widgets() {
 
 // Configure the graph data based on the current display mode and the S-parameter data in sp_data.
 void display::configure_graph() {
+    // Get the number of sets of coordinates to plot for the current display mode.
+    // Clear the existing graph data.
+    // Map the enabled datasets to graph data sets and add them to the graph.
+    dataset_to_graph_map_.clear();
+    graph_->clear_data_sets();
+	// Set the graph parameters for the axes based on the display mode parameters.
+	for (const auto& axis : params_.axis_params) {
+        graph_->set_axis_params(axis.second);
+    }
+    update_graph();
+	// For each axis, update the legend to show the datasets that are plotted on that axis.
+    for (const auto& axis : params_.axis_params) {
+        update_legend(axis.first);
+    }
+	redraw();
+}
+
+// Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
+void display::update_graph() {
+    std::set<int> dataset_indices;
     // Get the number of S-parameter datasets to plot.
     int num_datasets = 0;
-    std::set<int> dataset_indices;
-     for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
-		auto dataset = sp_data_->get_dataset(i);
+    // Create a range for each data type
+	graph_data_ranges_t graph_data_ranges = get_all_data_ranges();
+    for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
+        auto dataset = sp_data_->get_dataset(i);
         if (dataset->enabled) {
             num_datasets++;
             dataset_indices.insert(i);
         }
     }
 
-    // Get the number of sets of coordinates to plot for the current display mode.
-    // Clear the existing graph data.
-    // Map the enabled datasets to graph data sets and add them to the graph.
-    dataset_to_graph_map_.clear();
-    graph_->clear_data_sets();
     for (int dataset_index : dataset_indices) {
-        zc_graph::data_set_t* graph_data_set = new zc_graph::data_set_t();
+        graph_data_map_t* graph_data_map = new graph_data_map_t();
         auto dataset = sp_data_->get_dataset(dataset_index);
-        graph_data_set->y_axis = zc_graph::Y_LEFT; // First set of points on left.
-        graph_data_set->style = dataset->line_style_l;
-        graph_data_set->data = nullptr; // Set the data pointer to null for now - we'll set it to the correct data after converting the points.
-        int ix_l = graph_->add_data_set(*graph_data_set);
-        dataset_to_graph_map_[dataset_index].index_l = ix_l;
-        if (params_.dual_axes) {
-            // If we need to plot 2 sets of points for this display mode, add a second graph data set for the second set of points.
-            graph_data_set = new zc_graph::data_set_t();
-            graph_data_set->y_axis = zc_graph::Y_RIGHT; // Second set of points on right.
-            graph_data_set->style = dataset->line_style_r;
-            graph_data_set->data = nullptr; // Set the data pointer to null for now
-            
-            int ix_r = graph_->add_data_set(*graph_data_set);
-            dataset_to_graph_map_[dataset_index].index_r = ix_r;
-        }
+        // For each axis we need to plot for this display mode, add
+        // a graph data set for the points to plot on that axis.
+        convert_sp_to_coords(*dataset, *graph_data_map, graph_data_ranges);
+        // Add the graph data set for each axis to the graph.
+        for (const auto& axis : params_.axis_params) {
+            if (graph_data_map->find(axis.first) != graph_data_map->end()) {
+                graph_->add_data_set(graph_data_map->at(axis.first));
+            }
+        };
     }
-    if (params_.dual_axes) {
-        graph_->set_params(params_.axis_x_options, params_.axis_l_options, params_.axis_r_options);
-    } else {
-        graph_->set_params(params_.axis_x_options, params_.axis_l_options);
+	// Update the axis ranges based on the data.
+    for (const auto& data_range : graph_data_ranges) {
+        graph_->set_data_range(data_range.first, data_range.second);
 	}
-	update_legend(zc_graph::Y_LEFT);
-    if (params_.dual_axes) {
-        update_legend(zc_graph::Y_RIGHT);
-	}
-	redraw();
-}
 
-// Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
-void display::update_graph() {
-	// Keep track of the minimum and maximum values across all datasets for each axis, so we can adjust the graph scales to fit the new data.
-	float min_x = std::numeric_limits<float>::max();
-	float max_x = std::numeric_limits<float>::lowest();
-	float min_y_l = std::numeric_limits<float>::max();
-	float max_y_l = std::numeric_limits<float>::lowest();
-	float min_y_r = std::numeric_limits<float>::max();
-	float max_y_r = std::numeric_limits<float>::lowest();
-    for (const auto& dataset_map : dataset_to_graph_map_) {
-        int dataset_index = dataset_map.first;
-        auto dataset = sp_data_->get_dataset(dataset_index);
-        if (dataset->enabled) {
-            std::vector<zc_graph::coord>* graph_points_l = new std::vector<zc_graph::coord>();
-            std::vector<zc_graph::coord>* graph_points_r = new std::vector<zc_graph::coord>();
-            for (const auto& sp_point : dataset->data) {
-                zc_graph::coord point_l;
-                zc_graph::coord point_r;
-                convert_sp_point(sp_point, *dataset, point_l, point_r);
-                min_x = std::min(min_x, point_l.x);
-                max_x = std::max(max_x, point_l.x);
-                min_y_l = std::min(min_y_l, point_l.y);
-                max_y_l = std::max(max_y_l, point_l.y);
-                if (params_.dual_axes) {
-                    min_y_r = std::min(min_y_r, point_r.y);
-                    max_y_r = std::max(max_y_r, point_r.y);
-                }
-                graph_points_l->push_back(point_l);
-                if (params_.dual_axes) {
-                    graph_points_r->push_back(point_r);
-                }
-            }
-            int ix_l = dataset_map.second.index_l;
-            graph_->set_data(ix_l, graph_points_l); // Set the data pointer to the converted points.
-            if (params_.dual_axes) {
-                int ix_r = dataset_map.second.index_r;
-                graph_->set_data(ix_r, graph_points_r); // Set the data pointer to the converted points.
-            }
-        }
-    }
-	// After updating the data, we need to adjust the graph scales to fit the new data.
-    graph_->set_drawing_area();
-	graph_->get_x_options()->set_range(min_x, max_x, true);
-    graph_->get_x_options()->set_factors(true);
-	graph_->get_y_options(zc_graph::Y_LEFT)->set_range(min_y_l, max_y_l, true);
-    graph_->get_y_options(zc_graph::Y_LEFT)->set_factors(true);
-    if (params_.dual_axes) {
-        graph_->get_y_options(zc_graph::Y_RIGHT)->set_range(min_y_r, max_y_r, true);
-        graph_->get_y_options(zc_graph::Y_RIGHT)->set_factors(true);
-    }
     redraw();
 }
 
 // Update the legend for each axis based on the current display mode and data.
-void display::update_legend(zc_graph::y_axis_t axis) {
+void display::update_legend(zc_graph_axis::orientation_t axis) {
     // Get the label for this axis based on the current display mode.
     std::string label;
     // For each dataset map onto next legend entry for this axis.
@@ -259,12 +209,7 @@ void display::update_legend(zc_graph::y_axis_t axis) {
             legend_entries.push_back(entry);
         }
     }
-    if (axis == zc_graph::Y_LEFT) {
-        legend_l_->set_entries(legend_entries);
-    }
-    else {
-        legend_r_->set_entries(legend_entries);
-    }
+	legends_.at(axis)->set_entries(legend_entries);
     redraw();
 }
 
@@ -283,13 +228,9 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
-    legend_l_->show();
-	legend_l_->copy_label(params_.legend_l.c_str());
-    if (params_.dual_axes) {
-        legend_r_->show();
-		legend_r_->copy_label(params_.legend_r.c_str());
-    } else {
-        legend_r_->hide();
-	}
+	for (const auto& axis : params_.axis_params) {
+		legends_.at(axis.first)->copy_label(axis.second.label.c_str());
+		legends_.at(axis.first)->show();
+    }
 }
 
