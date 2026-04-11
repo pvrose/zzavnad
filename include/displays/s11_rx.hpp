@@ -110,7 +110,7 @@ namespace display_modes {
 			coords[zc_graph_axis::orientation_t::YL_AXIS] = resistance_coords;
 			zc_graph_base::data_set_t* reactance_coords = new zc_graph_base::data_set_t;
 			reactance_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			reactance_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			reactance_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
 			reactance_coords->style = dataset.line_style_r;
 			coords[zc_graph_axis::orientation_t::YR_AXIS] = reactance_coords;
 			for (const sp_point& point : dataset.data) {

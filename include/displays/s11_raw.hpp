@@ -105,7 +105,7 @@ namespace display_modes {
 			coords[zc_graph_axis::orientation_t::YL_AXIS] = real_coords;
 			zc_graph_base::data_set_t* imag_coords = new zc_graph_base::data_set_t;
 			imag_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			imag_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			imag_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
 			imag_coords->style = dataset.line_style_r;
 			coords[zc_graph_axis::orientation_t::YR_AXIS] = imag_coords;
 			for (const sp_point& point : dataset.data) {

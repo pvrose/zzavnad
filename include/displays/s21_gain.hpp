@@ -107,7 +107,7 @@ namespace display_modes {
 			coords[zc_graph_axis::orientation_t::YL_AXIS] = mag_coords;
 			zc_graph_base::data_set_t* angle_coords = new zc_graph_base::data_set_t;
 			angle_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			angle_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			angle_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
 			angle_coords->style = dataset.line_style_r;
 			coords[zc_graph_axis::orientation_t::YR_AXIS] = angle_coords;
 
