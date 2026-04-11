@@ -92,6 +92,7 @@ void display::create_widgets() {
     graph_->box(FL_BORDER_BOX);
 	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
+    graph_->create();
 
     cy += graph_->h();
 
