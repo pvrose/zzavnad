@@ -70,6 +70,7 @@ void display::create() {
     // such as setting display mode parameters that are 
     // needed for widget configuration.
 	configure_dm_params();
+	update_supported_data_types();
     create_widgets();
     load_default_settings();
     configure_widgets();
@@ -97,13 +98,14 @@ void display::create_widgets() {
     // Put a group around the legends so they will be resized together.
 	Fl_Group* legend_group = new Fl_Group(cx, cy, graph_->w(), HLEGEND);
 
-	int number_legends = params_.axis_params.size();
-	int w_legend = legend_group->w() / number_legends;
-    for (auto& axis : params_.axis_params) {
-        legends_[axis.first] = new display_legend(cx, cy, w_legend, HLEGEND);
-        legends_[axis.first]->box(FL_BORDER_BOX);
-        legends_[axis.first]->copy_tooltip(("Legend for the " + axis.second.label + " axis").c_str());
-        legends_[axis.first]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
+	int number_legends = params_.data_types.size();
+	int w_legend = number_legends == 0 ? 1 :legend_group->w() / number_legends;
+    for (auto& data_type : params_.data_types) {
+        legends_[data_type] = new display_legend(cx, cy, w_legend, HLEGEND);
+        legends_[data_type]->box(FL_BORDER_BOX);
+        legends_[data_type]->copy_tooltip(("Legend for the " + std::to_string(data_type) + " axis").c_str());
+        legends_[data_type]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
+		cx += w_legend;
     };
     legend_group->end();
     legend_group->resizable(legend_group);
@@ -126,9 +128,9 @@ void display::configure_graph() {
         graph_->set_axis_params(axis.second);
     }
     update_graph();
-	// For each axis, update the legend to show the datasets that are plotted on that axis.
-    for (const auto& axis : params_.axis_params) {
-        update_legend(axis.first);
+	// For each data type, update the legend to show the datasets that are plotted for that data type.
+    for (const auto& data_type : params_.data_types) {
+        update_legend(data_type);
     }
 	redraw();
 }
@@ -169,21 +171,22 @@ void display::update_graph() {
     redraw();
 }
 
-// Update the legend for each axis based on the current display mode and data.
-void display::update_legend(zc_graph_axis::orientation_t axis) {
-    // Get the label for this axis based on the current display mode.
+// Update the legend for each data type based on the current display mode and data.
+void display::update_legend(zc_graph_base::data_type_t data_type) {
+    // Get the label for this data type based on the current display mode.
     std::string label;
-    // For each dataset map onto next legend entry for this axis.
+    // For each dataset map onto next legend entry for this data type.
     int num_datasets = sp_data_->get_dataset_count();
     std::vector<legend_entry_t> legend_entries;
     for (int i = 0; i < num_datasets; i++) {
         auto dataset = sp_data_->get_dataset(i);
         if (dataset->enabled) {
             legend_entry_t entry;
-            if (axis == zc_graph::Y_LEFT) {
+            if (data_type == zc_graph_base::Y_VALUE) {
                 entry.style = dataset->line_style_l;
             }
             else {
+                // == Y2_VALUE
                 entry.style = dataset->line_style_r;
             }
             switch (dataset->source) {
@@ -209,7 +212,7 @@ void display::update_legend(zc_graph_axis::orientation_t axis) {
             legend_entries.push_back(entry);
         }
     }
-	legends_.at(axis)->set_entries(legend_entries);
+	legends_.at(data_type)->set_entries(legend_entries);
     redraw();
 }
 
@@ -228,9 +231,30 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
-	for (const auto& axis : params_.axis_params) {
-		legends_.at(axis.first)->copy_label(axis.second.label.c_str());
-		legends_.at(axis.first)->show();
+	for (const auto& data_type : params_.data_types) {
+		zc_graph_axis::orientation_t axis = graph_->get_axis(data_type);
+ 		legends_.at(data_type)->copy_label(params_.axis_params.at(axis).label.c_str());
+		legends_.at(data_type)->show();
+    }
+}
+
+// Update the supported data types for the current display mode based on the display mode parameters.
+void display::update_supported_data_types() {
+    params_.data_types.clear();
+    for (const auto& axis : params_.axis_params) {
+        switch (axis.second.orientation) {
+        case zc_graph_axis::YL_AXIS:
+            params_.data_types.insert(zc_graph_base::Y_VALUE);
+            break;
+        case zc_graph_axis::YR_AXIS:
+            params_.data_types.insert(zc_graph_base::Y2_VALUE);
+            break;
+        case zc_graph_axis::R_AXIS:
+            params_.data_types.insert(zc_graph_base::RADIUS);
+            break;
+        default:
+            break;
+        }
     }
 }
 

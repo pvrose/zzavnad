@@ -41,6 +41,7 @@ class display_legend;
 enum display_mode : uint8_t;
 
 typedef std::map<zc_graph_axis::orientation_t, zc_graph_axis::axis_params_t> axis_params_map_t;
+typedef std::set<zc_graph_base::data_type_t> data_type_set_t;
 
 //! \brief Various parameters for the display modes.
 //! This structure holds all the parameters for each display mode,
@@ -51,6 +52,7 @@ struct dm_params_t {
 	axis_params_map_t axis_params;       //!< Map of axis parameters for each axis in this display mode.
 	int number_ports = 1;                //!< Number of valid VNA ports required for this display mode (1 or 2).
     bool enabled = false;                //!< Whether this display mode is being shown.
+	data_type_set_t data_types;          //!< The data types that this display mode uses for plotting.
 };
 
 //! \brief The display class manages the plotting of S-parameter data on the graph.
@@ -138,10 +140,13 @@ protected:
     void configure_widgets();
 
     //! Update the legend for each axis based on the current display mode and data.
-	void update_legend(zc_graph_axis::orientation_t axis);
+	void update_legend(zc_graph_base::data_type_t data_type);
+
+	//! Update supported data types from axis parameters.
+	void update_supported_data_types();
 
     //! Each sp_data dataset can be mapped to a number of graph data sets for plotting.
-	typedef std::map<zc_graph_axis::orientation_t, int> graph_data_indices_t; //!< The indices of the graph data sets for a given sp_data dataset.
+	typedef std::map<zc_graph_base::data_type_t, int> graph_data_indices_t; //!< The indices of the graph data sets for a given sp_data dataset.
     //! Map sp_data datasets to graph data sets for plotting. 
     std::map<int, graph_data_indices_t> dataset_to_graph_map_ = {};
 
@@ -149,7 +154,8 @@ protected:
     zc_graph_base* graph_ = nullptr;
 
 	//! The legend widgets for the left and right axes.
-	std::map<zc_graph_axis::orientation_t, display_legend*> legends_ = {};
+	std::map<zc_graph_base::data_type_t, display_legend*> legends_ = {};
+
 };
 
 extern display* display_;
