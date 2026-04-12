@@ -59,7 +59,7 @@ namespace display_modes {
 			yl_axis_params.inner_range = { -1.0F, 1.0F };
 			yl_axis_params.default_range = { -1.0F, 1.0F };
 			yl_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
-			yl_axis_params.unit = "Sr";
+			yl_axis_params.unit = "";
 			yl_axis_params.label = "S11 Real";
 			yl_axis_params.tick_spacing_pixels = 30;
 			params_.axis_params[zc_graph_axis::orientation_t::YL_AXIS] = yl_axis_params;
@@ -70,7 +70,7 @@ namespace display_modes {
 			yr_axis_params.inner_range = { -1.0F, 1.0F };
 			yr_axis_params.default_range = { -1.0F, 1.0F };
 			yr_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
-			yr_axis_params.unit = "Si";
+			yr_axis_params.unit = "";
 			yr_axis_params.label = "S11 Imaginary";
 			yr_axis_params.tick_spacing_pixels = 30;
 			params_.axis_params[zc_graph_axis::orientation_t::YR_AXIS] = yr_axis_params;

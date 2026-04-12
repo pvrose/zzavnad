@@ -59,7 +59,7 @@ namespace display_modes {
 			yl_axis_params.inner_range = { 0.0F, 1000.0F };
 			yl_axis_params.default_range = { 0.0F, 1000.0F };
 			yl_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
-			yl_axis_params.unit = "\xCE\xA9(R)";
+			yl_axis_params.unit = "\xCE\xA9";
 			yl_axis_params.label = "S11 Resistance";
 			yl_axis_params.tick_spacing_pixels = 30;
 			params_.axis_params[zc_graph_axis::orientation_t::YL_AXIS] = yl_axis_params;
@@ -70,7 +70,7 @@ namespace display_modes {
 			yr_axis_params.inner_range = { -1000.0F, 1000.0F };
 			yr_axis_params.default_range = { -1000.0F, 1000.0F };
 			yr_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
-			yr_axis_params.unit = "\xCE\xA9(X)";
+			yr_axis_params.unit = "\xCE\xA9";
 			yr_axis_params.label = "S11 Reactance";
 			yr_axis_params.tick_spacing_pixels = 30;
 			params_.axis_params[zc_graph_axis::orientation_t::YR_AXIS] = yr_axis_params;

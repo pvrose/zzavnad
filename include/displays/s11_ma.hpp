@@ -60,7 +60,7 @@ namespace display_modes {
 			yl_axis_params.inner_range = { 0.0F, 1.0F };
 			yl_axis_params.default_range = { 0.0F, 1.0F };
 			yl_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
-			yl_axis_params.unit = "Mag";
+			yl_axis_params.unit = "";
 			yl_axis_params.label = "S11 Magnitude";
 			yl_axis_params.tick_spacing_pixels = 30;
 			params_.axis_params[zc_graph_axis::orientation_t::YL_AXIS] = yl_axis_params;
