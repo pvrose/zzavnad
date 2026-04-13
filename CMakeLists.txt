@@ -38,9 +38,9 @@ set(CPPFILES
 
 # set directory to install executable, reference data and documents.
 if(MSVC)
-  set(CMAKE_INSTALL_RPATH C:/ProgramData/${APP_VENDOR}/${APP_NAME})
+  set(CMAKE_INSTALL_RPATH etc)
 else()
-  set(CMAKE_INSTALL_RPATH /etc/${APP_VENDOR}/${APP_NAME})
+  set(CMAKE_INSTALL_RPATH etc/${TARGET})
 endif()
 
 # ser compiler options
