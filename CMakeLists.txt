@@ -126,4 +126,8 @@ endforeach()
 install(TARGETS ${TARGET})
 install(FILES ${DATAFILES}
     DESTINATION ${CMAKE_INSTALL_RPATH})
+# Install DLLs for MSVC
+if (MSVC)
+  install_vcpkg_dlls()
+endif()
 
