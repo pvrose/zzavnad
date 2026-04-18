@@ -23,6 +23,7 @@
 #include "sp_data.hpp"
 
 #include "zc_file_holder.h"
+#include "zc_fltk.h"
 #include "zc_status.h"
 
 // include FLTK headers.
@@ -56,47 +57,10 @@ const std::map < uint8_t, file_control_t > FILE_CONTROL = {
 	{ FILE_ICON_ZZA, { "rose.png", true, true, 0}}
 };
 
-// Customise FLTK feature
-static void customise_fltk() {
-	// Set default font size for all widgets
-	FL_NORMAL_SIZE = 10;
-	// FLTK 1.4 default contrast algorithm
-	fl_contrast_mode(FL_CONTRAST_CIELAB);
-#ifndef _WIN32
-	// Set courier font - ensure it's Courier New
-	Fl::set_font(FL_COURIER, "Courier New");
-	Fl::set_font(FL_COURIER_BOLD, "Courier New Bold");
-	Fl::set_font(FL_COURIER_ITALIC, "Courier New Italic");
-	Fl::set_font(FL_COURIER_BOLD_ITALIC, "Courier New Bold Italic");
-	// Use liberation fonts as closest to Windows fonts
-	Fl::set_font(FL_TIMES, "Liberation Serif");
-	Fl::set_font(FL_TIMES_BOLD, "Liberation Serif Bold");
-	Fl::set_font(FL_TIMES_ITALIC, "Liberation Serif Italic");
-	Fl::set_font(FL_TIMES_BOLD_ITALIC, "Liberation Serif Bold Italic");
-	// Fl::set_font(FL_HELVETICA,            "Liberation Sans");
-	// Fl::set_font(FL_HELVETICA_BOLD,       "Liberation Sans Bold");
-	// Fl::set_font(FL_HELVETICA_ITALIC,     "Liberation Sans Italic");
-	// Fl::set_font(FL_HELVETICA_BOLD_ITALIC,"Liberation Sans Bold Italic");	
-#else 
-	// Set courier font - ensure it's Courier New
-	Fl::set_font(FL_COURIER, " Courier New");
-	Fl::set_font(FL_COURIER_BOLD, "BCourier New");
-	Fl::set_font(FL_COURIER_ITALIC, "ICourier New");
-	Fl::set_font(FL_COURIER_BOLD_ITALIC, "PCourier New");
-#endif
-	// Default message properties
-	fl_message_size_ = FL_NORMAL_SIZE;
-	fl_message_font_ = 0;
-	fl_message_title_default(APP_NAME.c_str());
-	// Default scrollbar
-	Fl::scrollbar_size(10);
-}
-
-
 // Main function for the application.
 int main(int argc, char** argv) {
 	file_holder_ = new zc_file_holder(argv[0], FILE_CONTROL);
-    customise_fltk();
+    zc::customise_fltk();
 	status_ = new zc_status(zc_status::HAS_CONSOLE, {});
     // Create the main data item for the S-parameter data.
     sp_data_ = new sp_data();
