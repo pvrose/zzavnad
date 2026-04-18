@@ -25,6 +25,7 @@ if (NOT MSVC)
 endif()
 
 set(CPPFILES 
+  ${ZZAVNAD_SOURCE_DIR}/src/app.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp
@@ -50,10 +51,40 @@ else()
   add_compile_options(-g)
 endif()
 
-  # Add ZZACOMMON
-add_subdirectory(zzacommon)
-message(STATUS "FLTK include dir ${FLTK_INCLUDE_DIR}")
-message(STATUS "FLTK libs - ${FLTK_LIBRARIES}")
+# Add ZZACOMMON
+# Try to find zzacommon locally first (sibling directory), fall back to downloading
+if(CMAKE_BUILD_TYPE)
+  # Single-config generator (Unix Makefiles, Ninja): use specific build type
+  string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE_LOWER)
+  list(APPEND CMAKE_PREFIX_PATH 
+    "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/build/x64-${BUILD_TYPE_LOWER}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/install/x64-${BUILD_TYPE_LOWER}"
+  )
+endif()
+# Multi-config generator (Visual Studio) or fallback: include both
+list(APPEND CMAKE_PREFIX_PATH 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/build/x64-debug"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/build/x64-release"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/install/x64-debug"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/out/install/x64-release"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/build"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../zzacommon/install"
+)
+
+include(FetchContent)
+FetchContent_Declare(
+  zzacommon
+  GIT_REPOSITORY https://github.com/pvrose/zzacommon.git
+  GIT_TAG master
+  FIND_PACKAGE_ARGS NAMES zzacommon COMPONENTS zzaf zzam zzad zzab zzafb
+)
+FetchContent_MakeAvailable(zzacommon)
+
+configure_file(
+  ${ZZAVNAD_SOURCE_DIR}/src/app.cpp.in
+  ${ZZAVNAD_SOURCE_DIR}/src/app.cpp
+  @ONLY
+)
 
 ## Reference data
 set(DATAFILES
@@ -62,7 +93,13 @@ set(DATAFILES
 
 add_executable(${TARGET})
 if (MSVC)
-  add_dependencies(${TARGET} zzacommon ${ZC_APP_LIBRARY})
+  add_dependencies(${TARGET} 
+  zzacommon::zzaf
+  zzacommon::zzam
+  zzacommon::zzad
+  zzacommon::zzab
+  zzacommon::zzafb
+  )
 else()
   add_dependencies(${TARGET} zzacommon ${ZC_APP_LIBRARY})
 endif()
@@ -70,7 +107,6 @@ endif()
 target_include_directories(${TARGET} PRIVATE 
   ${ZZAVNAD_SOURCE_DIR}/include
   ${ZZACOMMON_INCLUDE_DIR}
-  ${ZC_APP_LIBRARY}
   ${FLTK_INCLUDE_DIR}
 )
 # Needed for boost::asio on Windows.
@@ -90,8 +126,11 @@ endif()
 target_sources(${TARGET} PRIVATE ${CPPFILES}  "src/nvna_iface.cpp")
 
 target_link_libraries(${TARGET} PRIVATE
-    ${ZZACOMMON_LIBRARIES}
-    ${ZC_APP_LIBRARY}
+  zzacommon::zzaf
+  zzacommon::zzam
+  zzacommon::zzad
+  zzacommon::zzab
+  zzacommon::zzafb
     ${FLTK_LIBRARIES}
 )
 
@@ -108,8 +147,6 @@ if (MSVC)
     COMMAND_EXPAND_LISTS
     COMMENT "Copying runtime DLLs to ${RUNTIME_OUTPUT_DIR}"
   )
-  # The following has been included from zzacommon.
-  copy_zlib_dlls()    
 
 endif()
 
@@ -126,8 +163,3 @@ endforeach()
 install(TARGETS ${TARGET})
 install(FILES ${DATAFILES}
     DESTINATION ${CMAKE_INSTALL_RPATH})
-# Install DLLs for MSVC
-if (MSVC)
-  install_vcpkg_dlls()
-endif()
-

@@ -31,7 +31,7 @@
 #include "zc_line_style.h"
 #include "zc_settings.h"
 #include "zc_status.h"
-#include "zc_utils.h"
+#include "zc_fltk.h"
 
 // Include FLTK headers for the widgets used in the control panel.
 #include <FL/Enumerations.H>
