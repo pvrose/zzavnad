@@ -72,6 +72,7 @@ void display::create() {
 	configure_dm_params();
 	update_supported_data_types();
     create_widgets();
+    add_markers();
     load_default_settings();
     configure_widgets();
 }

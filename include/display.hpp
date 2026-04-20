@@ -116,6 +116,11 @@ public:
 	//! \brief Get all data ranges for the current display mode.
 	virtual graph_data_ranges_t get_all_data_ranges() = 0;
 
+    //! Add markers to the graph for the current display mode and data.
+	//! The base implementation does nothing, but individual display modes can override this to add markers for specific data values (e.g. SWR=3).
+    virtual void add_markers() {};
+
+
 
 protected:
 

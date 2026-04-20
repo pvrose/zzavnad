@@ -24,6 +24,8 @@
 #include "zc_graph_base.h"
 #include "zc_graph_xy.h"
 
+#include "zc_line_style.h"
+
 #include <cfloat>
 #include <complex>
 
@@ -65,6 +67,12 @@ namespace display_modes {
 			params_.axis_params[zc_graph_axis::orientation_t::YL_AXIS] = y_axis_params;
 		}
 
+		void add_markers() override {
+			// Add marker for SWR=3 (a common threshold for acceptable SWR).
+			graph_->add_marker(zc_graph_base::Y_VALUE, zc_line_style(FL_RED, 1, FL_DASH), 3.0F);
+			// Add band bar
+			graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(FL_GRAY, 1, FL_DASH), 28e6F, 29.7e6F);
+		}
 
 		void convert_sp_point(
 			const sp_point& point,
