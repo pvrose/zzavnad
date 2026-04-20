@@ -22,6 +22,7 @@
 #include "displays/s11_rx.hpp"
 #include "displays/s11_ma.hpp"
 #include "displays/s21_gain.hpp"
+#include "displays/s11_rj.hpp"
 
 #include "zc_drawing.h"
 #include "zc_settings.h"
@@ -239,6 +240,9 @@ display* display_control::create_display(display_mode mode, int W, int H) {
 			break;
 		case DM_S11_MA:
 			window = new display_modes::s11_ma(W, H);
+			break;
+		case DM_S11_RJ:
+			window = new display_modes::s11_rj(W, H);
 			break;
 		case DM_S21_GAIN:
 			window = new display_modes::s21_gain(W, H);
