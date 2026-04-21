@@ -68,14 +68,10 @@ namespace display_modes {
 		}
 
 		void add_markers() override {
+			add_frequency_markers();
 			// Add marker for SWR=3 (a common threshold for acceptable SWR).
 			graph_->add_marker(zc_graph_base::Y_VALUE, zc_line_style(FL_RED, 1, FL_DASH), 3.0F);
-			graph_->add_label(zc_graph_base::Y_VALUE, "SWR=3", zc_text_style(FL_RED, 0, 10), { -FLT_MAX, 3.0F });
-			// Add band bar
-			graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(FL_GRAY, 1, FL_DASH), 28e6F, 29.7e6F);
-			graph_->add_label(zc_graph_base::X_VALUE, "10m", zc_text_style(FL_BLACK, 0, 10), { 28e6F, FLT_MAX });
-			graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(FL_GRAY, 1, FL_DASH), 50e6F, 52e6F);
-			graph_->add_label(zc_graph_base::X_VALUE, "6m", zc_text_style(FL_BLACK, 0, 10), { 50e6F, FLT_MAX });
+			graph_->add_label(zc_graph_base::Y_VALUE, "SWR=3:1", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { -FLT_MAX, 3.0F });
 		}
 
 		void convert_sp_point(

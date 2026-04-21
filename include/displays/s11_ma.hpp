@@ -77,6 +77,10 @@ namespace display_modes {
 			params_.axis_params[zc_graph_axis::orientation_t::YR_AXIS] = yr_axis_params;
 		}
 
+		void add_markers() override {
+			add_frequency_markers();
+		}
+
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_base::coord& point_l,

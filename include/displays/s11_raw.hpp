@@ -77,6 +77,10 @@ namespace display_modes {
 
 		}
 
+		void add_markers() override {
+			add_frequency_markers();
+		}
+
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_base::coord& point_l,

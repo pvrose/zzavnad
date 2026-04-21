@@ -150,6 +150,9 @@ protected:
 	//! Update supported data types from axis parameters.
 	void update_supported_data_types();
 
+	//! Add frequency markers to the graph for the current display mode and data.
+	void add_frequency_markers();
+
     //! Each sp_data dataset can be mapped to a number of graph data sets for plotting.
 	typedef std::map<zc_graph_base::data_type_t, int> graph_data_indices_t; //!< The indices of the graph data sets for a given sp_data dataset.
     //! Map sp_data datasets to graph data sets for plotting. 
