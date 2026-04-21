@@ -101,7 +101,7 @@ if (MSVC)
   zzacommon::zzafb
   )
 else()
-  add_dependencies(${TARGET} zzacommon ${ZC_APP_LIBRARY})
+#  add_dependencies(${TARGET} zzacommon ${ZC_APP_LIBRARY})
 endif()
 
 target_include_directories(${TARGET} PRIVATE 
