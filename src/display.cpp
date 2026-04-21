@@ -289,7 +289,7 @@ void display::add_frequency_markers() {
     graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 24.89e6F, 24.99e6F);
     graph_->add_label(zc_graph_base::X_VALUE, "12m", zc_text_style(FL_BLACK, 0, fz), { 24.89e6F, FLT_MAX });
     graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 28e6F, 29.7e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "fzm", zc_text_style(FL_BLACK, 0, fz), { 28e6F, FLT_MAX });
+    graph_->add_label(zc_graph_base::X_VALUE, "10m", zc_text_style(FL_BLACK, 0, fz), { 28e6F, FLT_MAX });
     graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 50e6F, 52e6F);
     graph_->add_label(zc_graph_base::X_VALUE, "6m", zc_text_style(FL_BLACK, 0, fz), { 50e6F, FLT_MAX });
     graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 70e6F, 70e6F);
