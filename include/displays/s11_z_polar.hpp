@@ -59,8 +59,6 @@ namespace display_modes {
 		void add_markers() override {
 			graph_->add_marker(zc_graph_base::RADIUS, zc_line_style(FL_RED, 1, FL_DASH), 50.0F);
 			graph_->add_label(zc_graph_base::RADIUS, "|Z|=50\xCE\xA9", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { 50.0F, 0 });
-			// For testing only add a shaded area from 500 to 600 Ohms.
-			graph_->add_marker(zc_graph_base::RADIUS, zc_line_style(FL_BLUE, 1, FL_DASH), 500.0F, 600.0F);
 		}
 
 		// Convert a sp_point to coordinates for the polar plot.
