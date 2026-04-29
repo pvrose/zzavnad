@@ -23,6 +23,7 @@
 #include "displays/s11_ma.hpp"
 #include "displays/s21_gain.hpp"
 #include "displays/s11_rj.hpp"
+#include "displays/s11_z_polar.hpp"
 
 #include "zc_drawing.h"
 #include "zc_settings.h"
@@ -177,7 +178,7 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 	params.enabled = enabled;
 	if (enabled) {
 		window->configure_graph();
-		window->update_graph();
+//		window->update_graph();
 		window->show();
 	}
 	else {
@@ -243,6 +244,9 @@ display* display_control::create_display(display_mode mode, int W, int H) {
 			break;
 		case DM_S11_RJ:
 			window = new display_modes::s11_rj(W, H);
+			break;
+		case DM_S11_Z_POLAR:
+			window = new display_modes::s11_z_polar(W, H);
 			break;
 		case DM_S21_GAIN:
 			window = new display_modes::s21_gain(W, H);
