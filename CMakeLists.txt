@@ -24,6 +24,26 @@ if (NOT MSVC)
   set(BUILD_SHARED_LIBS OFF)
 endif()
 
+## Split version into components for Windows resource file
+string(REPLACE "." ";" VERSION_LIST ${ZZAVNAD_VERSION})
+list(LENGTH VERSION_LIST VERSION_LIST_LENGTH)
+list(GET VERSION_LIST 0 ZZAVNAD_VERSION_MAJOR)
+list(GET VERSION_LIST 1 ZZAVNAD_VERSION_MINOR)
+# Handle PATCH component (default to 0 if not provided)
+if(VERSION_LIST_LENGTH GREATER 2)
+    list(GET VERSION_LIST 2 ZZAVNAD_VERSION_PATCH)
+else()
+    set(ZZAVNAD_VERSION_PATCH 0)
+endif()
+# Handle TWEAK component (default to 0 if not provided)
+if(VERSION_LIST_LENGTH GREATER 3)
+    list(GET VERSION_LIST 3 ZZAVNAD_VERSION_TWEAK)
+else()
+    set(ZZAVNAD_VERSION_TWEAK 0)
+endif()
+
+
+
 set(CPPFILES 
   ${ZZAVNAD_SOURCE_DIR}/src/app.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display.cpp
@@ -91,7 +111,54 @@ set(DATAFILES
   ${ZZAVNAD_SOURCE_DIR}/rose.png 
 )
 
-add_executable(${TARGET})
+# Generate Windows icon and resource file
+if (MSVC)
+  # Generate ICO file from PNG logo
+  set(ZZAVNAD_LOGO_PNG "${CMAKE_CURRENT_SOURCE_DIR}/rose.png")
+  set(ZZAVNAD_ICO_FILE "${ZZAVNAD_BINARY_DIR}/zzavnad.ico")
+
+  # Optional: Set white threshold for transparency (default: 250, range: 0-255)
+  # Higher values = more aggressive white removal (e.g., 240 removes near-white)
+  # Lower values = only pure white removed (e.g., 254 removes almost pure white)
+  if(NOT DEFINED ZZAVNAD_ICON_WHITE_THRESHOLD)
+    set(ZZAVNAD_ICON_WHITE_THRESHOLD 240)
+  endif()
+
+  if(EXISTS "${ZZAVNAD_LOGO_PNG}")
+    message(STATUS "Generating Windows icon from ${ZZAVNAD_LOGO_PNG}")
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+        -DPNG_FILE=${ZZAVNAD_LOGO_PNG}
+        -DICO_FILE=${ZZAVNAD_ICO_FILE}
+        -DWHITE_THRESHOLD=${ZZAVNAD_ICON_WHITE_THRESHOLD}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/convert_png_to_ico.cmake
+      RESULT_VARIABLE ICO_RESULT
+      ERROR_VARIABLE ICO_ERROR
+    )
+    if(NOT ICO_RESULT EQUAL 0)
+      message(WARNING "Failed to generate ICO file: ${ICO_ERROR}")
+    endif()
+  else()
+    message(WARNING "Logo file not found: ${ZZAVNAD_LOGO_PNG}")
+  endif()
+
+  # Configure Windows resource file with version information
+  set(ZZAVNAD_RC_FILE "${ZZAVNAD_BINARY_DIR}/zzavnad.rc")
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/zzavnad.rc.in
+    ${ZZAVNAD_RC_FILE}
+    @ONLY
+  )
+  message(STATUS "Generated Windows resource file: ${ZZAVNAD_RC_FILE}")
+endif()
+
+
+# Define the zzavnad executable
+if (MSVC)
+  add_executable(${TARGET} WIN32 ${ZZAVNAD_RC_FILE})
+else()
+  add_executable(${TARGET} WIN32)
+endif()
 if (MSVC)
   add_dependencies(${TARGET} 
   zzacommon::zzaf
@@ -163,3 +230,8 @@ endforeach()
 install(TARGETS ${TARGET})
 install(FILES ${DATAFILES}
     DESTINATION ${CMAKE_INSTALL_RPATH})
+
+    # install DLLs
+if (MSVC)
+    zzacommon_install_runtime_dlls(DESTINATION bin COMPONENT application)
+endif()
