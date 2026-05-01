@@ -40,7 +40,7 @@ class display;
 class display_legend;
 enum display_mode : uint8_t;
 
-typedef std::map<zc_graph_axis::orientation_t, zc_graph_axis::axis_params_t> axis_params_map_t;
+typedef std::map<zc_graph_base::data_type_t, zc_graph_axis::axis_params_t> axis_params_map_t;
 typedef std::set<zc_graph_base::data_type_t> data_type_set_t;
 
 //! \brief Various parameters for the display modes.
@@ -76,7 +76,7 @@ public:
     void update_graph();
 
     //! \brief Data definition for the entirety of graph data.
-    typedef std::map<zc_graph_axis::orientation_t, zc_graph_base::data_set_t*> graph_data_map_t;
+    typedef std::map<zc_graph_base::data_type_t, zc_graph_base::data_set_t*> graph_data_map_t;
 
     //! \brief data ranges for each data type,
 	typedef std::map<zc_graph_base::data_type_t, zc_graph_axis::range> graph_data_ranges_t;
@@ -109,9 +109,11 @@ public:
     void create();
 
     //! \brief Get the range of data supported by the axis for the data.
-    virtual zc_graph_axis::range get_range(
+    zc_graph_axis::range get_range(
         zc_graph_base::data_type_t data_type
-    ) = 0;
+    ) {
+        return graph_->get_data_range(data_type);
+    }
 
 	//! \brief Get all data ranges for the current display mode.
 	virtual graph_data_ranges_t get_all_data_ranges() = 0;

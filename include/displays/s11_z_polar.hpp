@@ -42,7 +42,6 @@ namespace display_modes {
 			params_.serial_name = "S11 Z Polar";
 			params_.title = "S11 Impedance Polar Plot";
 			zc_graph_axis::axis_params_t r_axis_params;
-			r_axis_params.orientation = zc_graph_axis::orientation_t::R_AXIS;
 			r_axis_params.outer_range = { 0, 1000.0F };
 			r_axis_params.inner_range = { 0, 1000.0F };
 			r_axis_params.default_range = { 0, 1000.0F };
@@ -50,7 +49,7 @@ namespace display_modes {
 			r_axis_params.unit = "\xCE\xA9";
 			r_axis_params.label = "Impedance";
 			r_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_axis::orientation_t::R_AXIS] = r_axis_params;
+			params_.axis_params[zc_graph_base::data_type_t::RADIUS] = r_axis_params;
 		}
 
 		// Add markers for the s11_z_polar display mode.
@@ -91,7 +90,7 @@ namespace display_modes {
 			r_theta_coords->type_a = zc_graph_base::data_type_t::RADIUS;
 			r_theta_coords->type_b = zc_graph_base::data_type_t::NO_DATA;
 			r_theta_coords->style = dataset.line_style_l; // Use left line style for this plot.
-			coords[zc_graph_axis::orientation_t::R_AXIS] = r_theta_coords;
+			coords[zc_graph_base::data_type_t::RADIUS] = r_theta_coords;
 			for (const sp_point& point : dataset.data) {
 				zc_graph_base::coord point_r_theta;
 				convert_sp_point(point, dataset.z0, point_r_theta);
@@ -104,18 +103,6 @@ namespace display_modes {
 		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_polar(X, Y, W, H);
 		}
-
-		zc_graph_axis::range get_range(
-			zc_graph_base::data_type_t data_type
-		) override {
-			switch (data_type) {
-			case zc_graph_base::data_type_t::RADIUS:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::R_AXIS);
-			default:
-				return { 0.0F, 1.0F }; // Default range if data type is not recognized
-			}
-		}
-
 
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;

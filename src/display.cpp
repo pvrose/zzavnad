@@ -127,7 +127,7 @@ void display::configure_graph() {
     graph_->clear_data_sets();
 	// Set the graph parameters for the axes based on the display mode parameters.
 	for (const auto& axis : params_.axis_params) {
-        graph_->set_axis_params(axis.second);
+        graph_->set_axis_params(axis.first, axis.second);
     }
     update_graph();
 	// For each data type, update the legend to show the datasets that are plotted for that data type.
@@ -234,8 +234,8 @@ void display::save_current_settings() {
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
 	for (const auto& data_type : params_.data_types) {
-		zc_graph_axis::orientation_t axis = graph_->get_axis(data_type);
- 		legends_.at(data_type)->copy_label(params_.axis_params.at(axis).label.c_str());
+		auto axis = graph_->get_axis(data_type);
+ 		legends_.at(data_type)->copy_label(axis->label());
 		legends_.at(data_type)->show();
     }
 }
@@ -244,19 +244,7 @@ void display::configure_widgets() {
 void display::update_supported_data_types() {
     params_.data_types.clear();
     for (const auto& axis : params_.axis_params) {
-        switch (axis.second.orientation) {
-        case zc_graph_axis::YL_AXIS:
-            params_.data_types.insert(zc_graph_base::Y_VALUE);
-            break;
-        case zc_graph_axis::YR_AXIS:
-            params_.data_types.insert(zc_graph_base::Y2_VALUE);
-            break;
-        case zc_graph_axis::R_AXIS:
-            params_.data_types.insert(zc_graph_base::RADIUS);
-            break;
-        default:
-            break;
-        }
+        params_.data_types.insert(axis.first);
     }
 }
 

@@ -45,7 +45,6 @@ namespace display_modes {
 			params_.title = "SWR vs frequency";
 
 			zc_graph_axis::axis_params_t x_axis_params;
-			x_axis_params.orientation = zc_graph_axis::orientation_t::X_AXIS;
 			x_axis_params.outer_range = { 0.0F, FLT_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
@@ -53,10 +52,9 @@ namespace display_modes {
 			x_axis_params.unit = "Hz";
 			x_axis_params.label = "Frequency";
 			x_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_axis::orientation_t::X_AXIS] = x_axis_params;
+			params_.axis_params[zc_graph_base::X_VALUE] = x_axis_params;
 
 			zc_graph_axis::axis_params_t y_axis_params;
-			y_axis_params.orientation = zc_graph_axis::orientation_t::YL_AXIS;
 			y_axis_params.outer_range = { 1.0F, 15.0F };
 			y_axis_params.inner_range = { 1.0F, 15.0F };
 			y_axis_params.default_range = { 1.0F, 15.0F };
@@ -64,7 +62,7 @@ namespace display_modes {
 			y_axis_params.unit = "";
 			y_axis_params.label = "SWR";
 			y_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_axis::orientation_t::YL_AXIS] = y_axis_params;
+			params_.axis_params[zc_graph_base::Y_VALUE] = y_axis_params;
 		}
 
 		void add_markers() override {
@@ -97,7 +95,7 @@ namespace display_modes {
 			swr_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
 			swr_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
 			swr_coords->style = dataset.line_style_l;
-			coords[zc_graph_axis::orientation_t::YL_AXIS] = swr_coords;
+			coords[zc_graph_base::data_type_t::Y_VALUE] = swr_coords;
 
 			for (const sp_point& point : dataset.data) {
 				zc_graph_base::coord point_swr;
@@ -111,19 +109,6 @@ namespace display_modes {
 
 		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_xy(X, Y, W, H);
-		}
-
-		zc_graph_axis::range get_range(
-			zc_graph_base::data_type_t data_type
-		) override {
-			switch (data_type) {
-			case zc_graph_base::data_type_t::X_VALUE:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::X_AXIS);
-			case zc_graph_base::data_type_t::Y_VALUE:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::YL_AXIS);
-			default:
-				return { 0.0F, 1.0F }; // Default range if data type is not recognized
-			}
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {

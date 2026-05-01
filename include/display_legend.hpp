@@ -42,7 +42,7 @@ class Fl_Scroll;
 
 //! \brief Data needed to display the legend for a display.
 struct legend_entry_t {
-	zc_graph_axis::orientation_t axis; //!< Y-axis for this entry.
+	zc_graph_axis::tick_direction_t tick_direction; //!< Y-axis for this entry.
 	zc_line_style style; //!< Line style to show for this entry.
 	std::string source; //!< Source for this entry.
 };

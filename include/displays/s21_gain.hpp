@@ -45,7 +45,6 @@ namespace display_modes {
 			params_.title = "S21 Gain (dB magnitude and phase) vs frequency";
 
 			zc_graph_axis::axis_params_t x_axis_params;
-			x_axis_params.orientation = zc_graph_axis::orientation_t::X_AXIS;
 			x_axis_params.outer_range = { 0.0F, FLT_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
@@ -55,7 +54,6 @@ namespace display_modes {
 			x_axis_params.tick_spacing_pixels = 30;
 
 			zc_graph_axis::axis_params_t yl_axis_params;
-			yl_axis_params.orientation = zc_graph_axis::orientation_t::YL_AXIS;
 			yl_axis_params.outer_range = { -60.0F, 10.0F };
 			yl_axis_params.inner_range = { -60.0F, 10.0F };
 			yl_axis_params.default_range = { -60.0F, 10.0F };
@@ -65,7 +63,6 @@ namespace display_modes {
 			yl_axis_params.tick_spacing_pixels = 30;
 
 			zc_graph_axis::axis_params_t yr_axis_params;
-			yr_axis_params.orientation = zc_graph_axis::orientation_t::YR_AXIS;
 			yr_axis_params.outer_range = { -180.0F, 180.0F };
 			yr_axis_params.inner_range = { -180.0F, 180.0F };
 			yr_axis_params.default_range = { -180.0F, 180.0F };
@@ -73,7 +70,7 @@ namespace display_modes {
 			yr_axis_params.unit = "degree";
 			yr_axis_params.label = "S11 Angle";
 			yr_axis_params.tick_spacing_pixels = 60;
-			params_.axis_params[zc_graph_axis::orientation_t::YR_AXIS] = yr_axis_params;
+			params_.axis_params[zc_graph_base::data_type_t::Y2_VALUE] = yr_axis_params;
 
 		};
 
@@ -108,12 +105,12 @@ namespace display_modes {
 			mag_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
 			mag_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
 			mag_coords->style = dataset.line_style_l;
-			coords[zc_graph_axis::orientation_t::YL_AXIS] = mag_coords;
+			coords[zc_graph_base::data_type_t::Y_VALUE] = mag_coords;
 			zc_graph_base::data_set_t* angle_coords = new zc_graph_base::data_set_t;
 			angle_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
 			angle_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
 			angle_coords->style = dataset.line_style_r;
-			coords[zc_graph_axis::orientation_t::YR_AXIS] = angle_coords;
+			coords[zc_graph_base::data_type_t::Y2_VALUE] = angle_coords;
 
 			for (const sp_point& point : dataset.data) {
 				zc_graph_base::coord point_mag;
@@ -131,21 +128,6 @@ namespace display_modes {
 
 		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_x2y(X, Y, W, H);
-		}
-
-		zc_graph_axis::range get_range(
-			zc_graph_base::data_type_t data_type
-		) override {
-			switch (data_type) {
-			case zc_graph_base::data_type_t::X_VALUE:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::X_AXIS);
-			case zc_graph_base::data_type_t::Y_VALUE:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::YL_AXIS);
-			case zc_graph_base::data_type_t::Y2_VALUE:
-				return graph_->get_data_range(zc_graph_axis::orientation_t::YR_AXIS);
-			default:
-				return { 0.0F, 1.0F }; // Default range if data type is not recognized
-			}
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {
