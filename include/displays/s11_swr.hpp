@@ -20,9 +20,7 @@
 #include "display_control.hpp"
 #include "sp_data.hpp"	
 
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
-#include "zc_graph_xy.h"
+#include "zc_graph_.h"
 
 #include "zc_line_style.h"
 
@@ -44,41 +42,39 @@ namespace display_modes {
 			params_.serial_name = "SWR";
 			params_.title = "SWR vs frequency";
 
-			zc_graph_axis::axis_params_t x_axis_params;
+			axis_params_t x_axis_params;
 			x_axis_params.outer_range = { 0.0F, FLT_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
-			x_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
+			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "Hz";
 			x_axis_params.label = "Frequency";
-			x_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::X_VALUE] = x_axis_params;
+			params_.axis_params[0] = x_axis_params;
 
-			zc_graph_axis::axis_params_t y_axis_params;
+			axis_params_t y_axis_params;
 			y_axis_params.outer_range = { 1.0F, 15.0F };
 			y_axis_params.inner_range = { 1.0F, 15.0F };
 			y_axis_params.default_range = { 1.0F, 15.0F };
-			y_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
+			y_axis_params.unit_modifier = zc_graph_::modifier_t::NO_MODIFIER;
 			y_axis_params.unit = "";
 			y_axis_params.label = "SWR";
-			y_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::Y_VALUE] = y_axis_params;
+			params_.axis_params[1] = y_axis_params;
 		}
 
 		void add_markers() override {
 			add_frequency_markers();
 			// Add marker for SWR=3 (a common threshold for acceptable SWR).
-			graph_->add_marker(zc_graph_base::Y_VALUE, zc_line_style(FL_RED, 1, FL_DASH), 3.0F);
-			graph_->add_label(zc_graph_base::Y_VALUE, "SWR=3:1", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { -FLT_MAX, 3.0F });
+			graph_->add_marker(1, zc_graph_::FOREGROUND, zc_line_style(FL_RED, 1, FL_DASH), 3.0);
+			graph_->add_label(1, zc_graph_::FOREGROUND, "SWR=3:1", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { -DBL_MAX, 3.0 }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
 		}
 
 		void convert_sp_point(
 			const sp_point& point,
-			zc_graph_base::coord& point_l) const
+			zc_graph_::data_point_t& point_l) const
 		{
-			point_l.a = point.frequency;
+			point_l.first = point.frequency;
 			double s11_mag = ::std::abs(point.sparams.s11);
-			point_l.b = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
+			point_l.second = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
 		}
 
 		void convert_sp_to_coords(
@@ -91,30 +87,28 @@ namespace display_modes {
 			}
 			// We have two datasets to populate for this display mode.
 			// The Y axis is for SWR.
-			zc_graph_base::data_set_t* swr_coords = new zc_graph_base::data_set_t;
-			swr_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			swr_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			dm_data_set_t* swr_coords = new dm_data_set_t;
 			swr_coords->style = dataset.line_style_l;
-			coords[zc_graph_base::data_type_t::Y_VALUE] = swr_coords;
+			coords[1] = swr_coords;
 
 			for (const sp_point& point : dataset.data) {
-				zc_graph_base::coord point_swr;
+				zc_graph_::data_point_t point_swr;
 				convert_sp_point(point, point_swr);
 				swr_coords->data->push_back(point_swr);
 				// Update axis ranges based on the data points.
-				update_range_point(ranges[zc_graph_base::data_type_t::X_VALUE], point_swr.a);
-				update_range_point(ranges[zc_graph_base::data_type_t::Y_VALUE], point_swr.b);
+				ranges[0] |= point_swr.first; // Update X axis range with frequency
+				ranges[1] |= point_swr.second; // Update Y axis range with SWR
 			}
 		}
 
-		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
-			return new zc_graph_xy(X, Y, W, H);
+		zc_graph_* create_graph(int X, int Y, int W, int H) override {
+			return new zc_graph_cartesian(X, Y, W, H);
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
-			ranges[zc_graph_base::data_type_t::X_VALUE] = get_range(zc_graph_base::data_type_t::X_VALUE);
-			ranges[zc_graph_base::data_type_t::Y_VALUE] = get_range(zc_graph_base::data_type_t::Y_VALUE);
+			ranges[0] = get_range(0);
+			ranges[1] = get_range(1);
 			return ranges;
 		}
 	};

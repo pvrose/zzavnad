@@ -20,9 +20,7 @@
 #include "display_control.hpp"
 #include "sp_data.hpp"	
 
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
-#include "zc_graph_x2y.h"
+#include "zc_graph_.h"
 
 #include <cfloat>
 #include <complex>
@@ -42,36 +40,32 @@ namespace display_modes {
 			params_.serial_name = "S11 Raw";
 			params_.title = "S11 Real and Imaginary vs frequency";
 
-			zc_graph_axis::axis_params_t x_axis_params;
+			axis_params_t x_axis_params;
 			x_axis_params.outer_range = { 0.0F, FLT_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
-			x_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
+			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "Hz";
 			x_axis_params.label = "Frequency";
-			x_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::X_VALUE] = x_axis_params;
+			params_.axis_params[0] = x_axis_params;
 
-			zc_graph_axis::axis_params_t yl_axis_params;
+			axis_params_t yl_axis_params;
 			yl_axis_params.outer_range = { -1.0F, 1.0F };
 			yl_axis_params.inner_range = { -1.0F, 1.0F };
 			yl_axis_params.default_range = { -1.0F, 1.0F };
-			yl_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
+			yl_axis_params.unit_modifier = zc_graph_::modifier_t::NO_MODIFIER;
 			yl_axis_params.unit = "";
 			yl_axis_params.label = "S11 Real";
-			yl_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::Y_VALUE] = yl_axis_params;
+			params_.axis_params[1] = yl_axis_params;
 
-			zc_graph_axis::axis_params_t yr_axis_params;
+			axis_params_t yr_axis_params;
 			yr_axis_params.outer_range = { -1.0F, 1.0F };
 			yr_axis_params.inner_range = { -1.0F, 1.0F };
 			yr_axis_params.default_range = { -1.0F, 1.0F };
-			yr_axis_params.modifier = zc_graph_axis::modifier_t::NO_MODIFIER;
+			yr_axis_params.unit_modifier = zc_graph_::modifier_t::NO_MODIFIER;
 			yr_axis_params.unit = "";
 			yr_axis_params.label = "S11 Imaginary";
-			yr_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::Y2_VALUE] = yr_axis_params;
-
+			params_.axis_params[2] = yr_axis_params;
 		}
 
 		void add_markers() override {
@@ -80,13 +74,13 @@ namespace display_modes {
 
 		void convert_sp_point(
 			const sp_point& point,
-			zc_graph_base::coord& point_l,
-			zc_graph_base::coord& point_r) const
+			zc_graph_::data_point_t& point_l,
+			zc_graph_::data_point_t& point_r) const
 		{
-			point_l.a = point.frequency;
-			point_l.b = point.sparams.s11.real(); // S11 real part
-			point_r.a = point.frequency;
-			point_r.b = point.sparams.s11.imag(); // S11 imaginary part
+			point_l.first = point.frequency;
+			point_l.second = point.sparams.s11.real(); // S11 real part
+			point_r.first = point.frequency;
+			point_r.second = point.sparams.s11.imag(); // S11 imaginary part
 		}
 
 		void convert_sp_to_coords(
@@ -99,39 +93,35 @@ namespace display_modes {
 			}
 			// We have two datasets to populate for this display mode.
 			// The left Y axis is for S11 real, and the right Y axis is for S11 imaginary.
-			zc_graph_base::data_set_t* real_coords = new zc_graph_base::data_set_t;
-			real_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			real_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			dm_data_set_t* real_coords = new dm_data_set_t;
 			real_coords->style = dataset.line_style_l;
-			coords[zc_graph_base::data_type_t::Y_VALUE] = real_coords;
-			zc_graph_base::data_set_t* imag_coords = new zc_graph_base::data_set_t;
-			imag_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			imag_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
+			coords[1] = real_coords;
+			dm_data_set_t* imag_coords = new dm_data_set_t;
 			imag_coords->style = dataset.line_style_r;
-			coords[zc_graph_base::data_type_t::Y2_VALUE] = imag_coords;
+			coords[2] = imag_coords;
 			for (const sp_point& point : dataset.data) {
-				zc_graph_base::coord point_real;
-				zc_graph_base::coord point_imag;
+				zc_graph_::data_point_t point_real;
+				zc_graph_::data_point_t point_imag;
 				convert_sp_point(point, point_real, point_imag);
 				real_coords->data->push_back(point_real);
 				imag_coords->data->push_back(point_imag);
 				// Update axis ranges based on the data points.
-				update_range_point(ranges[zc_graph_base::data_type_t::X_VALUE], point_real.a);
-				update_range_point(ranges[zc_graph_base::data_type_t::X_VALUE], point_imag.a);
-				update_range_point(ranges[zc_graph_base::data_type_t::Y_VALUE], point_real.b);
-				update_range_point(ranges[zc_graph_base::data_type_t::Y2_VALUE], point_imag.b);
+				ranges[0] |= point_real.first;
+				ranges[0] |= point_imag.first;
+				ranges[1] |= point_real.second;
+				ranges[2] |= point_imag.second;
 			}
 		}
 
-		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
-			return new zc_graph_x2y(X, Y, W, H);
+		zc_graph_* create_graph(int X, int Y, int W, int H) override {
+			return new zc_graph_cartesian_2y(X, Y, W, H);
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
-			ranges[zc_graph_base::data_type_t::X_VALUE] = get_range(zc_graph_base::data_type_t::X_VALUE);
-			ranges[zc_graph_base::data_type_t::Y_VALUE] = get_range(zc_graph_base::data_type_t::Y_VALUE);
-			ranges[zc_graph_base::data_type_t::Y2_VALUE] = get_range(zc_graph_base::data_type_t::Y2_VALUE);
+			ranges[0] = get_range(0);
+			ranges[1] = get_range(1);
+			ranges[2] = get_range(2);
 			return ranges;
 		}
 	};

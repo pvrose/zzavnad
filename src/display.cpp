@@ -23,8 +23,7 @@
 
 // Include ZZACOMMON drawing constants
 #include "zc_drawing.h"
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
+#include "zc_graph_.h"
 #include "zc_settings.h"
 #include "zc_utils.h"
 
@@ -61,6 +60,7 @@ display::display(int W, int H, const char* L)
     : Fl_Double_Window(W, H, L) {
     box(FL_BORDER_BOX);
     align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    hide();
 }
 
 // Pre-create method.
@@ -70,9 +70,8 @@ void display::create() {
     // such as setting display mode parameters that are 
     // needed for widget configuration.
 	configure_dm_params();
-	update_supported_data_types();
     create_widgets();
-    add_markers();
+    configure_graph();
     load_default_settings();
     configure_widgets();
 }
@@ -93,20 +92,19 @@ void display::create_widgets() {
     graph_->box(FL_BORDER_BOX);
 	graph_->color(FL_WHITE);
     graph_->tooltip("Graph for plotting S-parameter data");
-    graph_->create();
 
     cy += graph_->h();
 
     // Put a group around the legends so they will be resized together.
 	Fl_Group* legend_group = new Fl_Group(cx, cy, graph_->w(), HLEGEND);
 
-	int number_legends = params_.data_types.size();
+	int number_legends = params_.axis_params.size();
 	int w_legend = number_legends == 0 ? 1 :legend_group->w() / number_legends;
-    for (auto& data_type : params_.data_types) {
-        legends_[data_type] = new display_legend(cx, cy, w_legend, HLEGEND);
-        legends_[data_type]->box(FL_BORDER_BOX);
-        legends_[data_type]->copy_tooltip(("Legend for the " + std::to_string(data_type) + " axis").c_str());
-        legends_[data_type]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
+    for (auto& axis : params_.axis_params) {
+        legends_[axis.first] = new display_legend(cx, cy, w_legend, HLEGEND);
+        legends_[axis.first]->box(FL_BORDER_BOX);
+        legends_[axis.first]->copy_tooltip(("Legend for the " + std::to_string(axis.first) + " axis").c_str());
+        legends_[axis.first]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 		cx += w_legend;
     };
     legend_group->end();
@@ -123,16 +121,26 @@ void display::configure_graph() {
     // Get the number of sets of coordinates to plot for the current display mode.
     // Clear the existing graph data.
     // Map the enabled datasets to graph data sets and add them to the graph.
-    dataset_to_graph_map_.clear();
-    graph_->clear_data_sets();
+    graph_->start_config();
 	// Set the graph parameters for the axes based on the display mode parameters.
 	for (const auto& axis : params_.axis_params) {
-        graph_->set_axis_params(axis.first, axis.second);
+        graph_->set_axis_params(
+            axis.first, 
+            axis.second.unit_modifier,
+            axis.second.unit,
+            axis.second.label,
+            30);
+        graph_->set_axis_ranges(
+            axis.first,
+			axis.second.inner_range,
+			axis.second.outer_range,
+			axis.second.default_range);
     }
+    add_markers();
     update_graph();
 	// For each data type, update the legend to show the datasets that are plotted for that data type.
-    for (const auto& data_type : params_.data_types) {
-        update_legend(data_type);
+    for (const auto& axis : params_.axis_params) {
+        update_legend(axis.first);
     }
 	redraw();
 }
@@ -160,21 +168,23 @@ void display::update_graph() {
         convert_sp_to_coords(*dataset, *graph_data_map, graph_data_ranges);
         // Add the graph data set for each axis to the graph.
         for (const auto& axis : params_.axis_params) {
-            if (graph_data_map->find(axis.first) != graph_data_map->end()) {
-                graph_->add_data_set(graph_data_map->at(axis.first));
+			auto it = graph_data_map->find(axis.first);
+            if (it != graph_data_map->end()) {
+                graph_->add_data_set(
+                    axis.first,
+                    it->second->data,
+                    it->second->style
+                );
             }
         };
     }
-	// Update the axis ranges based on the data.
-    for (const auto& data_range : graph_data_ranges) {
-        graph_->set_data_range(data_range.first, data_range.second);
-	}
 
+    graph_->end_config();
     redraw();
 }
 
 // Update the legend for each data type based on the current display mode and data.
-void display::update_legend(zc_graph_base::data_type_t data_type) {
+void display::update_legend(int  axis) {
     // Get the label for this data type based on the current display mode.
     std::string label;
     // For each dataset map onto next legend entry for this data type.
@@ -184,7 +194,7 @@ void display::update_legend(zc_graph_base::data_type_t data_type) {
         auto dataset = sp_data_->get_dataset(i);
         if (dataset->enabled) {
             legend_entry_t entry;
-            if (data_type == zc_graph_base::Y_VALUE) {
+            if (axis == 1) {
                 entry.style = dataset->line_style_l;
             }
             else {
@@ -214,7 +224,7 @@ void display::update_legend(zc_graph_base::data_type_t data_type) {
             legend_entries.push_back(entry);
         }
     }
-	legends_.at(data_type)->set_entries(legend_entries);
+	legends_.at(axis)->set_entries(legend_entries);
     redraw();
 }
 
@@ -233,61 +243,61 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
-	for (const auto& data_type : params_.data_types) {
-		auto axis = graph_->get_axis(data_type);
- 		legends_.at(data_type)->copy_label(axis->label());
-		legends_.at(data_type)->show();
+	for (const auto& axis : params_.axis_params) {
+ 		legends_.at(axis.first)->copy_label(axis.second.label.c_str());
+		legends_.at(axis.first)->show();
     }
 }
 
-// Update the supported data types for the current display mode based on the display mode parameters.
-void display::update_supported_data_types() {
-    params_.data_types.clear();
-    for (const auto& axis : params_.axis_params) {
-        params_.data_types.insert(axis.first);
-    }
-}
+//// Update the supported data types for the current display mode based on the display mode parameters.
+//void display::update_supported_data_types() {
+//    params_.data_types.clear();
+//    for (const auto& axis : params_.axis_params) {
+//        params_.data_types.insert(axis.first);
+//    }
+//}
 
 void display::add_frequency_markers() {
     // Add frequency markers to the graph for the current display mode and data.
 	// Add band bars for the amateur radio bands.
     Fl_Color band_colour = FL_LIGHT3;
-    Fl_Fontsize fz = FL_NORMAL_SIZE - 2;
+    Fl_Fontsize fz = graph_->textsize();
+    Fl_Font f = graph_->textfont();
 
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 135.7e3F, 137.8e3F);
-    graph_->add_label(zc_graph_base::X_VALUE, "2190m", zc_text_style(FL_BLACK, 0, fz), { 135.7e3F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 472e3F, 479e3F);
-    graph_->add_label(zc_graph_base::X_VALUE, "630m", zc_text_style(FL_BLACK, 0, fz), { 472e3F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 1.81e6F, 2.0e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "160m", zc_text_style(FL_BLACK, 0, fz), { 1.81e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 3.5e6F, 3.8e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "80m", zc_text_style(FL_BLACK, 0, fz), { 3.5e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 5.2585e6F, 5.4065e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "60m", zc_text_style(FL_BLACK, 0, fz), { 5.2585e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 7.0e6F, 7.2e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "40m", zc_text_style(FL_BLACK, 0, fz), { 7.0e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 10.1e6F, 10.15e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "30m", zc_text_style(FL_BLACK, 0, fz), { 10.1e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 14.0e6F, 14.35e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "20m", zc_text_style(FL_BLACK, 0, fz), { 14.0e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 18.068e6F, 18.168e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "17m", zc_text_style(FL_BLACK, 0, fz), { 18.068e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 21.0e6F, 21.45e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "15m", zc_text_style(FL_BLACK, 0, fz), { 21.0e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 24.89e6F, 24.99e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "12m", zc_text_style(FL_BLACK, 0, fz), { 24.89e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 28e6F, 29.7e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "10m", zc_text_style(FL_BLACK, 0, fz), { 28e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 50e6F, 52e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "6m", zc_text_style(FL_BLACK, 0, fz), { 50e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 70e6F, 70e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "4m", zc_text_style(FL_BLACK, 0, fz), { 70e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 144e6F, 146e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "2m", zc_text_style(FL_BLACK, 0, fz), { 144e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 430e6F, 440e6F);
-    graph_->add_label(zc_graph_base::X_VALUE, "70cm", zc_text_style(FL_BLACK, 0, fz), { 430e6F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 1.24e9F, 1.325e9F);
-    graph_->add_label(zc_graph_base::X_VALUE, "23cm", zc_text_style(FL_BLACK, 0, fz), { 1.24e9F, FLT_MAX });
-    graph_->add_marker(zc_graph_base::X_VALUE, zc_line_style(band_colour, 1, FL_DASH), 2.3e9F, 2.45e9F);
-    graph_->add_label(zc_graph_base::X_VALUE, "13cm", zc_text_style(FL_BLACK, 0, fz), { 2.3e9F, FLT_MAX });
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 135.7e3, 137.8e3);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "2190m", zc_text_style(FL_BLACK, f, fz), { 135.7e3, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 472e3F, 479e3F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "630m", zc_text_style(FL_BLACK, f, fz), { 472e3F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.81e6F, 2.0e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "160m", zc_text_style(FL_BLACK, f, fz), { 1.81e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 3.5e6F, 3.8e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "80m", zc_text_style(FL_BLACK, f, fz), { 3.5e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 5.2585e6F, 5.4065e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "60m", zc_text_style(FL_BLACK, f, fz), { 5.2585e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 7.0e6F, 7.2e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "40m", zc_text_style(FL_BLACK, f, fz), { 7.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 10.1e6F, 10.15e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "30m", zc_text_style(FL_BLACK, f, fz), { 10.1e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 14.0e6F, 14.35e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "20m", zc_text_style(FL_BLACK, f, fz), { 14.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 18.068e6F, 18.168e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "17m", zc_text_style(FL_BLACK, f, fz), { 18.068e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 21.0e6F, 21.45e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "15m", zc_text_style(FL_BLACK, f, fz), { 21.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 24.89e6F, 24.99e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "12m", zc_text_style(FL_BLACK, f, fz), { 24.89e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 28e6F, 29.7e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "10m", zc_text_style(FL_BLACK, f, fz), { 28e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 50e6F, 52e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "6m", zc_text_style(FL_BLACK, f, fz), { 50e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 70e6F, 70e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "4m", zc_text_style(FL_BLACK, f, fz), { 70e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 144e6F, 146e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "2m", zc_text_style(FL_BLACK, f, fz), { 144e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 430e6F, 440e6F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "70cm", zc_text_style(FL_BLACK, f, fz), { 430e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.24e9F, 1.325e9F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "23cm", zc_text_style(FL_BLACK, f, fz), { 1.24e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 2.3e9F, 2.45e9F);
+    graph_->add_label(0, zc_graph_::BACKGROUND, "13cm", zc_text_style(FL_BLACK, f, fz), { 2.3e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
 }

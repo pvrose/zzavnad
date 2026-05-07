@@ -19,9 +19,8 @@
 #include "display.hpp"
 #include "sp_data.hpp"	
 
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
-#include "zc_graph_x2y.h"
+#include "zc_graph_.h"
+
 
 #include <cfloat>
 #include <complex>
@@ -42,35 +41,32 @@ namespace display_modes {
 			params_.serial_name = "S11 R+jX";
 			params_.title = "S11 Resistance and Reactance vs frequency";
 
-			zc_graph_axis::axis_params_t x_axis_params;
+			axis_params_t x_axis_params;
 			x_axis_params.outer_range = { 0.0F, FLT_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
-			x_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
+			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "Hz";
 			x_axis_params.label = "Frequency";
-			x_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::X_VALUE] = x_axis_params;
+			params_.axis_params[0] = x_axis_params;
 
-			zc_graph_axis::axis_params_t yl_axis_params;
+			axis_params_t yl_axis_params;
 			yl_axis_params.outer_range = { 0.0F, 1000.0F };
 			yl_axis_params.inner_range = { 0.0F, 1000.0F };
 			yl_axis_params.default_range = { 0.0F, 1000.0F };
-			yl_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
+			yl_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			yl_axis_params.unit = "\xCE\xA9";
 			yl_axis_params.label = "S11 Resistance";
-			yl_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::Y_VALUE] = yl_axis_params;
+			params_.axis_params[1] = yl_axis_params;
 
-			zc_graph_axis::axis_params_t yr_axis_params;
+			axis_params_t yr_axis_params;
 			yr_axis_params.outer_range = { -1000.0F, 1000.0F };
 			yr_axis_params.inner_range = { -1000.0F, 1000.0F };
 			yr_axis_params.default_range = { -1000.0F, 1000.0F };
-			yr_axis_params.modifier = zc_graph_axis::modifier_t::SI_PREFIX;
+			yr_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			yr_axis_params.unit = "\xCE\xA9";
 			yr_axis_params.label = "S11 Reactance";
-			yr_axis_params.tick_spacing_pixels = 30;
-			params_.axis_params[zc_graph_base::Y2_VALUE] = yr_axis_params;
+			params_.axis_params[2] = yr_axis_params;
 		}
 
 		void add_markers() override {
@@ -80,18 +76,18 @@ namespace display_modes {
 		void convert_sp_point(
 			const sp_point& point,
 			float Z0,
-			zc_graph_base::coord& point_l,
-			zc_graph_base::coord& point_r) const
+			zc_graph_::data_point_t& point_l,
+			zc_graph_::data_point_t& point_r) const
 		{
 			::std::complex<double> ONE(1.0, 0.0);
-			point_l.a = point.frequency;
+			point_l.first = point.frequency;
 			::std::complex<double> s11 = point.sparams.s11;
 			// Get Z0 from the dataset.
 			::std::complex<double> z0 = Z0;
 			::std::complex<double> z = z0 * (ONE + s11) / (ONE - s11); // Convert S11 to impedance.
-			point_l.b = z.real(); // Resistance
-			point_r.a = point.frequency;
-			point_r.b = z.imag(); // Reactance
+			point_l.second = z.real(); // Resistance
+			point_r.first = point.frequency;
+			point_r.second = z.imag(); // Reactance
 		}
 
 		void convert_sp_to_coords(
@@ -104,39 +100,35 @@ namespace display_modes {
 			}
 			// We have two datasets to populate for this display mode.
 			// The left Y axis is for S11 resistance, and the right Y axis is for S11 reactance.
-			zc_graph_base::data_set_t* resistance_coords = new zc_graph_base::data_set_t;
-			resistance_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			resistance_coords->type_b = zc_graph_base::data_type_t::Y_VALUE;
+			dm_data_set_t* resistance_coords = new dm_data_set_t;
 			resistance_coords->style = dataset.line_style_l;
-			coords[zc_graph_base::data_type_t::Y_VALUE] = resistance_coords;
-			zc_graph_base::data_set_t* reactance_coords = new zc_graph_base::data_set_t;
-			reactance_coords->type_a = zc_graph_base::data_type_t::X_VALUE;
-			reactance_coords->type_b = zc_graph_base::data_type_t::Y2_VALUE;
+			coords[1] = resistance_coords;
+			dm_data_set_t* reactance_coords = new dm_data_set_t;
 			reactance_coords->style = dataset.line_style_r;
-			coords[zc_graph_base::data_type_t::Y2_VALUE] = reactance_coords;
+			coords[2] = reactance_coords;
 			for (const sp_point& point : dataset.data) {
-				zc_graph_base::coord point_resistance;
-				zc_graph_base::coord point_reactance;
+				zc_graph_::data_point_t point_resistance;
+				zc_graph_::data_point_t point_reactance;
 				convert_sp_point(point, dataset.z0, point_resistance, point_reactance);
 				resistance_coords->data->push_back(point_resistance);
 				reactance_coords->data->push_back(point_reactance);
 				// Update axis ranges based on the data points.
-				update_range_point(ranges[zc_graph_base::data_type_t::X_VALUE], point_resistance.a);
-				update_range_point(ranges[zc_graph_base::data_type_t::X_VALUE], point_reactance.a);
-				update_range_point(ranges[zc_graph_base::data_type_t::Y_VALUE], point_resistance.b);
-				update_range_point(ranges[zc_graph_base::data_type_t::Y2_VALUE], point_reactance.b);
+				ranges[0] |= point_resistance.first;
+				ranges[0] |= point_reactance.first;
+				ranges[1] |= point_resistance.second;
+				ranges[2] |= point_reactance.second;
 			}
 		}
 
-		zc_graph_base* create_graph(int X, int Y, int W, int H) override {
-			return new zc_graph_x2y(X, Y, W, H);
+		zc_graph_* create_graph(int X, int Y, int W, int H) override {
+			return new zc_graph_cartesian_2y(X, Y, W, H);
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
-			ranges[zc_graph_base::data_type_t::X_VALUE] = get_range(zc_graph_base::data_type_t::X_VALUE);
-			ranges[zc_graph_base::data_type_t::Y_VALUE] = get_range(zc_graph_base::data_type_t::Y_VALUE);
-			ranges[zc_graph_base::data_type_t::Y2_VALUE] = get_range(zc_graph_base::data_type_t::Y2_VALUE);
+			ranges[0] = get_range(0);
+			ranges[1] = get_range(1);
+			ranges[2] = get_range(2);
 			return ranges;
 		}
 	};

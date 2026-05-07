@@ -22,8 +22,7 @@
 
 #include "sp_data.hpp"
 
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
+#include "zc_graph_.h"
 
 #include <FL/Fl_Double_Window.H>
 
@@ -40,8 +39,26 @@ class display;
 class display_legend;
 enum display_mode : uint8_t;
 
-typedef std::map<zc_graph_base::data_type_t, zc_graph_axis::axis_params_t> axis_params_map_t;
-typedef std::set<zc_graph_base::data_type_t> data_type_set_t;
+//! \brief Parameters for each axis to be set by the individual display modes.
+struct axis_params_t {
+    zc_graph_::modifier_t unit_modifier = zc_graph_::NO_MODIFIER; //!< Modifier for axis units (e.g. SI prefix or power of 10).
+    std::string unit = "";              //!< Unit to display on the axis (e.g. "Hz").
+    std::string label = "";             //!< Base label for the axis (e.g. "Frequency").
+    zc_graph_::range_t outer_range;       //!< Range of data values for this axis.
+    zc_graph_::range_t inner_range;       //!< Range of data values currently displayed for this axis (may be zoomed or scrolled).
+    zc_graph_::range_t default_range;     //!< Default range for this axis in the absence of data.
+};
+
+//! \brief The data and how it is to be displayed for each axis.
+struct dm_data_set_t {
+	std::vector<zc_graph_::data_point_t>* data; //!< Pointer to a vector of data points to be plotted for this axis.
+	zc_line_style style; //!< Line style to use for plotting this data set.
+
+	// Default constructor initializes to an empty data set with a solid black line style.
+	dm_data_set_t() : data(
+        new std::vector<zc_graph_::data_point_t>()), 
+        style({ FL_SOLID, 1, FL_BLACK }) {}
+};
 
 //! \brief Various parameters for the display modes.
 //! This structure holds all the parameters for each display mode,
@@ -49,10 +66,9 @@ typedef std::set<zc_graph_base::data_type_t> data_type_set_t;
 struct dm_params_t {
     std::string serial_name = "";        //!< Name for use in serialisation.
 	std::string title = "";              //!< Title of the display window for this mode.
-	axis_params_map_t axis_params;       //!< Map of axis parameters for each axis in this display mode.
+	std::map<int, axis_params_t> axis_params;       //!< Map of axis parameters for each axis in this display mode.
 	int number_ports = 1;                //!< Number of valid VNA ports required for this display mode (1 or 2).
     bool enabled = false;                //!< Whether this display mode is being shown.
-	data_type_set_t data_types;          //!< The data types that this display mode uses for plotting.
 };
 
 //! \brief The display class manages the plotting of S-parameter data on the graph.
@@ -76,10 +92,10 @@ public:
     void update_graph();
 
     //! \brief Data definition for the entirety of graph data.
-    typedef std::map<zc_graph_base::data_type_t, zc_graph_base::data_set_t*> graph_data_map_t;
+    typedef std::map<int, dm_data_set_t*> graph_data_map_t;
 
     //! \brief data ranges for each data type,
-	typedef std::map<zc_graph_base::data_type_t, zc_graph_axis::range> graph_data_ranges_t;
+	typedef std::map<int, zc_graph_::range_t> graph_data_ranges_t;
 
 	//! Convert sp_data into graph coordinates for plotting, based on the current display mode.
     //! \param dataset The dataset to which this point belongs, which may be needed for some display modes.
@@ -91,17 +107,18 @@ public:
 
 	dm_params_t& get_params() { return params_; }
 
-    void update_range_point(
-        zc_graph_axis::range& range,
-        float value
-    ) const {
-        if (value < range.min) {
-            range.min = value;
-        }
-        if (value > range.max) {
-            range.max = value;
-        }
-    }
+    // use ac_graph_::range_t::operator|
+    //void update_range_point(
+    //    zc_graph_::range_t& range,
+    //    float value
+    //) const {
+    //    if (value < range.min) {
+    //        range.min = value;
+    //    }
+    //    if (value > range.max) {
+    //        range.max = value;
+    //    }
+    //}
 
     //! The create method to be run after construction.
     //! This must be called after the derived class is fully constructed to avoid pure virtual function calls.
@@ -109,10 +126,10 @@ public:
     void create();
 
     //! \brief Get the range of data supported by the axis for the data.
-    zc_graph_axis::range get_range(
-        zc_graph_base::data_type_t data_type
+    zc_graph_::range_t  get_range(
+        int axis
     ) {
-        return graph_->get_data_range(data_type);
+        return graph_->get_axis_range(axis);
     }
 
 	//! \brief Get all data ranges for the current display mode.
@@ -127,7 +144,7 @@ public:
 protected:
 
     //! \brief Add the specific graph widget for this display mode.
-	virtual zc_graph_base* create_graph(int X, int Y, int W, int H) = 0;
+	virtual zc_graph_* create_graph(int X, int Y, int W, int H) = 0;
 
 	//! \brief Configure the display mode parameters for this display mode.
 	virtual void configure_dm_params() = 0;
@@ -147,7 +164,7 @@ protected:
     void configure_widgets();
 
     //! Update the legend for each axis based on the current display mode and data.
-	void update_legend(zc_graph_base::data_type_t data_type);
+	void update_legend(int axis);
 
 	//! Update supported data types from axis parameters.
 	void update_supported_data_types();
@@ -155,16 +172,11 @@ protected:
 	//! Add frequency markers to the graph for the current display mode and data.
 	void add_frequency_markers();
 
-    //! Each sp_data dataset can be mapped to a number of graph data sets for plotting.
-	typedef std::map<zc_graph_base::data_type_t, int> graph_data_indices_t; //!< The indices of the graph data sets for a given sp_data dataset.
-    //! Map sp_data datasets to graph data sets for plotting. 
-    std::map<int, graph_data_indices_t> dataset_to_graph_map_ = {};
-
     //! The graph widget for plotting the data.
-    zc_graph_base* graph_ = nullptr;
+    zc_graph_* graph_ = nullptr;
 
 	//! The legend widgets for the left and right axes.
-	std::map<zc_graph_base::data_type_t, display_legend*> legends_ = {};
+	std::map<int, display_legend*> legends_ = {};
 
 };
 
