@@ -107,19 +107,6 @@ public:
 
 	dm_params_t& get_params() { return params_; }
 
-    // use ac_graph_::range_t::operator|
-    //void update_range_point(
-    //    zc_graph_::range_t& range,
-    //    float value
-    //) const {
-    //    if (value < range.min) {
-    //        range.min = value;
-    //    }
-    //    if (value > range.max) {
-    //        range.max = value;
-    //    }
-    //}
-
     //! The create method to be run after construction.
     //! This must be called after the derived class is fully constructed to avoid pure virtual function calls.
     //! It will configure display mode parameters and create all widgets.

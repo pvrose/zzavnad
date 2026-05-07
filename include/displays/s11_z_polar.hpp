@@ -41,8 +41,8 @@ namespace display_modes {
 			params_.title = "S11 Impedance Polar Plot";
 			axis_params_t r_axis_params;
 			r_axis_params.outer_range = { 0, 1000.0F };
-			r_axis_params.inner_range = { 0, 1000.0F };
-			r_axis_params.default_range = { 0, 1000.0F };
+			r_axis_params.inner_range = { 0, 50.0F };
+			r_axis_params.default_range = { 0, 500.0F };
 			r_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			r_axis_params.unit = "\xCE\xA9";
 			r_axis_params.label = "Impedance";
@@ -69,7 +69,7 @@ namespace display_modes {
 		// Convert a sp_point to coordinates for the polar plot.
 		void convert_sp_point(
 			const sp_point& point,
-			float Z0,
+			double Z0,
 			zc_graph_::data_point_t& point_r_theta) const
 		{
 			::std::complex<double> ONE(1.0, 0.0);

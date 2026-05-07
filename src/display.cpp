@@ -98,13 +98,13 @@ void display::create_widgets() {
     // Put a group around the legends so they will be resized together.
 	Fl_Group* legend_group = new Fl_Group(cx, cy, graph_->w(), HLEGEND);
 
-	int number_legends = params_.axis_params.size();
+	int number_legends = params_.axis_params.size() - 1;
 	int w_legend = number_legends == 0 ? 1 :legend_group->w() / number_legends;
-    for (auto& axis : params_.axis_params) {
-        legends_[axis.first] = new display_legend(cx, cy, w_legend, HLEGEND);
-        legends_[axis.first]->box(FL_BORDER_BOX);
-        legends_[axis.first]->copy_tooltip(("Legend for the " + std::to_string(axis.first) + " axis").c_str());
-        legends_[axis.first]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
+    for (int axis = 1; axis < params_.axis_params.size(); axis++) {
+        legends_[axis] = new display_legend(cx, cy, w_legend, HLEGEND);
+        legends_[axis]->box(FL_BORDER_BOX);
+        legends_[axis]->copy_tooltip(("Legend for the " + std::to_string(axis) + " axis").c_str());
+        legends_[axis]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
 		cx += w_legend;
     };
     legend_group->end();
@@ -113,7 +113,6 @@ void display::create_widgets() {
 	resizable(graph_);
 
     end();
-    show();
 }
 
 // Configure the graph data based on the current display mode and the S-parameter data in sp_data.
@@ -139,8 +138,8 @@ void display::configure_graph() {
     add_markers();
     update_graph();
 	// For each data type, update the legend to show the datasets that are plotted for that data type.
-    for (const auto& axis : params_.axis_params) {
-        update_legend(axis.first);
+    for (int axis = 1; axis < params_.axis_params.size(); axis++) {
+        update_legend(axis);
     }
 	redraw();
 }
@@ -243,19 +242,11 @@ void display::save_current_settings() {
 
 // Configure the widgets based on the current settings.
 void display::configure_widgets() {
-	for (const auto& axis : params_.axis_params) {
- 		legends_.at(axis.first)->copy_label(axis.second.label.c_str());
-		legends_.at(axis.first)->show();
+	for (int axis = 1; axis < params_.axis_params.size(); axis++) {
+ 		legends_.at(axis)->copy_label(params_.axis_params[axis].label.c_str());
+		legends_.at(axis)->show();
     }
 }
-
-//// Update the supported data types for the current display mode based on the display mode parameters.
-//void display::update_supported_data_types() {
-//    params_.data_types.clear();
-//    for (const auto& axis : params_.axis_params) {
-//        params_.data_types.insert(axis.first);
-//    }
-//}
 
 void display::add_frequency_markers() {
     // Add frequency markers to the graph for the current display mode and data.

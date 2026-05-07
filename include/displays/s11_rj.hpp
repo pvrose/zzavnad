@@ -41,18 +41,18 @@ namespace display_modes {
 			params_.title = "S11 Resistance vs Reactance";
 
 			axis_params_t x_axis_params;
-			x_axis_params.outer_range = { -FLT_MAX, FLT_MAX };
+			x_axis_params.outer_range = { -DBL_MAX, DBL_MAX };
 			x_axis_params.inner_range = { -50.0F, 50.0F };
-			x_axis_params.default_range = { -50.0F, 50.0F };
+			x_axis_params.default_range = { -500.0F, 500.0F };
 			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "\xCE\xA9";
 			x_axis_params.label = "S11 Resistance";
 			params_.axis_params[0] = x_axis_params;
 
 			axis_params_t y_axis_params;
-			y_axis_params.outer_range = { -FLT_MAX, FLT_MAX };
+			y_axis_params.outer_range = { -DBL_MAX, DBL_MAX };
 			y_axis_params.inner_range = { -50.0F, 50.0F };
-			y_axis_params.default_range = { -50.0F, 50.0F };
+			y_axis_params.default_range = { -500.0F, 500.0F };
 			y_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			y_axis_params.unit = "\xCE\xA9";
 			y_axis_params.label = "S11 Reactance";
@@ -62,7 +62,7 @@ namespace display_modes {
 
 		void convert_sp_point(
 			const sp_point& point,
-			float Z0,
+			double Z0,
 			zc_graph_::data_point_t& pixel) const
 		{
 			::std::complex<double> ONE(1.0, 0.0);

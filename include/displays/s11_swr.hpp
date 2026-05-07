@@ -43,7 +43,7 @@ namespace display_modes {
 			params_.title = "SWR vs frequency";
 
 			axis_params_t x_axis_params;
-			x_axis_params.outer_range = { 0.0F, FLT_MAX };
+			x_axis_params.outer_range = { 0.0F, DBL_MAX };
 			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
 			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
@@ -65,7 +65,7 @@ namespace display_modes {
 			add_frequency_markers();
 			// Add marker for SWR=3 (a common threshold for acceptable SWR).
 			graph_->add_marker(1, zc_graph_::FOREGROUND, zc_line_style(FL_RED, 1, FL_DASH), 3.0);
-			graph_->add_label(1, zc_graph_::FOREGROUND, "SWR=3:1", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { -DBL_MAX, 3.0 }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+			graph_->add_label(1, zc_graph_::FOREGROUND, "SWR=3:1", zc_text_style(FL_RED, 0, graph_->textsize()), { -DBL_MAX, 3.0 }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
 		}
 
 		void convert_sp_point(
