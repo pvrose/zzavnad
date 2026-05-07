@@ -78,7 +78,7 @@ namespace display_modes {
 			::std::complex<double> z0 = Z0;
 			::std::complex<double> z = z0 * (ONE + s11) / (ONE - s11); // Convert S11 to impedance.
 			point_r_theta.first = std::abs(z); // Magnitude of impedance
-			point_r_theta.second = std::arg(z); // Phase of impedance
+			point_r_theta.second = std::arg(z) * 180.0 / zc::PI; // Phase of impedance
 		}
 
 		// Convert sp_data to coordinates for the polar plot.

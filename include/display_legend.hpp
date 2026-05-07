@@ -22,7 +22,7 @@
 
 //! Include zzacommon items.
 #include "zc_button_dialog.h"
-#include "zc_graph_axis.h"
+#include "zc_graph_.h"
 #include "zc_line_style.h"
 
 //! Include FLTK headers for the widgets used in the display legend.
@@ -42,7 +42,6 @@ class Fl_Scroll;
 
 //! \brief Data needed to display the legend for a display.
 struct legend_entry_t {
-	zc_graph_axis::tick_direction_t tick_direction; //!< Y-axis for this entry.
 	zc_line_style style; //!< Line style to show for this entry.
 	std::string source; //!< Source for this entry.
 };

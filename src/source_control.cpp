@@ -26,8 +26,7 @@
 #include "zc_drawing.h"
 #include "zc_file_viewer.h"
 #include "zc_filename_input.h"
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
+#include "zc_graph_.h"
 #include "zc_line_style.h"
 #include "zc_settings.h"
 #include "zc_status.h"
@@ -87,13 +86,13 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 
     cx += ip_filename_->w();
     btn_line_l_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
-    btn_line_l_->callback(cb_file_line, (void*)zc_graph_axis::LEFTWARDS);
+    btn_line_l_->callback(cb_file_line, (void*)0);
     btn_line_l_->tooltip("Configure the line style for this data source");
     btn_line_l_->color(FL_WHITE);
 
     cx += HBUTTON;
     btn_line_r_ = new line_style_button(cx, cy, HBUTTON, HBUTTON);
-    btn_line_r_->callback(cb_file_line, (void*)zc_graph_axis::RIGHTWARDS);
+    btn_line_r_->callback(cb_file_line, (void*)1);
     btn_line_r_->tooltip("Configure the line style for this data source");
 	btn_line_r_->color(FL_WHITE);
 
@@ -434,11 +433,11 @@ void source_control::file_source::cb_file_line(Fl_Widget* widget, void* data) {
     if (file_source != nullptr) {
 		zc_line_style* line_style = nullptr;
 		sp_data_entry* entry = (sp_data_entry*)file_source->user_data();
-        switch ((zc_graph_axis::tick_direction_t)(intptr_t)data) {
-		case zc_graph_axis::LEFTWARDS:
+        switch ((intptr_t)data) {
+		case 0:
 			line_style = &entry->line_style_l;
             break;
-		case zc_graph_axis::RIGHTWARDS:
+		case 1:
 			line_style = &entry->line_style_r;
 			break;
         }

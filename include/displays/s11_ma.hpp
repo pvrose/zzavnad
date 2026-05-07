@@ -20,9 +20,7 @@
 #include "display_control.hpp"
 #include "sp_data.hpp"	
 
-#include "zc_graph_axis.h"
-#include "zc_graph_base.h"
-#include "zc_graph_x2y.h"
+#include "zc_graph_.h"
 #include "zc_utils.h"
 
 #include <cfloat>
