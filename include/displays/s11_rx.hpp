@@ -43,7 +43,6 @@ namespace display_modes {
 
 			axis_params_t x_axis_params;
 			x_axis_params.outer_range = { 0.0F, DBL_MAX };
-			x_axis_params.inner_range = { 1e6F, 30e6F };
 			x_axis_params.default_range = { 1e6F, 30e6F };
 			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "Hz";
@@ -52,7 +51,6 @@ namespace display_modes {
 
 			axis_params_t yl_axis_params;
 			yl_axis_params.outer_range = { 0.0F, 1000.0F };
-			yl_axis_params.inner_range = { 0.0F, 1000.0F };
 			yl_axis_params.default_range = { 0.0F, 1000.0F };
 			yl_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			yl_axis_params.unit = "\xCE\xA9";
@@ -61,7 +59,6 @@ namespace display_modes {
 
 			axis_params_t yr_axis_params;
 			yr_axis_params.outer_range = { -1000.0F, 1000.0F };
-			yr_axis_params.inner_range = { -1000.0F, 1000.0F };
 			yr_axis_params.default_range = { -1000.0F, 1000.0F };
 			yr_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			yr_axis_params.unit = "\xCE\xA9";
