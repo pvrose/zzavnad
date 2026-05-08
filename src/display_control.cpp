@@ -163,7 +163,7 @@ void display_control::update_displays() {
 		display_mode mode = pair.first;
 		display* window = pair.second;
 		if (window != nullptr && window->get_params().enabled) {
-			window->update_graph();
+			window->update_graph_data();
 		}
 	}
 }

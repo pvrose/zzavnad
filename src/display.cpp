@@ -136,7 +136,7 @@ void display::configure_graph() {
 			axis.second.default_range);
     }
     add_markers();
-    update_graph();
+    update_graph_data();
 	// For each data type, update the legend to show the datasets that are plotted for that data type.
     for (int axis = 1; axis < params_.axis_params.size(); axis++) {
         update_legend(axis);
@@ -145,7 +145,9 @@ void display::configure_graph() {
 }
 
 // Update the graph with the current S-parameter data from sp_data, converting the S-parameter points to graph coordinates based on the current display mode.
-void display::update_graph() {
+void display::update_graph_data() {
+	// Clear the existing graph data.
+	graph_->clear_data_sets();
     std::set<int> dataset_indices;
     // Get the number of S-parameter datasets to plot.
     int num_datasets = 0;

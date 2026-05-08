@@ -89,7 +89,7 @@ public:
     void configure_graph();
 
     //! \brief Update the graph with the current S-parameter data.
-    void update_graph();
+    void update_graph_data();
 
     //! \brief Data definition for the entirety of graph data.
     typedef std::map<int, dm_data_set_t*> graph_data_map_t;
