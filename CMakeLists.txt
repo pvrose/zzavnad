@@ -113,9 +113,8 @@ set(DATAFILES
 
 # Generate Windows icon and resource file
 if (MSVC)
-  # Generate ICO file from PNG logo
-  set(ZZAVNAD_LOGO_PNG "${CMAKE_CURRENT_SOURCE_DIR}/rose.png")
-  set(ZZAVNAD_ICO_FILE "${ZZAVNAD_BINARY_DIR}/zzavnad.ico")
+  # Include the icon helper functions
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/icon_helper.cmake)
 
   # Optional: Set white threshold for transparency (default: 250, range: 0-255)
   # Higher values = more aggressive white removal (e.g., 240 removes near-white)
@@ -124,32 +123,16 @@ if (MSVC)
     set(ZZAVNAD_ICON_WHITE_THRESHOLD 240)
   endif()
 
-  if(EXISTS "${ZZAVNAD_LOGO_PNG}")
-    message(STATUS "Generating Windows icon from ${ZZAVNAD_LOGO_PNG}")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND}
-        -DPNG_FILE=${ZZAVNAD_LOGO_PNG}
-        -DICO_FILE=${ZZAVNAD_ICO_FILE}
-        -DWHITE_THRESHOLD=${ZZAVNAD_ICON_WHITE_THRESHOLD}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/convert_png_to_ico.cmake
-      RESULT_VARIABLE ICO_RESULT
-      ERROR_VARIABLE ICO_ERROR
-    )
-    if(NOT ICO_RESULT EQUAL 0)
-      message(WARNING "Failed to generate ICO file: ${ICO_ERROR}")
-    endif()
-  else()
-    message(WARNING "Logo file not found: ${ZZAVNAD_LOGO_PNG}")
-  endif()
-
-  # Configure Windows resource file with version information
-  set(ZZAVNAD_RC_FILE "${ZZAVNAD_BINARY_DIR}/zzavnad.rc")
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/zzavnad.rc.in
-    ${ZZAVNAD_RC_FILE}
-    @ONLY
+  # Generate icon and resource file using the helper function
+  generate_windows_icon_and_resource(
+    PNG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/rose.png"
+    RC_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/zzavnad.rc.in"
+    WHITE_THRESHOLD ${ZZAVNAD_ICON_WHITE_THRESHOLD}
   )
-  message(STATUS "Generated Windows resource file: ${ZZAVNAD_RC_FILE}")
+
+  # The function exports ${PROJECT_NAME}_RC_FILE which we'll use below
+  # For project ZZAVNAD, this will be ${ZZAVNAD_RC_FILE}
+  message(STATUS "Using resource file: ${ZZAVNAD_RC_FILE}")
 endif()
 
 

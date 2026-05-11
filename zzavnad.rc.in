@@ -6,7 +6,7 @@
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "@ZZAVNAD_BINARY_DIR@/zzavnad.ico"
+IDI_ICON1               ICON                    "rose.ico"
 
 // Version Information
 VS_VERSION_INFO VERSIONINFO
@@ -23,7 +23,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",      "@APP_VENDOR@"
-            VALUE "FileDescription",  "@APP_NAME@ - Amateur Radio Logging Software"
+            VALUE "FileDescription",  "@APP_NAME@ - VNA Analysis Software"
             VALUE "FileVersion",      "@APP_VERSION@"
             VALUE "InternalName",     "@TARGET@"
             VALUE "LegalCopyright",   "Copyright (C) 2026 Philip Rose, GM3ZZA"
