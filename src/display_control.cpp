@@ -24,6 +24,7 @@
 #include "displays/s21_gain.hpp"
 #include "displays/s11_rj.hpp"
 #include "displays/s11_z_polar.hpp"
+#include "displays/s11_smith.hpp"
 
 #include "zc_drawing.h"
 #include "zc_settings.h"
@@ -250,6 +251,9 @@ display* display_control::create_display(display_mode mode, int W, int H) {
 			break;
 		case DM_S21_GAIN:
 			window = new display_modes::s21_gain(W, H);
+			break;
+		case DM_S11_SMITH:
+			window = new display_modes::s11_smith(W, H);
 			break;
 		default:
 			break;

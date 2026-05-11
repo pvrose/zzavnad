@@ -39,10 +39,10 @@ enum display_mode : uint8_t {
 	DM_S11,        //!< Display Raw S11 values vs frequency
 	DM_S11_RX,     //!< Display S11 as resistance/reactance vs frequency
 	//    DM_S11_RXPAR,  //!< Display S11 as resistance/reactance as R||jX vs frequency
-	//    DM_S11_SMITH,  //!< Display S11 on a Smith chart
 	DM_S11_MA,     //!< Display S11 magnitude and phase vs frequency
 	DM_S11_RJ,     //!< Display S11 as resistance (R) vs reactance (jX).
 	DM_S11_Z_POLAR, //!< Display S11 as impedance (Z) on a polar plot.
+	DM_S11_SMITH,  //!< Display S11 on a Smith chart.
 	DM_S21_GAIN,   //!< Display S21 gain (dB magnitude and phase) vs frequency
 	DM_COUNT       //!< Number of display modes
 };
