@@ -23,6 +23,7 @@
 class display_control;
 class nvna_control;
 class source_control;
+class markers;
 // Forward declaration of FLTK widgets.
 
 //! \brief The main application window.
@@ -48,5 +49,6 @@ public:
     display_control* display_control_; //!< The main display control for managing the display windows.
     source_control* source_control_; //!< The control panel for selecting data sources and configuring their display settings.
     nvna_control* nvna_control_; //!< The control panel for configuring the nanoVNA data acquisition settings.
+	markers* markers_; //!< The control panel for configuring the markers to add to the display windows.
 
 };

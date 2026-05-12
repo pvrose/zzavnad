@@ -23,6 +23,7 @@
 #include "zc_graph_.h"
 
 #include "zc_line_style.h"
+#include "zc_settings.h"
 
 #include <cfloat>
 #include <complex>
@@ -63,8 +64,17 @@ namespace display_modes {
 		void add_markers() override {
 			add_frequency_markers();
 			// Add marker for SWR=3 (a common threshold for acceptable SWR).
-			graph_->add_marker(1, zc_graph_::FOREGROUND, zc_line_style(FL_RED, 1, FL_DASH), 3.0);
-			graph_->add_label(1, zc_graph_::FOREGROUND, "SWR=3:1", zc_text_style(FL_RED, 0, graph_->textsize()), { -DBL_MAX, 3.0 }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+			zc_settings settings;
+			zc_settings markers_settings(&settings, "Markers");
+			zc_settings swr_markers_settings(&markers_settings, "SWR");
+			bool show_swr_markers;
+			swr_markers_settings.get("Enabled", show_swr_markers, true);
+			if (show_swr_markers) {
+				Fl_Color swr_marker_color;
+				swr_markers_settings.get("Colour", (uint32_t&)swr_marker_color, FL_RED);
+				graph_->add_marker(1, zc_graph_::FOREGROUND, zc_line_style(swr_marker_color, 1, FL_DASH), 3.0);
+				graph_->add_label(1, zc_graph_::FOREGROUND, "SWR=3:1", zc_text_style(swr_marker_color, 0, graph_->textsize()), { -DBL_MAX, 3.0 }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+			}
 		}
 
 		void convert_sp_point(

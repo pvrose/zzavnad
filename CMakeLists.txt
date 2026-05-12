@@ -50,6 +50,7 @@ set(CPPFILES
   ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/main.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/markers.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/nvna_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/nvna_iface.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/source_control.cpp
@@ -173,7 +174,7 @@ if (MSVC)
   )
 endif()
 
-target_sources(${TARGET} PRIVATE ${CPPFILES}  "src/nvna_iface.cpp")
+target_sources(${TARGET} PRIVATE ${CPPFILES})
 
 target_link_libraries(${TARGET} PRIVATE
   zzacommon::zzaf

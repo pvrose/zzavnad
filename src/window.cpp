@@ -23,6 +23,7 @@
 
 // Include the main groups.
 #include "display_control.hpp"
+#include "markers.hpp"
 #include "nvna_control.hpp"
 #include "source_control.hpp"
 #include "sp_data.hpp"
@@ -61,12 +62,15 @@ void main_window::create_widgets() {
 	cy += source_control_->h();
 	cx = x() + GAP;
 	display_control_ = new display_control(cx, cy, source_control_->w(), 100, "Displays");
+	// Add the markers control beneath the display control panel.
+	cy += display_control_->h();
+	markers_ = new markers(cx, cy, source_control_->w(), 100, "Markers");
 
 	// Adjust the heights of the control panels to match each other.
-    int h1 = source_control_->h() + display_control_->h();
+    int h1 = source_control_->h() + display_control_->h() + markers_->h();
 	int h2 = nvna_control_->h();
     if (h2 > h1) {
-		display_control_->size(display_control_->w(), h2 - source_control_->h());
+        markers_->size(markers_->w(), h2 - display_control_->h());
 	}
     else if (h1 > h2) {
         nvna_control_->size(nvna_control_->w(), h1);

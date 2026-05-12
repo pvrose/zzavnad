@@ -137,10 +137,6 @@ void display::configure_graph() {
     }
     add_markers();
     update_graph_data();
-	// For each data type, update the legend to show the datasets that are plotted for that data type.
-    for (int axis = 1; axis < params_.axis_params.size(); axis++) {
-        update_legend(axis);
-    }
 	redraw();
 }
 
@@ -178,6 +174,10 @@ void display::update_graph_data() {
                 );
             }
         };
+    }
+	// For each data type, update the legend to show the datasets that are plotted for that data type.
+    for (int axis = 1; axis < params_.axis_params.size(); axis++) {
+        update_legend(axis);
     }
 
     graph_->end_config();
@@ -252,45 +252,54 @@ void display::configure_widgets() {
 
 void display::add_frequency_markers() {
     // Add frequency markers to the graph for the current display mode and data.
-	// Add band bars for the amateur radio bands.
-    Fl_Color band_colour = fl_color_average(FL_BLUE, FL_WHITE, 0.1F);
-    Fl_Fontsize fz = graph_->textsize();
-    Fl_Font f = graph_->textfont();
+	zc_settings settings;
+	zc_settings markers_settings(&settings, "Markers");
+	zc_settings frequency_markers_settings(&markers_settings, "Frequency");
+    bool show_frequency_markers;
+	frequency_markers_settings.get("Enabled", show_frequency_markers, true);
+    if (show_frequency_markers) {
+        // Add band bars for the amateur radio bands.
+        Fl_Color text_colour;
+		frequency_markers_settings.get("Colour", (uint32_t&)text_colour, FL_BLUE);
+        Fl_Color band_colour = fl_color_average(FL_WHITE, text_colour, 0.875F);
+        Fl_Fontsize fz = graph_->textsize();
+        Fl_Font f = graph_->textfont();
 
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 135.7e3, 137.8e3);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "2190m", zc_text_style(FL_BLUE, f, fz), { 135.7e3, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 472e3F, 479e3F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "630m", zc_text_style(FL_BLUE, f, fz), { 472e3F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.81e6F, 2.0e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "160m", zc_text_style(FL_BLUE, f, fz), { 1.81e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 3.5e6F, 3.8e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "80m", zc_text_style(FL_BLUE, f, fz), { 3.5e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 5.2585e6F, 5.4065e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "60m", zc_text_style(FL_BLUE, f, fz), { 5.2585e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 7.0e6F, 7.2e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "40m", zc_text_style(FL_BLUE, f, fz), { 7.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 10.1e6F, 10.15e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "30m", zc_text_style(FL_BLUE, f, fz), { 10.1e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 14.0e6F, 14.35e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "20m", zc_text_style(FL_BLUE, f, fz), { 14.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 18.068e6F, 18.168e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "17m", zc_text_style(FL_BLUE, f, fz), { 18.068e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 21.0e6F, 21.45e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "15m", zc_text_style(FL_BLUE, f, fz), { 21.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 24.89e6F, 24.99e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "12m", zc_text_style(FL_BLUE, f, fz), { 24.89e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 28e6F, 29.7e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "10m", zc_text_style(FL_BLUE, f, fz), { 28e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 50e6F, 52e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "6m", zc_text_style(FL_BLUE, f, fz), { 50e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 70e6F, 70e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "4m", zc_text_style(FL_BLUE, f, fz), { 70e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 144e6F, 146e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "2m", zc_text_style(FL_BLUE, f, fz), { 144e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 430e6F, 440e6F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "70cm", zc_text_style(FL_BLUE, f, fz), { 430e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.24e9F, 1.325e9F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "23cm", zc_text_style(FL_BLUE, f, fz), { 1.24e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
-    graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 2.3e9F, 2.45e9F);
-    graph_->add_label(0, zc_graph_::BACKGROUND, "13cm", zc_text_style(FL_BLUE, f, fz), { 2.3e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 135.7e3, 137.8e3);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "2190m", zc_text_style(text_colour, f, fz), { 135.7e3, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 472e3F, 479e3F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "630m", zc_text_style(text_colour, f, fz), { 472e3F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.81e6F, 2.0e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "160m", zc_text_style(text_colour, f, fz), { 1.81e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 3.5e6F, 3.8e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "80m", zc_text_style(text_colour, f, fz), { 3.5e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 5.2585e6F, 5.4065e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "60m", zc_text_style(text_colour, f, fz), { 5.2585e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 7.0e6F, 7.2e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "40m", zc_text_style(text_colour, f, fz), { 7.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 10.1e6F, 10.15e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "30m", zc_text_style(text_colour, f, fz), { 10.1e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 14.0e6F, 14.35e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "20m", zc_text_style(text_colour, f, fz), { 14.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 18.068e6F, 18.168e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "17m", zc_text_style(text_colour, f, fz), { 18.068e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 21.0e6F, 21.45e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "15m", zc_text_style(text_colour, f, fz), { 21.0e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 24.89e6F, 24.99e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "12m", zc_text_style(text_colour, f, fz), { 24.89e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 28e6F, 29.7e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "10m", zc_text_style(text_colour, f, fz), { 28e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 50e6F, 52e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "6m", zc_text_style(text_colour, f, fz), { 50e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 70e6F, 70e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "4m", zc_text_style(text_colour, f, fz), { 70e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 144e6F, 146e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "2m", zc_text_style(text_colour, f, fz), { 144e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 430e6F, 440e6F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "70cm", zc_text_style(text_colour, f, fz), { 430e6F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 1.24e9F, 1.325e9F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "23cm", zc_text_style(text_colour, f, fz), { 1.24e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+        graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 2.3e9F, 2.45e9F);
+        graph_->add_label(0, zc_graph_::BACKGROUND, "13cm", zc_text_style(text_colour, f, fz), { 2.3e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
+    }
 }
