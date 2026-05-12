@@ -175,12 +175,13 @@ void display::update_graph_data() {
             }
         };
     }
-	// For each data type, update the legend to show the datasets that are plotted for that data type.
+    graph_->end_config();
+
+    // For each data type, update the legend to show the datasets that are plotted for that data type.
     for (int axis = 1; axis < params_.axis_params.size(); axis++) {
         update_legend(axis);
     }
 
-    graph_->end_config();
     redraw();
 }
 
