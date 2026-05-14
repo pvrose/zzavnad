@@ -18,6 +18,7 @@
 
 #include "nvna_iface.hpp"
 
+#include "calib_data.hpp"
 #include "nvna_control.hpp"
 
 // Include ZZACOMMON classes.
@@ -136,6 +137,7 @@ bool nvna_iface::acquire_data_batch(sp_data_set* data, double start, double step
 			point.frequency = freq;
 			point.sparams.s11 = std::complex<double>(s11_real, s11_imag);
 			point.sparams.s21 = std::complex<double>(s21_real, s21_imag);
+			calib_data_->calibrate(point);
 			data->insert(point);
 		}
 	}	

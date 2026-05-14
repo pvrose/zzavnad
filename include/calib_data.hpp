@@ -60,8 +60,8 @@ public:
 		CALIB_THROUGH = 8,  //!< Through calibration data available (for 2-port calibration).
 		CALIB_ISOLATION = 16, //!< Isolation calibration data available (for 2-port calibration).
 		CALIB_VALID2 = 31,  //!< All calibration data (open, short, load) available and valid, and through/isolation data available if needed for 2-port calibration.
-		CALIB_CONVERTED = 32, //!< Calibration data has been converted to error terms and is ready for use in calibration correction (1-port calibration).
-		
+		CALIB_CONVERTED = 32, //!< Calibration data has been converted to error terms and is ready for use in calibration correction.
+		CALIB_USE_IT = 64, //!< Calibration data is available for use.	
 	};
 
 	//! \brief Get the current calibration status.
@@ -79,7 +79,7 @@ public:
 	//! The frequency is looked up in the calibration data and the
 	//! corresponding error terms are interpolated 
 	//! to apply the calibration correction.
-	void calibrate(sp_params& sparams, double frequency) const;
+	void calibrate(sp_point& point) const;
 
 	//! \brief Check if the calibration data is valid for the given frequency range.
 	//! 
@@ -105,6 +105,20 @@ public:
 	//! \brief Get the directory where calibration data is stored.
 	const std::string& get_calibration_directory() const { return calib_directory_; }
 
+	//! \brief Calculate the error terms based on the available 
+	//! calibration data.
+	//! 
+	//! Calculates the error terms (e00, e11, e10*e01) for each
+	//! frequency point in the calibration data and stores them 
+	//! in the error_terms_ set for later interpolation and
+	//! application of calibration correction.
+	void calculate_error_terms();
+
+	//! \brief Set/Unset the availability flag for the calibration data, 
+	//! which indicates that the calibration data should be used for correction.
+	void use_calibration(bool use_calib);
+
+	//! \brief 
 private:
 	//! \brief Current calibration status.
 	calib_status status_;
@@ -133,15 +147,6 @@ private:
 
 	//! \brief An ordered set of error term points, sorted by frequency.
 	std::set<e_point> error_terms_;
-
-	//! \brief Calculate the error terms based on the available 
-	//! calibration data.
-	//! 
-	//! Calculates the error terms (e00, e11, e10*e01) for each
-	//! frequency point in the calibration data and stores them 
-	//! in the error_terms_ set for later interpolation and
-	//! application of calibration correction.
-	void calculate_error_terms();
 
 	//! \brief Interpolate the error terms for a given frequency.
 	//! 

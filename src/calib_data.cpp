@@ -160,11 +160,13 @@ void calib_data::load_calibration_data(const std::string& directory) {
 
 // Calibrate the provided S-parameter data using the available calibration data.
 void calib_data::calibrate(
-	sp_params& sparams,
-	double frequency) const {
+	sp_point& point) const {
+	if (!(status_ & CALIB_USE_IT)) {
+		return; // Cannot calibrate if calibration data is not complete and converted to error terms.
+	}
 	// Get error terms at the specified frequency by looking up the calibration data and interpolating if necessary.
-	e_point e_values = interpolate_error_terms(frequency);
-	apply_calibration_correction(sparams, e_values);
+	e_point e_values = interpolate_error_terms(point.frequency);
+	apply_calibration_correction(point.sparams, e_values);
 }
 
 // Check if the calibration data is valid for the given frequency range.
@@ -273,5 +275,17 @@ void calib_data::calculate_error_terms() {
 	// error terms for all frequency points in the calibration data.
 	if (!error_terms_.empty()) {
 		(uint32_t&)status_ |= CALIB_CONVERTED; // Set the converted flag to indicate that error terms have been calculated.
+	}
+}
+
+// Set/unset the flag indicating whether the calibration data should be used.
+void calib_data::use_calibration(bool use_calib) {
+	if (use_calib) {
+		if (status_ & CALIB_CONVERTED) {
+			(uint32_t&)status_ |= CALIB_USE_IT; // Set the flag to indicate that calibration data is available for use.
+		}
+	}
+	else {
+		(uint32_t&)status_ &= ~CALIB_USE_IT; // Unset the flag to indicate that calibration data should not be used.
 	}
 }

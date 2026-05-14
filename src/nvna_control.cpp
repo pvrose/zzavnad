@@ -204,6 +204,11 @@ void nvna_control::create_widgets() {
 	btn_calib_clear_->callback(cb_calib_clear, this);
     btn_calib_clear_->tooltip("Clear existing calibration data.");
 
+    cx += WBUTTON;
+	btn_calib_use_ = new Fl_Light_Button(cx, cy, WBUTTON, HBUTTON, "Use It");
+	btn_calib_use_->callback(cb_calib_use, this);
+	btn_calib_use_->tooltip("Use the current calibration data for correction.");
+
 	cy += HBUTTON;
     cx = calib_group_->x() + GAP;
 
@@ -345,21 +350,22 @@ void nvna_control::configure_widgets() {
     }
     else {
         calib_group_->activate();
+		calib_data::calib_status status = calib_data_->get_calibration_status();
 		// Update the calibration check buttons based on the current calibration data status.   
-        btn_calib_open_->value(calib_data_->get_calibration_status() & calib_data::CALIB_OPEN);
-        btn_calib_short_->value(calib_data_->get_calibration_status() & calib_data::CALIB_SHORT);
-        btn_calib_load_->value(calib_data_->get_calibration_status() & calib_data::CALIB_LOAD);
+        btn_calib_open_->value(status & calib_data::CALIB_OPEN);
+        btn_calib_short_->value(status & calib_data::CALIB_SHORT);
+        btn_calib_load_->value(status & calib_data::CALIB_LOAD);
         if (sp_data_->get_number_ports() == 2) {
             btn_calib_thru_->activate();
-            btn_calib_thru_->value(calib_data_->get_calibration_status() & calib_data::CALIB_THROUGH);
+            btn_calib_thru_->value(status & calib_data::CALIB_THROUGH);
 			btn_calib_isol_->activate();
-            btn_calib_isol_->value(calib_data_->get_calibration_status() & calib_data::CALIB_ISOLATION);
+            btn_calib_isol_->value(status & calib_data::CALIB_ISOLATION);
         }
         else {
             btn_calib_thru_->deactivate();
             btn_calib_isol_->deactivate();
         }
-        btn_calib_ok_->value(calib_data_->get_calibration_status() & calib_data::CALIB_CONVERTED);
+        btn_calib_ok_->value(status & calib_data::CALIB_CONVERTED);
         if (calib_directory.empty()) {
             btn_calib_save_->deactivate();
             btn_calib_read_->deactivate();
@@ -368,6 +374,7 @@ void nvna_control::configure_widgets() {
             btn_calib_save_->activate();
             btn_calib_read_->activate();
         }
+		btn_calib_use_->value(status & calib_data::CALIB_USE_IT);
     }
 }
 
@@ -616,4 +623,10 @@ void nvna_control::cb_calib_status_ignore(Fl_Widget* widget, void* data) {
 	// The status of these buttons is determined by the calibration data and should not be changed by user interaction.
 	nvna_control* control = zc::ancestor_view<nvna_control>(widget);
 	control->configure_widgets(); // Reset the button states to reflect the actual calibration status.
+}
+
+// Callback function for the calibration use button.
+void nvna_control::cb_calib_use(Fl_Widget* widget, void* data) {
+	calib_data_->calculate_error_terms(); // Calculate the error terms based on the current calibration data.
+	calib_data_->use_calibration(((Fl_Light_Button*)widget)->value()); // Set whether to use calibration based on the button state.
 }

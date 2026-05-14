@@ -21,6 +21,7 @@
 
 
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Widget.H>
 
 #include <set>
 #include <string>
@@ -31,6 +32,7 @@ class Fl_Check_Button;
 class Fl_Choice;
 class Fl_Fill_Dial;
 class Fl_Float_Input;
+class Fl_Light_Button;
 class Fl_Radio_Round_Button;
 class Fl_Widget;
 class zc_filename_input;
@@ -94,6 +96,8 @@ protected:
 	static void cb_calib_read(Fl_Widget* widget, void* data);
     //! Callback to ignore clicks on status check buttons.
 	static void cb_calib_status_ignore(Fl_Widget* widget, void* data);
+	//! Callback function for the calibration use button.
+	static void cb_calib_use(Fl_Widget* widget, void* data);
 
     private:
 
@@ -138,6 +142,7 @@ protected:
 
 	Fl_Group* calib_group_; //!< Group box for calibration controls.
 	Fl_Button* btn_calib_clear_;  //!< Clear calibration data.
+	Fl_Light_Button* btn_calib_use_;   //!< Use current calibration data for correction.
 	Fl_Button* btn_calib_save_;   //!< Save calibration data to file.
 	Fl_Button* btn_calib_read_;   //!< Read calibration data from file.
 	zc_filename_input* ip_calib_directory_; //!< Input to select the directory for saving/loading calibration data.
