@@ -372,6 +372,7 @@ void source_control::configure_widgets() {
 		}
 		if (entry->source == SPDS_CALIB_S || entry->source == SPDS_CALIB_O || entry->source == SPDS_CALIB_L || entry->source == SPDS_CALIB_T || entry->source == SPDS_CALIB_I) {
             if (!btn_display_calib_->value()) {
+				entry->enabled = false; // Disable the calibration data sources if the display calibration data checkbox is not checked to prevent them from being accidentally enabled and taking resources when they are not being displayed.
                 continue; // Skip the calibration data sources if the display calibration data checkbox is not checked.
 			} 
         }

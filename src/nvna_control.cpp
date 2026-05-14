@@ -330,8 +330,17 @@ void nvna_control::configure_widgets() {
 		btn_connect_nvna_->deactivate();
     }
 
+	calib_data::calib_status target_status;
+	if (sp_data_->get_number_ports() == 1) {
+		target_status = calib_data::CALIB_VALID1; // For 1-port calibration, we only need open, short, and load.
+	}
+	else if (sp_data_->get_number_ports() == 2) {
+		target_status = calib_data::CALIB_VALID2; // For 2-port calibration, we need open, short, load, and through.
+	}
+	std::string calib_directory = calib_data_->get_calibration_directory();
+	ip_calib_directory_->value(calib_directory.c_str());
     // Configure the calibration widgets.
-    if (!nvna_enabled_) {
+    if (!nvna_enabled_ && calib_data_->get_calibration_status() < target_status) {
 		calib_group_->deactivate();
     }
     else {
@@ -350,8 +359,15 @@ void nvna_control::configure_widgets() {
             btn_calib_thru_->deactivate();
             btn_calib_isol_->deactivate();
         }
-            btn_calib_ok_->value(calib_data_->get_calibration_status() & calib_data::CALIB_CONVERTED);
-
+        btn_calib_ok_->value(calib_data_->get_calibration_status() & calib_data::CALIB_CONVERTED);
+        if (calib_directory.empty()) {
+            btn_calib_save_->deactivate();
+            btn_calib_read_->deactivate();
+		}
+        else {
+            btn_calib_save_->activate();
+            btn_calib_read_->activate();
+        }
     }
 }
 

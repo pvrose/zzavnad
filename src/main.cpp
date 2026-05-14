@@ -51,6 +51,8 @@ extern zc_file_holder* file_holder_;
 extern std::string APP_NAME;
 extern std::string APP_VERSION;
 
+
+
 //! File holder customisation - control data
 const std::map < uint8_t, file_control_t > FILE_CONTROL = {
 	// ID, { filename, reference, read-only
@@ -74,6 +76,7 @@ int main(int argc, char** argv) {
     int result = Fl::run();   
 	// Clean up and exit.
 	delete window;
+	delete calib_data_;
 	delete sp_data_;
 	delete file_holder_;
 	return result;

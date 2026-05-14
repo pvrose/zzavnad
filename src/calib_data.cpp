@@ -92,21 +92,23 @@ void calib_data::clear_calibration_data() {
 }
 
 // Save the current calibration data to files (e.g. S11 files).
-void calib_data::save_calibration_data(std::string directory) const {
+void calib_data::save_calibration_data(const std::string& directory) {
+	// Remember the directory to save to settimgs
+	calib_directory_ = directory;
 	// Save the open, short, and load calibration data to separate files in the specified directory.
 	for (const auto& pair : calib_data_entries_) {
 		sp_data_entry* entry = pair.second;
 		if (entry != nullptr) {
 			if (entry->source == SPDS_CALIB_O) {
-				entry->filename = directory + "/calib_open.s11";
+				entry->filename = directory + "/calib_open.s1p";
 			} else if (entry->source == SPDS_CALIB_S) {
-				entry->filename = directory + "/calib_short.s11";
+				entry->filename = directory + "/calib_short.s1p";
 			} else if (entry->source == SPDS_CALIB_L) {
-				entry->filename = directory + "/calib_load.s11";
+				entry->filename = directory + "/calib_load.s1p";
 			} else if (entry->source == SPDS_CALIB_T) {
-				entry->filename = directory + "/calib_through.s11";
+				entry->filename = directory + "/calib_through.s1p";
 			} else if (entry->source == SPDS_CALIB_I) {
-				entry->filename = directory + "/calib_isolation.s11";
+				entry->filename = directory + "/calib_isolation.s1p";
 			}
 		}
 		sp_data_->store_data_to_file(entry);
@@ -114,34 +116,39 @@ void calib_data::save_calibration_data(std::string directory) const {
 }
 
 // Load calibration data from files (e.g. S11 files).
-void calib_data::load_calibration_data(std::string directory) {
+void calib_data::load_calibration_data(const std::string& directory) {
 
 	bool ok = true;
 	calib_data_entries_[SPDS_CALIB_O] = sp_data_->get_dataset(sp_data_->add_dataset(SPDS_CALIB_O));
 	sp_data_entry* open_entry = calib_data_entries_[SPDS_CALIB_O];
-	open_entry->filename = directory + "/calib_open.s11";
+	open_entry->filename = directory + "/calib_open.s1p";
 	ok &= sp_data_->read_data_from_file(open_entry);
+	if (ok) (uint32_t&)status_ = status_ | CALIB_OPEN;
 
 	calib_data_entries_[SPDS_CALIB_S] = sp_data_->get_dataset(sp_data_->add_dataset(SPDS_CALIB_S));
 	sp_data_entry* short_entry = calib_data_entries_[SPDS_CALIB_S];
-	short_entry->filename = directory + "/calib_short.s11";
+	short_entry->filename = directory + "/calib_short.s1p";
 	ok &= sp_data_->read_data_from_file(short_entry);
+	if (ok) (uint32_t&)status_ = status_ | CALIB_SHORT;
 
 	calib_data_entries_[SPDS_CALIB_L] = sp_data_->get_dataset(sp_data_->add_dataset(SPDS_CALIB_L));
 	sp_data_entry* load_entry = calib_data_entries_[SPDS_CALIB_L];
-	load_entry->filename = directory + "/calib_load.s11";
+	load_entry->filename = directory + "/calib_load.s1p";
 	ok &= sp_data_->read_data_from_file(load_entry);
+	if (ok) (uint32_t&)status_ = status_ | CALIB_LOAD;
 
 	if (sp_data_->get_number_ports() == 2) {
 		calib_data_entries_[SPDS_CALIB_T] = sp_data_->get_dataset(sp_data_->add_dataset(SPDS_CALIB_T));
 		sp_data_entry* through_entry = calib_data_entries_[SPDS_CALIB_T];
-		through_entry->filename = directory + "/calib_through.s11";
+		through_entry->filename = directory + "/calib_through.s1p";
 		ok &= sp_data_->read_data_from_file(through_entry);
+		if (ok) (uint32_t&)status_ = status_ | CALIB_THROUGH;
 
 		calib_data_entries_[SPDS_CALIB_I] = sp_data_->get_dataset(sp_data_->add_dataset(SPDS_CALIB_I));
 		sp_data_entry* isolation_entry = calib_data_entries_[SPDS_CALIB_I];
-		isolation_entry->filename = directory + "/calib_isolation.s11";
+		isolation_entry->filename = directory + "/calib_isolation.s1p";
 		ok &= sp_data_->read_data_from_file(isolation_entry);
+		if (ok) (uint32_t&)status_ = status_ | CALIB_ISOLATION;
 	}
 
     if (ok) {

@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <map>
 #include <set>
+#include <string>
 
 //! \brief Calibration data and management.
 //! 
@@ -93,13 +94,16 @@ public:
 	//! 
 	//! Opens a file dialog to select a directory and saves the open, short,
 	//! and load calibration data to separate files in that directory.
-	void save_calibration_data(std::string directory) const;
+	void save_calibration_data(const std::string& directory);
 
 	//! \brief Load calibration data from files (e.g. S11 files).
 	//! 
 	//! Opens a file dialog to select a directory and loads the open, short, 
 	//! and load calibration data from separate files in that directory.
-	void load_calibration_data(std::string directory);
+	void load_calibration_data(const std::string& directory);
+
+	//! \brief Get the directory where calibration data is stored.
+	const std::string& get_calibration_directory() const { return calib_directory_; }
 
 private:
 	//! \brief Current calibration status.
@@ -116,10 +120,10 @@ private:
 	//! \brief Individual set of error terms for a single frequency point, used for calibration correction.
 	//! \brief Single frequency point S-parameter data structure.
 	struct e_point {
-		double frequency;    //!< Frequency in Hz
-		std::complex<double> e00;   //!< e00 error term at this frequency
-		std::complex<double> e11;   //!< e11 error term at this frequency
-		std::complex<double> e10e01; //!< e10*e01 error term at this frequency
+		double frequency = 0.0;    //!< Frequency in Hz
+		std::complex<double> e00 = {0.0, 0.0};   //!< e00 error term at this frequency
+		std::complex<double> e11 = {0.0, 0.0};   //!< e11 error term at this frequency
+		std::complex<double> e10e01 = {0.0, 0.0}; //!< e10*e01 error term at this frequency
 
 		//! Declare a '<' operator to allow sorting by frequency.
 		bool operator< (const e_point& other) const {
