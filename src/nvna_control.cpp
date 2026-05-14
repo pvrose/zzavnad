@@ -627,6 +627,8 @@ void nvna_control::cb_calib_status_ignore(Fl_Widget* widget, void* data) {
 
 // Callback function for the calibration use button.
 void nvna_control::cb_calib_use(Fl_Widget* widget, void* data) {
-	calib_data_->calculate_error_terms(); // Calculate the error terms based on the current calibration data.
+    nvna_control* control = zc::ancestor_view<nvna_control>(widget);
+    calib_data_->calculate_error_terms(); // Calculate the error terms based on the current calibration data.
 	calib_data_->use_calibration(((Fl_Light_Button*)widget)->value()); // Set whether to use calibration based on the button state.
+    control->configure_widgets(); // Reset the button states to reflect the actual calibration status.
 }

@@ -255,7 +255,7 @@ void calib_data::calculate_error_terms() {
 			const std::complex<double>& s11_l = it_l->sparams.s11;
 			const std::complex<double> two = { 2.0, 0.0 };
 			// Calculate e00, e11, and e10*e01 error terms using the open, short, and load S-parameters at this frequency.
-			e.e00 = s11_o;
+			e.e00 = s11_l;
 			e.e11 = (two * s11_l - s11_s - s11_o) / (s11_s - s11_o);
 			e.e10e01 = (two * (s11_l - s11_o) * (s11_l - s11_s)) / (s11_s - s11_o);
 			error_terms_.insert(e);
