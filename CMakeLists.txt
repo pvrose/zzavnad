@@ -140,9 +140,9 @@ endif()
 
 # Define the zzavnad executable
 if (MSVC)
-  add_executable(${TARGET} WIN32 ${ZZAVNAD_RC_FILE})
+  add_executable(${TARGET} ${ZZAVNAD_RC_FILE})
 else()
-  add_executable(${TARGET} WIN32)
+  add_executable(${TARGET})
 endif()
 if (MSVC)
   add_dependencies(${TARGET} 

@@ -37,6 +37,11 @@
 #include <map>
 #include <string>
 
+// Include Windows headers for console colour support
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 
 // Declare global pointers.
 display* display_;
@@ -63,6 +68,16 @@ const std::map < uint8_t, file_control_t > FILE_CONTROL = {
 
 // Main function for the application.
 int main(int argc, char** argv) {
+#ifdef _WIN32
+	// Enable Windows console colour support (ANSI escape sequences)
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwMode = 0;
+	if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &dwMode)) {
+		dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		SetConsoleMode(hOut, dwMode);
+	}
+#endif
+
 	file_holder_ = new zc_file_holder(argv[0], FILE_CONTROL);
     zc::customise_fltk();
 	status_ = new zc_status(zc_status::HAS_CONSOLE, {});
