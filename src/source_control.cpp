@@ -19,6 +19,7 @@
 #include "source_control.hpp"
 
 // Include ZZAVNAD data structures.
+#include "calib_data.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"
 
@@ -224,6 +225,44 @@ void source_control::file_source::configure_widgets() {
             ckb_enable_->show();
             ckb_enable_->value(entry->enabled);
             break;
+		case SPDS_CALIB_S:
+		case SPDS_CALIB_O:
+		case SPDS_CALIB_L:
+		case SPDS_CALIB_T:
+		case SPDS_CALIB_I:
+            btn_remove_->hide();
+			box_type_->label("@<->"); // Show a double headed arrow symbol to indicate this data source is a calibration dataset.
+            ip_filename_->hide();
+            box_nvna_->show();
+            switch (entry->source) {
+            case SPDS_CALIB_S:
+                box_nvna_->label("Calibration - short");
+                break;
+            case SPDS_CALIB_O:
+                box_nvna_->label("Calibration - open");
+                break;
+            case SPDS_CALIB_L:
+                box_nvna_->label("Calibration - load");
+                break;
+            case SPDS_CALIB_T:
+                box_nvna_->label("Calibration - through");
+                break;
+            case SPDS_CALIB_I:
+                box_nvna_->label("Calibration - isolation");
+                break;
+            default:
+				break;
+            }
+            btn_keep_->hide();
+            btn_notes_->show();
+            btn_line_l_->show();
+            btn_line_l_->value(entry->line_style_l);
+            btn_line_r_->show();
+            btn_line_r_->value(entry->line_style_r);
+            ckb_enable_->show();
+            ckb_enable_->value(entry->enabled);
+            break;
+
         default:
             // This should not happen, but if it does, hide all the widgets for this data source.
             btn_remove_->hide();
@@ -259,13 +298,19 @@ void source_control::create_widgets() {
     int cy = y() + GAP;
 
     // Add the dropdown to select the data type for this session.
-    choice_data_type_ = new Fl_Choice(cx, cy, WSMEDIT, HBUTTON, "VNA ports");
+    choice_data_type_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "VNA ports");
 	choice_data_type_->add("1-port");
 	choice_data_type_->add("2-port");
     choice_data_type_->align(FL_ALIGN_LEFT);
 	choice_data_type_->callback(cb_data_type, this);
 	choice_data_type_->tooltip("Select the data type for this session.\n This will affect how the data can be displayed and analyzed.");
 	choice_data_type_->value(sp_data_->get_number_ports() - 1);
+
+    cx += WBUTTON + GAP;
+
+	btn_display_calib_ = new Fl_Check_Button(cx, cy, HBUTTON, HBUTTON, "Show Calib");
+	btn_display_calib_->callback(cb_display_calib, this);
+    btn_display_calib_->tooltip("Show the calibration data acquired from the nanoVNA as a data source.\n This can be useful for checking the quality of the calibration and for troubleshooting.");
 
     cx = x() + GAP;
 	cy += HBUTTON + GAP;
@@ -319,13 +364,22 @@ void source_control::configure_widgets() {
     int cy = 0;
     for (int i = 1; i < sp_data_->get_dataset_count(); i++) {
         sp_data_entry* entry = sp_data_->get_dataset(i);
-        if (entry != nullptr && entry->source != SPDS_ACTIVE) {
-            file_source* fs = new file_source(file_group_->x(), file_group_->y() + cy, WCONTROL, HBUTTON);
-            fs->user_data(entry);
-            fs->configure_widgets();
-            file_group_->add(fs);
-            cy += HBUTTON;
+		if (entry == nullptr) {
+            continue;
         }
+        if (entry->source == SPDS_ACTIVE) {
+            continue; // Skip the active data source since this is already shown in the dedicated control for the nanoVNA data source.
+		}
+		if (entry->source == SPDS_CALIB_S || entry->source == SPDS_CALIB_O || entry->source == SPDS_CALIB_L || entry->source == SPDS_CALIB_T || entry->source == SPDS_CALIB_I) {
+            if (!btn_display_calib_->value()) {
+                continue; // Skip the calibration data sources if the display calibration data checkbox is not checked.
+			} 
+        }
+        file_source* fs = new file_source(file_group_->x(), file_group_->y() + cy, WCONTROL, HBUTTON);
+        fs->user_data(entry);
+        fs->configure_widgets();
+        file_group_->add(fs);
+        cy += HBUTTON;
     }
     redraw();
 };
@@ -485,5 +539,14 @@ void source_control::cb_data_type(Fl_Widget* widget, void* data) {
         sp_data_->set_number_ports(selected + 1);
         control->configure_widgets();
         control->data_source_changed();
+    }
+}
+
+// Callback function for the display calibration data checkbox.
+void source_control::cb_display_calib(Fl_Widget* widget, void* data) {
+    source_control* control = zc::ancestor_view<source_control>(widget);
+    if (control != nullptr) {
+        control->configure_widgets();
+		control->data_source_changed();
     }
 }

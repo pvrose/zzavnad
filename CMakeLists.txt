@@ -46,6 +46,7 @@ endif()
 
 set(CPPFILES 
   ${ZZAVNAD_SOURCE_DIR}/src/app.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/calib_data.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp

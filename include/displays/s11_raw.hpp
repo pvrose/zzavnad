@@ -49,7 +49,8 @@ namespace display_modes {
 			params_.axis_params[0] = x_axis_params;
 
 			axis_params_t yl_axis_params;
-			yl_axis_params.outer_range = { -1.0F, 1.0F };
+			// Set the outer range to slightly larger than the default range to allow values at the limits to be displayed without being cut off.
+			yl_axis_params.outer_range = { -1.1F, 1.1F };
 			yl_axis_params.default_range = { -1.0F, 1.0F };
 			yl_axis_params.unit_modifier = zc_graph_::modifier_t::NO_MODIFIER;
 			yl_axis_params.unit = "";
@@ -57,7 +58,8 @@ namespace display_modes {
 			params_.axis_params[1] = yl_axis_params;
 
 			axis_params_t yr_axis_params;
-			yr_axis_params.outer_range = { -1.0F, 1.0F };
+			// Set the outer range to slightly larger than the default range to allow values at the limits to be displayed without being cut off.
+			yr_axis_params.outer_range = { -1.1F, 1.1F };
 			yr_axis_params.default_range = { -1.0F, 1.0F };
 			yr_axis_params.unit_modifier = zc_graph_::modifier_t::NO_MODIFIER;
 			yr_axis_params.unit = "";

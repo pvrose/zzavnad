@@ -17,6 +17,7 @@
 
 #include "window.hpp"
 
+#include "calib_data.hpp"
 #include "display.hpp"
 #include "nvna_control.hpp"
 #include "source_control.hpp"
@@ -43,6 +44,7 @@ display_control* display_control_;
 nvna_control* nvna_control_;
 source_control* source_control_;
 sp_data* sp_data_;
+calib_data* calib_data_;
 
 // Externals included in zc_zzanvad.cpp
 extern zc_file_holder* file_holder_;
@@ -64,6 +66,8 @@ int main(int argc, char** argv) {
 	status_ = new zc_status(zc_status::HAS_CONSOLE, {});
     // Create the main data item for the S-parameter data.
     sp_data_ = new sp_data();
+	// Create the main data item for the calibration data.
+	calib_data_ = new calib_data();
     // Create the main application window.
     main_window* window = new main_window(800, 600, (APP_NAME + " " + APP_VERSION + " - VNA Analysis Software").c_str());
     // Run the FLTK event loop.

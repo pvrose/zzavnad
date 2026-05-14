@@ -56,7 +56,12 @@ enum sp_data_source : uint8_t {
 	SPDS_NONE,      //!< No data source (e.g. empty dataset).
 	SPDS_ACTIVE,    //!< Active data source - currently used for a datase being acquired from the VNA.
 	SPDS_FILE,      //!< Data source is a file - the dataset was read from a file.
-	SPDS_KEPT       //!< Data has been previously acquired in this session and is being kept for display.
+	SPDS_KEPT,      //!< Data has been previously acquired in this session and is being kept for display.
+	SPDS_CALIB_S,   //!< Data source is calibration data from short circuit measurement.
+	SPDS_CALIB_O,   //!< Data source is calibration data from open circuit measurement.
+	SPDS_CALIB_L,   //!< Data source is calibration data from load measurement.
+	SPDS_CALIB_T,   //!< Data source is calibration data from through measurement (for 2-port calibration).
+	SPDS_CALIB_I    //!< Data source is calibration data from isolation measurement (for 2-port calibration).
 };
 
 //! \brief A structure to hold S-parameter data along with its source information.

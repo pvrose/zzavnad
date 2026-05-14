@@ -19,6 +19,7 @@
 
 #include "sp_data.hpp"
 
+
 #include <FL/Fl_Group.H>
 
 #include <set>
@@ -26,11 +27,13 @@
 
 // Forward declaration of FLTK widgets.
 class Fl_Button;
+class Fl_Check_Button;
 class Fl_Choice;
 class Fl_Fill_Dial;
 class Fl_Float_Input;
 class Fl_Radio_Round_Button;
 class Fl_Widget;
+class zc_filename_input;
 
 class nvna_iface;
 
@@ -81,6 +84,16 @@ protected:
     static void cb_nvna_connect(Fl_Widget* widget, void* data);
 	//! Callback function for the nanoVNA rescan ports button.
 	static void cb_rescan_ports(Fl_Widget* widget, void* data);
+	//! Callback function for the calibration start button.
+	static void cb_calib_start(Fl_Widget* widget, void* data);
+	//! Callback function for the calibration clear button.
+	static void cb_calib_clear(Fl_Widget* widget, void* data);
+	//! Callback function for the calibration save button.
+	static void cb_calib_save(Fl_Widget* widget, void* data);
+	//! Callback function for the calibration read button.
+	static void cb_calib_read(Fl_Widget* widget, void* data);
+    //! Callback to ignore clicks on status check buttons.
+	static void cb_calib_status_ignore(Fl_Widget* widget, void* data);
 
     private:
 
@@ -95,6 +108,9 @@ protected:
 
     //! Populate the nanoVNA port and speed dropdowns with available options.
     void populate_nvna_options();
+
+	//! Run the calibration process with the nanoVNA.
+	void run_calibration();
      
     Fl_Float_Input* ip_start_freq_; //!< Input for the start frequency.
     Fl_Float_Input* ip_stop_freq_;  //!< Input for the stop frequency.
@@ -111,6 +127,20 @@ protected:
 
     Fl_Button* btn_connect_nvna_; //!< Button to connect to the nanoVNA
 	Fl_Button* btn_rescan_ports_; //!< Button to rescan for available nanoVNA ports
+
+    Fl_Check_Button* btn_calib_ok_; //!< Indicates the calibration data is valid.
+    Fl_Button* btn_calib_start_;    //!< Start calibration.
+    Fl_Check_Button* btn_calib_open_;   //!< Calibration - open circuit read
+    Fl_Check_Button* btn_calib_short_;  //!< Calibration - short circuit read
+    Fl_Check_Button* btn_calib_load_;   //!< Calibration - load read.
+    Fl_Check_Button* btn_calib_thru_;   //!< Calibration - through read.
+    Fl_Check_Button* btn_calib_isol_;   //!< Calibration - isolation read.
+
+	Fl_Group* calib_group_; //!< Group box for calibration controls.
+	Fl_Button* btn_calib_clear_;  //!< Clear calibration data.
+	Fl_Button* btn_calib_save_;   //!< Save calibration data to file.
+	Fl_Button* btn_calib_read_;   //!< Read calibration data from file.
+	zc_filename_input* ip_calib_directory_; //!< Input to select the directory for saving/loading calibration data.
 
     //! Frequency unit multiplier based on the selected radio button.
     double frequency_xier_;

@@ -196,10 +196,18 @@ int sp_data::get_dataset_count() const {
 //! \param index The index of the dataset to store the data in.
 //! \return True if the data was successfully read and stored, false otherwise.
 bool sp_data::read_data_from_file(sp_data_entry* entry) {
-    if (entry->source != SPDS_FILE) {
-        // Raise an error.
-        throw std::invalid_argument("Dataset at index is not a file dataset");
-    }
+	switch (entry->source) {
+	case SPDS_FILE:
+    case SPDS_CALIB_O:
+	case SPDS_CALIB_S:
+	case SPDS_CALIB_L:
+	case SPDS_CALIB_T:
+	case SPDS_CALIB_I:
+		return load_data_from_file(entry->filename, entry);
+	default:
+		// Raise an error - only file datasets can be read from a file.
+		throw std::invalid_argument("Only file datasets can be read from a file");
+	}
     return load_data_from_file(entry->filename, entry);
 }
 
@@ -434,13 +442,27 @@ void sp_data::remove_dataset(sp_data_entry* entry) {
 }
 
 //! \brief Store the specified dataset as a file.
-//! \param index The index of the dataset to store.
+//! \param entry The dataset to store.
 //! \return True if the data was successfully stored, false otherwise.
 bool sp_data::store_data_to_file(sp_data_entry* entry) {
-    if (entry->source != SPDS_FILE && entry->source != SPDS_KEPT) {
-        // Raise an error.
-        throw std::invalid_argument("Dataset at index is not a valid dataset for writing");
-    }
+	switch (entry->source) {
+	case SPDS_FILE:
+	case SPDS_KEPT:
+	case SPDS_CALIB_S:
+	case SPDS_CALIB_O:
+	case SPDS_CALIB_L:
+	case SPDS_CALIB_T:
+	case SPDS_CALIB_I:
+		// This is a valid dataset for writing, continue with the function.
+		break;
+	case SPDS_ACTIVE:
+		// This dataset is currently being acquired from the VNA, raise a warning and return false since we don't want to overwrite the source file while it's being acquired.
+		status_->misc_status(ST_WARNING, "Cannot write active dataset to file since it is currently being acquired from the VNA");
+		return false;
+	default:
+		// Unrecognized data source, raise an error.
+		throw std::invalid_argument("Dataset at index has unrecognized data source");
+	}
     // We will write the data in SRI format with a header line.
     std::ofstream file(entry->filename);
     if (!file.is_open()) {

@@ -221,6 +221,25 @@ void display::update_legend(int  axis) {
                 case SPDS_KEPT:
                     entry.source = dataset->timestamp;
                     break;
+                case SPDS_CALIB_O:
+					entry.source = "Calibration - Open";
+                    break;
+				case SPDS_CALIB_S:
+					entry.source = "Calibration - Short";
+					break;
+				case SPDS_CALIB_L:
+					entry.source = "Calibration - Load";
+					break;
+                case SPDS_CALIB_T:
+					entry.source = "Calibration - Through";
+					break;
+                case SPDS_CALIB_I:
+					entry.source = "Calibration - Isolation";
+					break;
+				case SPDS_NONE:
+				default:
+					entry.source = "Unknown";
+                    break;
             }
             // Set the legend entry for this dataset.
             legend_entries.push_back(entry);
