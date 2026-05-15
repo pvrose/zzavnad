@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ZZAVNAD VERSION 0.2) 
+project(ZZAVNAD VERSION 0.3) 
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -102,7 +102,7 @@ include(FetchContent)
 FetchContent_Declare(
   zzacommon
   GIT_REPOSITORY https://github.com/pvrose/zzacommon.git
-  GIT_TAG v1.1.3
+  GIT_TAG v1.1.4
   FIND_PACKAGE_ARGS NAMES zzacommon COMPONENTS zzaf zzam zzad zzab zzafb
 )
 FetchContent_MakeAvailable(zzacommon)

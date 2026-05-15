@@ -21,6 +21,7 @@
 #include "sp_data.hpp"	
 
 #include "zc_graph_.h"
+#include "zc_line_style.h"
 
 #include <cfloat>
 #include <cmath>
@@ -38,6 +39,8 @@ namespace display_modes {
 		fftw_complex* in_array_ = nullptr;
 		fftw_complex* out_array_ = nullptr;
 		fftw_plan fft_plan_ = nullptr;
+
+		double time_at_max_ = 0.0;
 
 	public:
 
@@ -75,6 +78,16 @@ namespace display_modes {
 			params_.axis_params[2] = yr_axis_params;
 		}
 
+		void add_markers() override {
+			// Add a marker for the time of the maximum amplitude in the TDR response.
+			Fl_Color marker_color = FL_RED;
+			zc_line_style marker_style(marker_color, 1, FL_DASH);
+			graph_->add_marker(0, zc_graph_::FOREGROUND, marker_style, time_at_max_);
+			char text[32];
+			snprintf(text, sizeof(text), "%0.0f ns", time_at_max_ * 1e9);
+			graph_->add_label(0, zc_graph_::FOREGROUND, text, zc_text_style(marker_color, 0, graph_->textsize()), { time_at_max_, -DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+		}
+
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -88,14 +101,22 @@ namespace display_modes {
 				return; // No data to convert
 			}
 
-			// Add padding to the number of samples to improve FFT resolution. 
-			// This will add zeros to the end of the input array, 
-			// which corresponds to zero-padding in the frequency domain and
-			// thus interpolation in the time domain.
-			// TODO Make this dynamic to give a time resolution of e.g. 1 ns, which would require a sampling rate of 1 GHz and thus 1e9 samples per second. For a dataset with a maximum frequency of 30 MHz, this would require at least 30 samples, so we could use a padding factor of 16 to give us 512 samples for the FFT, which would give us a time resolution of around 2 ns.
-			int padding_factor = 16; // This can be adjusted based on the desired resolution and performance trade-off.
+			double f_max = dataset.data.rbegin()->frequency; // Maximum frequency from the dataset
+			double f_min = dataset.data.begin()->frequency;   // Minimum frequency from the dataset
+			double delta_f = (f_max - f_min) / (num_samples - 1);
+			double f_sampling = num_samples * delta_f;     // Effective sampling rate for FFT
+
+			// Add padding to provide better resolution in the time domain.
+			// Pad so that the maximum frequency is > 1 GHz and there are
+			// a power of 2 samples for the FFT.
 			int padded_num_samples = 1;
-			while (padded_num_samples < num_samples * padding_factor) padded_num_samples *= 2;
+			f_sampling = padded_num_samples * delta_f;
+			while (f_sampling < 1e9 && padded_num_samples < num_samples * 8) {
+				padded_num_samples *= 2;
+				f_sampling = padded_num_samples * delta_f;
+			}
+			double delta_t = 1.0 / f_sampling;   // Time step
+
 			// Create input and output arrays for the FFT.
 			in_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * padded_num_samples);
 			out_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * padded_num_samples);
@@ -116,13 +137,10 @@ namespace display_modes {
 
 			// Create the data points for the graph from the FFT output.
 			dm_data_set_t* tdr_coords = new dm_data_set_t;
+			double max_amplitude = 0.0;
+
 			tdr_coords->style = dataset.line_style_l; // Use the line style from the dataset for the TDR response
 			coords[1] = tdr_coords; // Assuming axis 1 is for the TDR response
-			double f_max = dataset.data.rbegin()->frequency; // Maximum frequency from the dataset
-			double f_min = dataset.data.begin()->frequency;   // Minimum frequency from the dataset
-			double delta_f = (f_max - f_min) / (num_samples - 1);
-			double f_sampling = num_samples * delta_f;     // Effective sampling rate for FFT
-			double delta_t = 1.0 / f_sampling;   // Time step
 			for (size_t ix = 0; ix < dataset.data.size() / 2; ++ix) {
 				double time = ix * delta_t; // Time corresponding to this FFT bin
 				double amplitude = sqrt(out_array_[ix][0] * out_array_[ix][0] + out_array_[ix][1] * out_array_[ix][1]); // Magnitude of the FFT output
@@ -130,6 +148,10 @@ namespace display_modes {
 				// Update the range for the x and y axes based on the TDR data.
 				ranges[0] |= time; // Update x-axis range with time values
 				ranges[1] |= amplitude; // Update y-axis range with amplitude values
+				if (amplitude > max_amplitude) {
+					max_amplitude = amplitude;
+					time_at_max_ = time;
+				}
 			}
 			// Normalise and convert to percentage for the accumulated response on the right Y axis.
 			dm_data_set_t* accumulated_coords = new dm_data_set_t;
@@ -150,6 +172,9 @@ namespace display_modes {
 			fftw_destroy_plan(fft_plan_);
 			fftw_free(in_array_);
 			fftw_free(out_array_);
+
+			// Add a marker for the time of the maximum amplitude in the TDR response.
+
 		}
 
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
