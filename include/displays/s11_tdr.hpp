@@ -25,6 +25,7 @@
 #include <cfloat>
 #include <cmath>
 #include <complex>
+#include <cstring>
 
 #include <fftw3.h>
 
@@ -86,12 +87,20 @@ namespace display_modes {
 			if (num_samples == 0) {
 				return; // No data to convert
 			}
+
+			// Add padding to the number of samples to improve FFT resolution. 
+			// This will add zeros to the end of the input array, 
+			// which corresponds to zero-padding in the frequency domain and
+			// thus interpolation in the time domain.
+			int padding_factor = 16; // This can be adjusted based on the desired resolution and performance trade-off.
+			int padded_num_samples = 1;
+			while (padded_num_samples < num_samples * padding_factor) padded_num_samples *= 2;
 			// Create input and output arrays for the FFT.
-			in_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * num_samples);
-			out_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * num_samples);
+			in_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * padded_num_samples);
+			out_array_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * padded_num_samples);
 
 			// Create a plan for the inverse FFT and execute it.
-			fft_plan_ = fftw_plan_dft_1d(num_samples, in_array_, out_array_, FFTW_BACKWARD, FFTW_ESTIMATE);
+			fft_plan_ = fftw_plan_dft_1d(padded_num_samples, in_array_, out_array_, FFTW_BACKWARD, FFTW_ESTIMATE);
 
 			// Fill the input array with S11 data.
 			size_t ix = 0;
@@ -100,6 +109,8 @@ namespace display_modes {
 				in_array_[ix][1] = entry.sparams.s11.imag(); // Imaginary part of S11
 				++ix;
 			}
+			// Zero-pad the remaining input samples.
+			memset(in_array_ + ix, 0, sizeof(fftw_complex) * (padded_num_samples - ix));
 			fftw_execute(fft_plan_);
 
 			// Create the data points for the graph from the FFT output.
