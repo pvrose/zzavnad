@@ -22,6 +22,7 @@
 
 #include "zc_graph_.h"
 #include "zc_line_style.h"
+#include "zc_settings.h"
 
 #include <cfloat>
 #include <cmath>
@@ -79,13 +80,31 @@ namespace display_modes {
 		}
 
 		void add_markers() override {
-			// Add a marker for the time of the maximum amplitude in the TDR response.
-			Fl_Color marker_color = FL_RED;
-			zc_line_style marker_style(marker_color, 1, FL_DASH);
-			graph_->add_marker(0, zc_graph_::FOREGROUND, marker_style, time_at_max_);
-			char text[32];
-			snprintf(text, sizeof(text), "%0.0f ns", time_at_max_ * 1e9);
-			graph_->add_label(0, zc_graph_::FOREGROUND, text, zc_text_style(marker_color, 0, graph_->textsize()), { time_at_max_, -DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+			zc_settings settings;
+			zc_settings markers_settings(&settings, "Markers");
+			zc_settings tdr_settings(&markers_settings, "TDR");
+			bool enabled;
+			tdr_settings.get("Enabled", enabled, false);
+			if (enabled) {
+				Fl_Color tdr_marker_colour_;
+				bool tdr_marker_type_distance_;
+				double tdr_vf_value_;
+				tdr_settings.get("Colour", tdr_marker_colour_, FL_RED);
+				tdr_settings.get("Type", tdr_marker_type_distance_, true);
+				tdr_settings.get("Velocity Factor", tdr_vf_value_, 0.66);
+				// Add a marker for the time of the maximum amplitude in the TDR response.
+				zc_line_style marker_style(tdr_marker_colour_, 1, FL_DASH);
+				graph_->add_marker(0, zc_graph_::FOREGROUND, marker_style, time_at_max_);
+				char text[32];
+				double distance_at_max = time_at_max_ * tdr_vf_value_ * 3e8; // Convert time to distance using velocity factor and speed of light
+				if (tdr_marker_type_distance_) {
+					snprintf(text, sizeof(text), "%0.2f m", distance_at_max);
+				}
+				else {
+					snprintf(text, sizeof(text), "%0.0f ns", time_at_max_ * 1e9);
+				}
+				graph_->add_label(0, zc_graph_::FOREGROUND, text, zc_text_style(tdr_marker_colour_, 0, graph_->textsize()), { time_at_max_, -DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+			}
 		}
 
 		void convert_sp_to_coords(

@@ -24,6 +24,8 @@
 
 class Fl_Button;
 class Fl_Check_Button;
+class Fl_Choice;
+class Fl_Input;	
 
 //! \brief This class defines the markers to add to appropriate display modes. 
 //! 
@@ -47,25 +49,6 @@ public:
 	//! \brief Instantiate the widgets for the display control.
 	void create_widgets();
 
-	//! \brief Enumeration of the types of markers that can be added to the display.
-	enum marker_type : uint8_t {
-		MT_SWR,
-		MT_FREQUENCY,
-		MT_COUNT
-	};
-
-	//! \brief Serialize the marker type for use in the settings.
-	const std::map<marker_type, std::string> marker_type_names_ = {
-		{MT_SWR, "SWR"},
-		{MT_FREQUENCY, "Frequency"},
-	};
-
-	//! \brief Return whether the marker of the given type is enabled.
-	bool is_marker_enabled(marker_type type) const;
-
-	//! \brief Return the base colour for the marker of the given type.
-	Fl_Color marker_color(marker_type type) const;
-
 protected:
 
 	//! \brief Callback for marker enabled/disabled.
@@ -74,29 +57,59 @@ protected:
 	//! \brief Callback for marker colour changed.
 	static void cb_marker_colour(Fl_Widget* widget, void* data);
 
+	//! \brief Callback for SWR marker value
+	static void cb_swr_marker_value(Fl_Widget* widget, void* data);
+
+	//! \brief Callback for TDR marker type: distance or time.
+	static void cb_tdr_marker_type(Fl_Widget* widget, void* data);
+
+	//! \brief Callback for TDR velocity factor material selection.
+	static void cb_tdr_vf_material(Fl_Widget* widget, void* data);
+
+	//! \brief Callback for TDR velocity factor value.
+	static void cb_tdr_vf_value(Fl_Widget* widget, void* data);
+
 	//! \brief Draw button for the SWR marker type.
-	void draw_swr_marker_button(Fl_Button* button);
+	void draw_line_marker_button(Fl_Button* button, Fl_Color& colour);
 
 	//! \brief Draw button for the frequency marker type.
-	void draw_frequency_marker_button(Fl_Button* button);
+	void draw_block_marker_button(Fl_Button* button, Fl_Color& colour);
 
-	//! \brief Marker settings
-	struct marker_settings_t {
-		bool enabled;
-		Fl_Color colour;
+	// Widgets
+	Fl_Check_Button* swr_marker_checkbox_;        //!< Checkbox to enable/disable the SWR marker.
+	Fl_Button* swr_marker_colour_button_;         //!< Button to select the colour of the SWR marker.
+	Fl_Input* swr_marker_value_input_;            //!< Input to set the value of the SWR marker.
+
+	Fl_Check_Button* frequency_marker_checkbox_;  //!< Checkbox to enable/disable the frequency marker.
+	Fl_Button* frequency_marker_colour_button_;   //!< Button to select the colour of the frequency marker.
+
+	Fl_Check_Button* tdr_marker_checkbox_;        //!< Checkbox to enable/disable the TDR marker.
+	Fl_Button* tdr_marker_colour_button_;         //!< Button to select the colour of the TDR marker.
+	Fl_Check_Button* tdr_marker_type_select_;     //!< Selector for the TDR marker type: distance (true) or time (false).
+	Fl_Choice* tdr_vf_material_choice_;           //!< Choice widget for the TDR marker velocity factor material.
+	Fl_Input* tdr_vf_input_;               //!< Input to set the TDR marker velocity factor (material = OTHER)
+
+	// Atributes
+	bool swr_marker_enabled_;        //!< Whether the SWR marker is enabled.
+	Fl_Color swr_marker_colour_;     //!< The colour of the SWR marker.
+	double swr_marker_value_;       //!< The value of the SWR marker.
+
+	bool frequency_marker_enabled_;  //!< Whether the frequency marker is enabled.
+	Fl_Color frequency_marker_colour_; //!< The colour of the frequency marker.
+
+	bool tdr_marker_enabled_;        //!< Whether the TDR marker is enabled.
+	Fl_Color tdr_marker_colour_;     //!< The colour of the TDR marker.
+	bool tdr_marker_type_distance_; //!< Whether the TDR marker type is distance (true) or time (false).
+	std::string tdr_vf_material_;   //!< The material selected for the TDR marker velocity factor.
+	double tdr_vf_value_;         //!< The value of the TDR marker velocity factor (material = OTHER)
+
+	// Table of materials and their corresponding velocity factors for TDR marker.
+	const std::map<std::string, double> tdr_vf_materials_ = {
+		{"Air", 1.0},
+		{"PTFE", 0.69},
+		{"Polyethylene", 0.66},
+		{"PVC", 0.66},
+		{"Air/Poly", 0.84},
+		{"Other", 0.0} // Placeholder for user-defined velocity factor
 	};
-
-	//! \brief Map of marker settings by marker type.
-	std::map<marker_type, marker_settings_t> marker_settings_;
-
-	//! \brief Map of marker type to corresponding checkbox widget.
-	std::map<marker_type, Fl_Check_Button*> marker_checkboxes_;
-	//! \brief Map of marker type to corresponding colour button widget.
-	std::map<marker_type, Fl_Button*> marker_colour_buttons_;
-	//! \brief Map of marker type to corresponding draw function for the colour button.
-	std::map<marker_type, void (markers::*)(Fl_Button*)> marker_colour_draw_functions_ = {
-		{MT_SWR, &markers::draw_swr_marker_button},
-		{MT_FREQUENCY, &markers::draw_frequency_marker_button},
-	};
-
 };
