@@ -184,6 +184,8 @@ private:
 	double default_z0_ = 50.0; //!< Default characteristic impedance to use if not specified in the data file.
 
     int number_ports_ = 1; //!< The number of VNA ports (1 or 2).
+
+	int next_colour_index_ = 0; //!< Index to the next colour to use for a new dataset, used to cycle through a set of colours for different datasets.
 };
 
 extern sp_data* sp_data_; //!< Global pointer to the sp_data instance used by the application.

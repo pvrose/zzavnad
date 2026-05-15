@@ -167,13 +167,33 @@ void sp_data::save_settings() {
 int sp_data::add_dataset(sp_data_source source) {
     sp_data_entry* entry = new sp_data_entry;
     datasets_.push_back(entry);
-	size_t index = datasets_.size() - 1;
     entry->source = source;
     entry->filename = "";
     entry->valid_ports = 2;
+	int index = datasets_.size() - 1;
+	// Set the line style for this dataset based on the source and index. 
+    // We use specific colours for the active dataset and calibration datasets,
+	// Cycle through COLOUR_CODE for file datasets.
+    switch (source) {
+	case SPDS_ACTIVE:
+		entry->line_style_l = zc_line_style(COLOUR_NAVY, 2, FL_SOLID);
+		entry->line_style_r = zc_line_style(COLOUR_NAVY, 1, FL_SOLID);
+		break;
+	case SPDS_CALIB_O:
+	case SPDS_CALIB_S:
+	case SPDS_CALIB_L:
+	case SPDS_CALIB_T:
+	case SPDS_CALIB_I:
+		entry->line_style_l = zc_line_style(COLOUR_PINK, 2, FL_SOLID);
+		entry->line_style_r = zc_line_style(COLOUR_PINK, 1, FL_SOLID);
+        break;
+	case SPDS_FILE:
+        entry->line_style_l = zc_line_style(COLOUR_CODE[next_colour_index_ % 9], 2, FL_SOLID);
+        entry->line_style_r = zc_line_style(COLOUR_CODE[next_colour_index_ % 9], 1, FL_SOLID);
+        if (++next_colour_index_ >= 9) next_colour_index_ = 0;
+        break;
+    }
     // Do not use COLOUR_CODE[9] as this is white!
-    entry->line_style_l = zc_line_style(COLOUR_CODE[index % 9], 2, FL_SOLID);
-    entry->line_style_r = zc_line_style(COLOUR_CODE[index % 9], 1, FL_SOLID);
     entry->z0 = default_z0_;
     return index;
 }

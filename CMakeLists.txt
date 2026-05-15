@@ -73,6 +73,11 @@ else()
   add_compile_options(-g)
 endif()
 
+# Local helper scripts
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(fftw_helper)
+
+
 # Add ZZACOMMON
 # Try to find zzacommon locally first (sibling directory), fall back to downloading
 if(CMAKE_BUILD_TYPE)
@@ -107,6 +112,11 @@ configure_file(
   ${ZZAVNAD_SOURCE_DIR}/src/app.cpp
   @ONLY
 )
+
+# fftw
+find_fftw()
+message(STATUS "FFTW include dir: ${FFTW3_INCLUDE_DIRS}")   
+message(STATUS "FFTW libraries: ${FFTW3_LIBRARIES}")
 
 ## Reference data
 set(DATAFILES
@@ -160,6 +170,7 @@ target_include_directories(${TARGET} PRIVATE
   ${ZZAVNAD_SOURCE_DIR}/include
   ${ZZACOMMON_INCLUDE_DIR}
   ${FLTK_INCLUDE_DIR}
+  ${FFTW3_INCLUDE_DIRS}
 )
 # Needed for boost::asio on Windows.
 # This is set in zzacommon, but we need it here too for the executable target.
@@ -184,6 +195,7 @@ target_link_libraries(${TARGET} PRIVATE
   zzacommon::zzab
   zzacommon::zzafb
     ${FLTK_LIBRARIES}
+    ${FFTW3_LIBRARIES}
 )
 
 # Copy runtime DLLs to build directory for MSVC
@@ -218,5 +230,6 @@ install(FILES ${DATAFILES}
 
     # install DLLs
 if (MSVC)
+  install_fftw_dlls()
     zzacommon_install_runtime_dlls(DESTINATION bin COMPONENT application)
 endif()

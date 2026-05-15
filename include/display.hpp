@@ -103,7 +103,7 @@ public:
 	virtual void convert_sp_to_coords(
         const sp_data_entry& dataset,
         graph_data_map_t& coords,
-        graph_data_ranges_t& ranges) const = 0;
+        graph_data_ranges_t& ranges) = 0;
 
 	dm_params_t& get_params() { return params_; }
 

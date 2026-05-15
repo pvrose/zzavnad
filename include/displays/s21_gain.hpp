@@ -91,7 +91,7 @@ namespace display_modes {
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
-			graph_data_ranges_t& ranges) const override
+			graph_data_ranges_t& ranges) override
 		{
 			if (dataset.valid_ports < 2) {
 				return; // Not enough valid ports for S21
