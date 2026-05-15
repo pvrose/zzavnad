@@ -92,6 +92,7 @@ namespace display_modes {
 			// This will add zeros to the end of the input array, 
 			// which corresponds to zero-padding in the frequency domain and
 			// thus interpolation in the time domain.
+			// TODO Make this dynamic to give a time resolution of e.g. 1 ns, which would require a sampling rate of 1 GHz and thus 1e9 samples per second. For a dataset with a maximum frequency of 30 MHz, this would require at least 30 samples, so we could use a padding factor of 16 to give us 512 samples for the FFT, which would give us a time resolution of around 2 ns.
 			int padding_factor = 16; // This can be adjusted based on the desired resolution and performance trade-off.
 			int padded_num_samples = 1;
 			while (padded_num_samples < num_samples * padding_factor) padded_num_samples *= 2;
