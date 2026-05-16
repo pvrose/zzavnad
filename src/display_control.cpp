@@ -189,6 +189,14 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 	}
 }
 
+// Callback from the display windows to add a frequency marker to the list
+// and trigger an update of all displays.
+void display_control::cb_update_displays(Fl_Widget* widget, void* data) {
+	display_control* control = (display_control*)data;
+	control->data_markers_.insert(((display*)widget)->value());
+	control->update_displays();
+}
+
 // Configure the widgets based on the current settings for the display control.
 void display_control::configure_widgets() {
 	for (display_mode mode = static_cast<display_mode>(0); mode < DM_COUNT; mode = static_cast<display_mode>(mode + 1)) {
@@ -234,15 +242,19 @@ display* display_control::create_display(display_mode mode, int W, int H) {
 	switch (mode) {
 		case DM_SWR:
 			window = new display_modes::s11_swr(W, H);
+			window->callback(cb_update_displays, (void*)this);
 			break;
 		case DM_S11:
 			window = new display_modes::s11_raw(W, H);
+			window->callback(cb_update_displays, (void*)this);
 			break;
 		case DM_S11_RX:
 			window = new display_modes::s11_rx(W, H);
+			window->callback(cb_update_displays, (void*)this);
 			break;
 		case DM_S11_MA:
 			window = new display_modes::s11_ma(W, H);
+			window->callback(cb_update_displays, (void*)this);
 			break;
 		case DM_S11_RJ:
 			window = new display_modes::s11_rj(W, H);

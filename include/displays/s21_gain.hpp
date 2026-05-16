@@ -72,7 +72,7 @@ namespace display_modes {
 		};
 
 		void add_markers() override {
-			add_frequency_markers();
+			add_frequency_bands();
 		}
 
 

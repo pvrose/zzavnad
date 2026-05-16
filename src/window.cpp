@@ -66,6 +66,12 @@ void main_window::create_widgets() {
 	cy += display_control_->h();
 	markers_ = new markers(cx, cy, source_control_->w(), 100, "Markers");
 
+    // Set the global pointers to the main window's widgets so
+    // that they can be accessed by other parts of the application.
+    ::source_control_ = source_control_;
+    ::nvna_control_ = nvna_control_;
+    ::display_control_ = display_control_;
+
 	// Adjust the heights of the control panels to match each other.
     int h1 = source_control_->h() + display_control_->h() + markers_->h();
 	int h2 = nvna_control_->h();
@@ -85,11 +91,6 @@ void main_window::create_widgets() {
     end();
     show();
 
-    // Set the global pointers to the main window's widgets so
-    // that they can be accessed by other parts of the application.
-    ::source_control_ = source_control_;
-    ::nvna_control_ = nvna_control_;   
-    ::display_control_ = display_control_;
 };
     
 // Callback function for the "Exit" menu item.

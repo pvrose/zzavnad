@@ -126,7 +126,22 @@ public:
 	//! The base implementation does nothing, but individual display modes can override this to add markers for specific data values (e.g. SWR=3).
     virtual void add_markers() {};
 
+	//! \brief Add the data markers to the graph for the specified axis and dataset.
+	void add_data_markers(
+		int axis,
+        std::vector<zc_graph_::data_point_t>* data,     //!< Reference to a vector of data points to be plotted
+        zc_line_style style                   //!< Line style to use for plotting this data set
+    );
 
+    //! \brief Get the last clicked frequency on any display.
+    double value() {
+		return value_;
+    }
+
+	//! \brief Set the last clicked frequency on any display.
+	void value(double v) {
+		value_ = v;
+	}
 
 protected:
 
@@ -156,14 +171,20 @@ protected:
 	//! Update supported data types from axis parameters.
 	void update_supported_data_types();
 
-	//! Add frequency markers to the graph for the current display mode and data.
-	void add_frequency_markers();
+	//! Add frequency band markers to the graph for the current display mode and data.
+	void add_frequency_bands();
+
+	//! Add data markers to the graph for the current display mode and data.
+	void add_data_markers();
 
     //! The graph widget for plotting the data.
     zc_graph_* graph_ = nullptr;
 
 	//! The legend widgets for the left and right axes.
 	std::map<int, display_legend*> legends_ = {};
+
+    //! The last clicked frequency on any display. 
+    double value_;
 
 };
 

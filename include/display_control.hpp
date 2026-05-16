@@ -25,7 +25,9 @@
 // C++ standard library headers.
 #include <cstdint>
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 //! \brief Header file for the display control class.
 //! This manages the displaying of the various views of the S-parameter data.
@@ -86,8 +88,15 @@ public:
 	//! \brief Close all active display windows.
 	void close_displays();
 
+	//! \brief Get the set of data markers to be added to the graph for each relevant display mode.
+	std::set<double>& get_data_markers() { return data_markers_; }
+
 	//! \brief Callback function for when a display mode selection is changed.
 	static void cb_display_mode(Fl_Widget* widget, void* data);
+
+	//! \brief Callback from the display windows to trigger
+	//! an update of all displays when settings are changed.
+	static void cb_update_displays(Fl_Widget* widget, void* data);
 
 private:
 
@@ -100,6 +109,8 @@ private:
 	//! \brief Map of displays by display mode.
 	std::map<display_mode, display*> displays_;
 
+	//! \brief Set of data markers to be added to the graph for each relevant display mode.
+	std::set<double> data_markers_;
 
 };
 

@@ -172,6 +172,11 @@ void display::update_graph_data() {
                     it->second->data,
                     it->second->style
                 );
+				add_data_markers(
+					axis.first,
+					it->second->data,
+					it->second->style
+				);
             }
         };
     }
@@ -270,8 +275,8 @@ void display::configure_widgets() {
     }
 }
 
-void display::add_frequency_markers() {
-    // Add frequency markers to the graph for the current display mode and data.
+void display::add_frequency_bands() {
+    // Add frequency band markers to the graph for the current display mode and data.
 	zc_settings settings;
 	zc_settings markers_settings(&settings, "Markers");
 	zc_settings frequency_markers_settings(&markers_settings, "Frequency");
@@ -322,4 +327,42 @@ void display::add_frequency_markers() {
         graph_->add_marker(0, zc_graph_::BACKGROUND, zc_line_style(band_colour, 1, FL_DASH), 2.3e9F, 2.45e9F);
         graph_->add_label(0, zc_graph_::BACKGROUND, "13cm", zc_text_style(text_colour, f, fz), { 2.3e9F, DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_BELOW);
     }
+}
+
+// Add data markers to the graph for the current display mode and data.
+void display::add_data_markers(
+	int axis,
+	std::vector<zc_graph_::data_point_t>* data,
+	zc_line_style style
+) {
+    if (!data) return;
+    if (!display_control_) return;
+   
+	// For each data_marker find the nearest data point and add a marker to the graph at that point.
+	int index = 0;
+	char text[64];
+    for (const auto& marker : display_control_->get_data_markers()) {
+		// Assume the data is sorted by frequency and use a binary search to find the nearest data point to the marker frequency.
+		auto it = std::lower_bound(data->begin(), data->end(), marker, [](const zc_graph_::data_point_t& point, double value) {
+            return point.first < value;
+        });
+        if (it != data->end()) {
+            // Find the nearer of this data point and the previous one, if it exists.
+            if (it != data->begin()) {
+                auto prev_it = std::prev(it);
+                if (std::abs(prev_it->first - marker) < std::abs(it->first - marker)) {
+                    it = prev_it;
+                }
+            }
+        }
+        else {
+            // set the marker at the last data point if the marker frequency is above the range of the data.
+            it = std::prev(data->end());
+        }
+		// Add the marker to the graph at the frequency of the nearest data point to the 
+        // marker frequency, and add a label with the index of the marker.
+		graph_->add_marker(axis, zc_graph_::BACKGROUND, style, *it);
+        snprintf(text, sizeof(text), "%d", ++index);
+		graph_->add_label(axis, zc_graph_::BACKGROUND, text, zc_text_style(style.colour, graph_->textfont(), graph_->textsize()), *it, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+	}
 }
