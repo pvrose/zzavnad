@@ -113,8 +113,23 @@ namespace display_modes {
 			}
 		}
 
+		// Callback for graph clicks to get the frequency at the clicked point.
+		static void cb_graph(Fl_Widget* widget, void* data) {
+			display* disp = zc::ancestor_view<display>(widget);
+			zc_graph_::data_point_t clicked_point = ((zc_graph_*)widget)->value();
+			//// Do something with the clicked frequency, e.g. update a label or emit a signal.
+			//// For this example, we'll just print it to the console.
+			//printf("Clicked data: %f @ %f Hz\n", clicked_point.second, clicked_point.first);
+
+			// Save the clicked frequency to the display's value and trigger any callbacks that depend on it.
+			disp->value(clicked_point.first); // Store the clicked frequency 
+			disp->do_callback();
+		}
+
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
-			return new zc_graph_cartesian_2y(X, Y, W, H);
+			zc_graph_* graph = new zc_graph_cartesian_2y(X, Y, W, H);
+			graph->callback(cb_graph);
+			return graph;
 		}
 
 		graph_data_ranges_t get_all_data_ranges() override {

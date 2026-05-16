@@ -361,8 +361,8 @@ void display::add_data_markers(
         }
 		// Add the marker to the graph at the frequency of the nearest data point to the 
         // marker frequency, and add a label with the index of the marker.
-		graph_->add_marker(axis, zc_graph_::BACKGROUND, style, *it);
+		graph_->add_marker(axis, zc_graph_::FOREGROUND, style, *it);
         snprintf(text, sizeof(text), "%d", ++index);
-		graph_->add_label(axis, zc_graph_::BACKGROUND, text, zc_text_style(style.colour, graph_->textfont(), graph_->textsize()), *it, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
+		graph_->add_label(axis, zc_graph_::FOREGROUND, text, zc_text_style(style.colour, graph_->textfont(), graph_->textsize()), *it, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE, true);
 	}
 }
