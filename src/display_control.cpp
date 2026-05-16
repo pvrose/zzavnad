@@ -194,7 +194,7 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 void display_control::cb_update_displays(Fl_Widget* widget, void* data) {
 	display_control* control = (display_control*)data;
 	control->data_markers_.insert(((display*)widget)->value());
-	control->update_displays();
+	control->configure_displays();
 }
 
 // Configure the widgets based on the current settings for the display control.
