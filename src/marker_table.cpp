@@ -203,7 +203,7 @@ void marker_table::marker_table_inner::draw_cell(TableContext context, int R, in
 		zc_graph_::normalise(it->frequency, zc_graph_::SI_PREFIX, mantissa, exponent, si_multiplier);
 		char si_utf8[5] = { 0 };
 		fl_utf8encode(si_multiplier, si_utf8);
-		snprintf(text, sizeof(text), "%.3f %sHz", mantissa, si_utf8);
+		snprintf(text, sizeof(text), "%d: %.3f %sHz", C + 1, mantissa, si_utf8);
 		fl_draw(text, X +1, Y +1, W -2, H -2, FL_ALIGN_CENTER);
 		break;
 	}
