@@ -28,6 +28,7 @@
 #include <cmath>
 #include <complex>
 #include <cstring>
+#include <string>
 
 #include <fftw3.h>
 
@@ -206,6 +207,10 @@ namespace display_modes {
 			ranges[1] = get_range(1);
 			ranges[2] = get_range(2);
 			return ranges;
+		}
+
+		std::string format_value(sp_point point) override {
+			return "---"; // Not applicable for TDR, so return a placeholder.
 		}
 	};
 };

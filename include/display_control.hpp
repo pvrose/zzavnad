@@ -98,6 +98,12 @@ public:
 	//! an update of all displays when settings are changed.
 	static void cb_update_displays(Fl_Widget* widget, void* data);
 
+	//! \brief Remove data markers from the graph for all display modes.
+	void clear_data_markers();
+
+	//! \brief Get the display for a specific display mode.
+	display* get_display(display_mode mode);
+
 private:
 
 	//! \brief create display for mode

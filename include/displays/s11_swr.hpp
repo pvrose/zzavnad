@@ -31,6 +31,7 @@
 #include <cfloat>
 #include <complex>
 #include <cstdint>
+#include <string>
 
 namespace display_modes {
 
@@ -138,6 +139,14 @@ namespace display_modes {
 			ranges[0] = get_range(0);
 			ranges[1] = get_range(1);
 			return ranges;
+		}
+
+		std::string format_value(sp_point point) override {
+			zc_graph_::data_point_t point_swr;
+			convert_sp_point(point, point_swr);
+			char buffer[50];
+			snprintf(buffer, sizeof(buffer), "%0.2f:1", point_swr.second);
+			return std::string(buffer);
 		}
 	};
 

@@ -24,6 +24,7 @@
 #include <cfloat>
 #include <complex>
 #include <map>
+#include <string>
 
 namespace display_modes {
 	class s11_smith : public display {
@@ -105,6 +106,10 @@ namespace display_modes {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
 			return ranges;
+		}
+
+		std::string format_value(sp_point point) override {
+			return "---"; // Not applicable for Smith chart, so return a placeholder.
 		}
 	};
 };

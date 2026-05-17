@@ -51,6 +51,7 @@ set(CPPFILES
   ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_legend.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/main.cpp
+  ${ZZAVNAD_SOURCE_DIR}/src/marker_table.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/markers.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/nvna_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/nvna_iface.cpp

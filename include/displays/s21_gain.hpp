@@ -130,5 +130,15 @@ namespace display_modes {
 			ranges[2] = get_range(2);
 			return ranges;
 		}
+
+		std::string format_value(sp_point point) override {
+			zc_graph_::data_point_t point_gain;
+			zc_graph_::data_point_t point_angle;
+			char buffer[100];
+			convert_sp_point(point, point_gain, point_angle);
+			std::snprintf(buffer, sizeof(buffer), "%.2f dB \xE2\x88\xA0 %.1f \xC2\xB0",
+				point_gain.second, point_angle.second);
+			return std::string(buffer);
+		}
 	};
 };

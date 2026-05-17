@@ -121,6 +121,16 @@ namespace display_modes {
 			ranges[1] = get_range(1);
 			return ranges;
 		}
+
+		std::string format_value(sp_point point) override {
+			char buffer[100];
+			// Assume Z0 = 50 ohms for formatting the S11 value.
+			double Z0 = 50.0;
+			zc_graph_::data_point_t point_coords;
+			convert_sp_point(point, Z0, point_coords);
+			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  point_coords.first, point_coords.second);
+			return std::string(buffer);
+		}
 	};
 
 };

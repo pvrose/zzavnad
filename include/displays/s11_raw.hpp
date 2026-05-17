@@ -24,6 +24,8 @@
 
 #include <cfloat>
 #include <complex>
+#include <cstdio>
+#include <string>
 
 namespace display_modes {
 
@@ -137,6 +139,12 @@ namespace display_modes {
 			ranges[1] = get_range(1);
 			ranges[2] = get_range(2);
 			return ranges;
+		}
+
+		std::string format_value(sp_point point) override {
+			char buffer[100];
+			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f", point.sparams.s11.real(), point.sparams.s11.imag());
+			return std::string(buffer);
 		}
 	};
 };

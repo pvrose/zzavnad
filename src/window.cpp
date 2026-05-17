@@ -23,6 +23,7 @@
 
 // Include the main groups.
 #include "display_control.hpp"
+#include "marker_table.hpp"
 #include "markers.hpp"
 #include "nvna_control.hpp"
 #include "source_control.hpp"
@@ -97,5 +98,6 @@ void main_window::create_widgets() {
 void main_window::cb_exit(Fl_Widget* widget, void* data) {
     main_window* win = (main_window*)widget;
 	win->display_control_->close_displays();
+	marker_table_->hide();
 	default_callback((Fl_Window*)widget, data);
 };

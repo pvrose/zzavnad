@@ -143,6 +143,17 @@ namespace display_modes {
 			ranges[2] = get_range(2);
 			return ranges;
 		}
+
+		std::string format_value(sp_point point) override {
+			char buffer[100];
+			zc_graph_::data_point_t resistance_point;
+			zc_graph_::data_point_t reactance_point;
+			// Assume Z0 = 50 ohms for formatting the S11 value.
+			double Z0 = 50.0;
+			convert_sp_point(point, Z0, resistance_point, reactance_point);
+			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  resistance_point.second, reactance_point.second);
+			return std::string(buffer);
+		}
 	};
 
 };

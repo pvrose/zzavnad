@@ -19,6 +19,7 @@
 
 #include "calib_data.hpp"
 #include "display.hpp"
+#include "marker_table.hpp"
 #include "nvna_control.hpp"
 #include "source_control.hpp"
 #include "sp_data.hpp"
@@ -46,6 +47,7 @@
 // Declare global pointers.
 display* display_;
 display_control* display_control_;
+marker_table* marker_table_;
 nvna_control* nvna_control_;
 source_control* source_control_;
 sp_data* sp_data_;
@@ -85,12 +87,15 @@ int main(int argc, char** argv) {
     sp_data_ = new sp_data();
 	// Create the main data item for the calibration data.
 	calib_data_ = new calib_data();
+	// Create the marker table window.
+	marker_table_ = new marker_table(400, 300, "Marker Table");
     // Create the main application window.
     main_window* window = new main_window(800, 600, (APP_NAME + " " + APP_VERSION + " - VNA Analysis Software").c_str());
     // Run the FLTK event loop.
     int result = Fl::run();   
 	// Clean up and exit.
 	delete window;
+	delete marker_table_;
 	delete calib_data_;
 	delete sp_data_;
 	delete file_holder_;

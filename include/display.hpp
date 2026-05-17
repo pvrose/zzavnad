@@ -143,6 +143,9 @@ public:
 		value_ = v;
 	}
 
+	//! \brief Convert a data value to a string with appropriate units for display.
+    virtual std::string format_value(sp_point point) = 0;
+
 protected:
 
     //! \brief Add the specific graph widget for this display mode.

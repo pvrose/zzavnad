@@ -23,7 +23,9 @@
 
 #include <cfloat>
 #include <complex>
+#include <cstdio>
 #include <map>
+#include <string>
 
 namespace display_modes {
 	class s11_z_polar : public display {
@@ -112,6 +114,14 @@ namespace display_modes {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
 			return ranges;
+		}
+
+		std::string format_value(sp_point point) override {
+			zc_graph_::data_point_t point_r_theta;
+			convert_sp_point(point, 50.0, point_r_theta);
+			char buffer[100];
+			snprintf(buffer, sizeof(buffer), "%.2f\xCE\xA9 \xE2\x88\xA0 %.0f\xC2\xB0", point_r_theta.first, point_r_theta.second);
+			return std::string(buffer);
 		}
 	};
 };

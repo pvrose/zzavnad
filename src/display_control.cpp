@@ -26,6 +26,7 @@
 #include "displays/s11_z_polar.hpp"
 #include "displays/s11_smith.hpp"
 #include "displays/s11_tdr.hpp"
+#include "marker_table.hpp"
 
 #include "zc_drawing.h"
 #include "zc_settings.h"
@@ -157,6 +158,7 @@ void display_control::configure_displays() {
 			window->configure_graph();
 		}
 	}
+	marker_table_->update_tables();
 }
 
 // Update all active display windows with the current S-parameter data.
@@ -168,6 +170,22 @@ void display_control::update_displays() {
 			window->update_graph_data();
 		}
 	}
+	marker_table_->update_tables();
+}
+
+// Get the display for a specific display mode.
+display* display_control::get_display(display_mode mode) {
+	auto it = displays_.find(mode);
+	if (it != displays_.end()) {
+		return it->second;
+	}
+	return nullptr;
+}
+
+// Remove data markers from the graph for all display modes.
+void display_control::clear_data_markers() {
+	data_markers_.clear();
+	configure_displays();
 }
 
 // Callback function for when a display mode selection is changed.
