@@ -186,6 +186,7 @@ display* display_control::get_display(display_mode mode) {
 // Remove data markers from the graph for all display modes.
 void display_control::clear_data_markers() {
 	data_marker_sets_.clear();
+	raw_data_markers_.clear();
 	configure_displays();
 }
 
