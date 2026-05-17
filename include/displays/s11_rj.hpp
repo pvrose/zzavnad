@@ -21,8 +21,12 @@
 
 #include "zc_graph_.h"
 
+#include <FL/Fl_Widget.H>
+
 #include <cfloat>
 #include <complex>
+#include <cstdio>
+#include <string>
 #include <map>
 
 namespace display_modes {
@@ -128,7 +132,13 @@ namespace display_modes {
 			double Z0 = 50.0;
 			zc_graph_::data_point_t point_coords;
 			convert_sp_point(point, Z0, point_coords);
-			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  point_coords.first, point_coords.second);
+			// Ensure negative reactance is displayed as "-jX" instead of "+ j- X".
+			if (point_coords.second < 0) {
+				snprintf(buffer, sizeof(buffer), "%.2f - j%.2f \xCE\xA9",  point_coords.first, -point_coords.second);
+			}
+			else {
+				snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  point_coords.first, point_coords.second);
+			}
 			return std::string(buffer);
 		}
 	};

@@ -24,7 +24,9 @@
 
 #include <cfloat>
 #include <complex>
+#include <cstdio>
 #include <map>
+#include <string>
 
 namespace display_modes {
 
@@ -151,7 +153,13 @@ namespace display_modes {
 			// Assume Z0 = 50 ohms for formatting the S11 value.
 			double Z0 = 50.0;
 			convert_sp_point(point, Z0, resistance_point, reactance_point);
-			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  resistance_point.second, reactance_point.second);
+			// Ensure that negative reactance is displayed as "-jX" instead of "+j-X".
+			if (reactance_point.second < 0) {
+				snprintf(buffer, sizeof(buffer), "%.2f - j%.2f \xCE\xA9", resistance_point.second, -reactance_point.second);
+			}
+			else {
+				snprintf(buffer, sizeof(buffer), "%.2f + j%.2f \xCE\xA9",  resistance_point.second, reactance_point.second);
+			}
 			return std::string(buffer);
 		}
 	};

@@ -143,7 +143,13 @@ namespace display_modes {
 
 		std::string format_value(sp_point point) override {
 			char buffer[100];
-			snprintf(buffer, sizeof(buffer), "%.2f + j%.2f", point.sparams.s11.real(), point.sparams.s11.imag());
+			// Ensure negative imaginary values are displayed as "-jX" instead of "+j-X".
+			if (point.sparams.s11.imag() < 0) {
+				snprintf(buffer, sizeof(buffer), "%.2f - j%.2f", point.sparams.s11.real(), -point.sparams.s11.imag());
+			}
+			else {
+				snprintf(buffer, sizeof(buffer), "%.2f + j%.2f", point.sparams.s11.real(), point.sparams.s11.imag());
+			}
 			return std::string(buffer);
 		}
 	};

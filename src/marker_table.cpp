@@ -146,7 +146,10 @@ void marker_table::marker_table_inner::init_table(sp_data_entry* dataset) {
 		// Get the closer between this value and the previous value if any
 		if (closest_it != data_set->begin()) {
 			auto prev_it = std::prev(closest_it);
-			if (std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
+			if (closest_it == data_set->end()) {
+				closest_it = prev_it;
+			}
+			else if (std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
 				closest_it = prev_it;
 			}
 		}
@@ -184,7 +187,7 @@ void marker_table::marker_table_inner::draw_cell(TableContext context, int R, in
 		// Get the closer between this value and the previous value if any
 		if (closest_it != data_set->begin()) {
 			auto prev_it = std::prev(closest_it);
-			if (std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
+			if (closest_it == data_set->end() || std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
 				closest_it = prev_it;
 			}
 		}
@@ -217,7 +220,13 @@ void marker_table::marker_table_inner::draw_cell(TableContext context, int R, in
 		fl_line(X, Y, X, Y + H);
 		// Draw the marker frequency in the column header.
 		char text[64];
-		snprintf(text, sizeof(text), "%.6f MHz", marker_freqs_[C] / 1e6);
+		double mantissa;
+		double exponent;
+		uint32_t si_multiplier;
+		zc_graph_::normalise(marker_freqs_[C], zc_graph_::SI_PREFIX, mantissa, exponent, si_multiplier);
+		char si_utf8[5] = { 0 };
+		fl_utf8encode(si_multiplier, si_utf8);
+		snprintf(text, sizeof(text), "%.3f %sHz", mantissa, si_utf8);
 		fl_draw(text, X +1, Y +1, W -2, H -2, FL_ALIGN_CENTER);
 		break;
 	}
