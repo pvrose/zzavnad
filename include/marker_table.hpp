@@ -51,14 +51,14 @@ class marker_table : public Fl_Double_Window {
 		};
 
 		//! Initialise the table with the appropriate number of rows and columns for the markers and datasets.
-		void init_table(sp_data_entry* dataset);
+		void init_table(int dataset_index, sp_data_entry* dataset);
 
 	private:
 		//! The displays that being reported on.
 		std::vector<display*> displays_ = {};
 
 		//! The marker frequencies adjusted for the dataset.
-		std::vector<double> marker_freqs_ = {};
+		sp_data_set markers_ = {};
 
 		sp_data_entry* dataset_ = nullptr; //!< The dataset that this table is reporting on.
 
@@ -81,7 +81,7 @@ public:
 	std::vector<marker_table_inner*> tables_ = {};
 
 	//! The datasets that are being reported on.
-	std::vector<sp_data_entry*> datasets_ = {};
+	std::map<int, sp_data_entry*> datasets_ = {};
 
 	//! Pointer to the internal Fl_Scroll widget that contains the marker tables.
 	Fl_Scroll* scroll_ = nullptr;

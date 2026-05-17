@@ -163,6 +163,14 @@ void display::update_graph_data() {
         // For each axis we need to plot for this display mode, add
         // a graph data set for the points to plot on that axis.
         convert_sp_to_coords(*dataset, *graph_data_map, graph_data_ranges);
+        // And repeat for data markers.
+		graph_data_map_t* graph_marker_data_map = new graph_data_map_t();
+        if (display_control_) {
+			sp_data_entry marker_dataset = *dataset;
+            marker_dataset.data = display_control_->get_data_markers(dataset_index);
+            marker_dataset.enabled = true;
+            convert_sp_to_coords(marker_dataset, *graph_marker_data_map, graph_data_ranges);
+        }
         // Add the graph data set for each axis to the graph.
         for (const auto& axis : params_.axis_params) {
 			auto it = graph_data_map->find(axis.first);
@@ -172,6 +180,9 @@ void display::update_graph_data() {
                     it->second->data,
                     it->second->style
                 );
+			}
+			it = graph_marker_data_map->find(axis.first);
+            if (it != graph_marker_data_map->end()) {
 				add_data_markers(
 					axis.first,
 					it->second->data,
@@ -341,28 +352,11 @@ void display::add_data_markers(
 	// For each data_marker find the nearest data point and add a marker to the graph at that point.
 	int index = 0;
 	char text[64];
-    for (const auto& marker : display_control_->get_data_markers()) {
-		// Assume the data is sorted by frequency and use a binary search to find the nearest data point to the marker frequency.
-		auto it = std::lower_bound(data->begin(), data->end(), marker, [](const zc_graph_::data_point_t& point, double value) {
-            return point.first < value;
-        });
-        if (it != data->end()) {
-            // Find the nearer of this data point and the previous one, if it exists.
-            if (it != data->begin()) {
-                auto prev_it = std::prev(it);
-                if (std::abs(prev_it->first - marker) < std::abs(it->first - marker)) {
-                    it = prev_it;
-                }
-            }
-        }
-        else {
-            // set the marker at the last data point if the marker frequency is above the range of the data.
-            it = std::prev(data->end());
-        }
+    for (int ix = 0; ix < data->size(); ix++) {
 		// Add the marker to the graph at the frequency of the nearest data point to the 
         // marker frequency, and add a label with the index of the marker.
-		graph_->add_marker(axis, zc_graph_::FOREGROUND, style, *it);
+		graph_->add_marker(axis, zc_graph_::FOREGROUND, style, (*data)[ix]);
         snprintf(text, sizeof(text), "%d", ++index);
-		graph_->add_label(axis, zc_graph_::FOREGROUND, text, zc_text_style(style.colour, graph_->textfont(), graph_->textsize()), *it, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE, true);
+        graph_->add_label(axis, zc_graph_::FOREGROUND, text, zc_text_style(style.colour, graph_->textfont(), graph_->textsize()), (*data)[ix], zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE, true);
 	}
 }

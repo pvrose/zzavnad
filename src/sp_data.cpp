@@ -39,6 +39,7 @@
 #include <fstream>
 #include <iostream> 
 #include <istream>
+#include <iterator>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -514,4 +515,27 @@ bool sp_data::store_data_to_file(sp_data_entry* entry) {
     }
     file.close();
     return true;
+}
+
+// Get the point coordinates in designated dataset for specific frequency.
+sp_point sp_data::get_point(sp_data_entry* entry, double frequency) const {
+	// We will search for the point with the specified frequency in the dataset.
+	// Since the data points are stored in a set sorted by frequency, we can use lower_bound to find the point with the specified frequency or the next higher frequency.
+	auto it = entry->data.lower_bound({ frequency, {} });
+    // See if the previous entry is closer to the specified frequency.
+	if (it != entry->data.begin()) {
+		auto prev_it = std::prev(it);
+		// If the original found entry is the end of the set, we should use the previous entry since it will be the closest.
+		if (it == entry->data.end()) {
+			it = prev_it;
+		}
+		else if (std::abs(prev_it->frequency - frequency) < std::abs(it->frequency - frequency)) {
+			it = prev_it;
+        }
+    }
+    else {
+		// Return the first entry in the set if lower_bound returned the beginning of the set since this will be the closest to the specified frequency.
+        it = entry->data.begin();
+    }
+    return *it;
 }

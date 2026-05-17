@@ -140,6 +140,11 @@ public:
         // Create a new active dataset for acquiring data from the VNA.
         create_active_dataset();
 	}
+
+    //! \brief Get the point coordinates in designated dataset for specific frequency.
+	//! \param entry The dataset to search.
+	//! \param frequency The frequency to find the coordinates for.
+	sp_point get_point(sp_data_entry* entry, double frequency) const;
     
 
 private:

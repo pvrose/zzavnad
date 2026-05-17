@@ -27,6 +27,7 @@
 #include "displays/s11_smith.hpp"
 #include "displays/s11_tdr.hpp"
 #include "marker_table.hpp"
+#include "sp_data.hpp"
 
 #include "zc_drawing.h"
 #include "zc_settings.h"
@@ -184,8 +185,27 @@ display* display_control::get_display(display_mode mode) {
 
 // Remove data markers from the graph for all display modes.
 void display_control::clear_data_markers() {
-	data_markers_.clear();
+	data_marker_sets_.clear();
 	configure_displays();
+}
+
+// Get the set of data markers to be added to the graph for each dataset index.
+sp_data_set& display_control::get_data_markers(int dataset_index) {
+	auto it = data_marker_sets_.find(dataset_index);
+	if (it != data_marker_sets_.end()) {
+		return it->second;
+	}
+	else {
+		// Create a new set from the raw data markers for this dataset index.
+		for (double frequency : raw_data_markers_) {
+			sp_point point;
+			point.frequency = frequency;
+			sp_data_entry* entry = sp_data_->get_dataset(dataset_index);
+			point.sparams = sp_data_->get_point(entry, frequency).sparams;
+			data_marker_sets_[dataset_index].insert(point);
+		}
+		return data_marker_sets_[dataset_index];
+	}
 }
 
 // Callback function for when a display mode selection is changed.
@@ -212,7 +232,16 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 // and trigger an update of all displays.
 void display_control::cb_update_displays(Fl_Widget* widget, void* data) {
 	display_control* control = (display_control*)data;
-	control->data_markers_.insert(((display*)widget)->value());
+	double frequency = ((display*)widget)->value();
+	control->raw_data_markers_.insert(frequency);
+	int number_datasets = sp_data_->get_dataset_count();
+	for (int i = 0; i < number_datasets; i++) {
+		sp_data_entry* entry = sp_data_->get_dataset(i);
+		if (entry->enabled) {
+			sp_point point = sp_data_->get_point(entry, frequency);
+			control->data_marker_sets_[i].insert(point);
+		}
+	}
 	control->configure_displays();
 }
 

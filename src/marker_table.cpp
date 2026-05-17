@@ -76,7 +76,7 @@ void marker_table::update_tables() {
 	for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
 		sp_data_entry* dataset = sp_data_->get_dataset(i);
 		if (dataset->enabled) {
-			datasets_.push_back(dataset);
+			datasets_[i] = dataset;
 		}
 	}
 	int number_tables = datasets_.size();
@@ -86,9 +86,9 @@ void marker_table::update_tables() {
 		return;
 	}
 	int cy = HTEXT;
-	for (int i = 0; i < number_tables; i++) {
+	for (auto dataset : datasets_) {
 		marker_table_inner* table = new marker_table_inner(0, cy, w(), 100);
-		table->init_table(datasets_[i]);
+		table->init_table(dataset.first, dataset.second);
 		tables_.push_back(table);
 		int table_height = table->h();
 		cy += table_height + HTEXT;
@@ -96,7 +96,7 @@ void marker_table::update_tables() {
 	scroll_->end();
 	Fl_Group::current(current_group);
 	// Hide the window if there are no markers
-	if (!display_control_ || display_control_->get_data_markers().empty()) {
+	if (!display_control_ || !display_control_->has_markers()) {
 		hide();
 	}
 	else {
@@ -111,10 +111,10 @@ marker_table::marker_table_inner::marker_table_inner(int X, int Y, int W, int H,
 }
 
 // Initisliase the table with the appropriate number of rows and columns for the markers and datasets.
-void marker_table::marker_table_inner::init_table(sp_data_entry* dataset) {
+void marker_table::marker_table_inner::init_table(int dataset_index, sp_data_entry* dataset) {
 	dataset_ = dataset;
-	std::string label = zc::terminal(dataset->filename);
-	if (label.empty()) label = dataset->timestamp;
+	std::string label = zc::terminal(dataset_->filename);
+	if (label.empty()) label = dataset_->timestamp;
 	copy_label(label.c_str());
 
 	if (!display_control_)
@@ -135,26 +135,10 @@ void marker_table::marker_table_inner::init_table(sp_data_entry* dataset) {
 	rows(displays_.size());
 	row_header(true);
 	// Get the number of columns required for the markers.
-	int num_cols = display_control_->get_data_markers().size();
+	markers_ = display_control_->get_data_markers(dataset_index);
+	int num_cols = markers_.size();
 	cols(num_cols);
 	col_header(true);
-	// Add the marker frequencies to the table for use in drawing the column headers and finding the closest data point to each marker.
-	marker_freqs_.assign(display_control_->get_data_markers().begin(), display_control_->get_data_markers().end());
-	for (double& marker_value : marker_freqs_) {
-		sp_data_set* data_set = &dataset->data;
-		auto closest_it = data_set->lower_bound({ marker_value, {} });
-		// Get the closer between this value and the previous value if any
-		if (closest_it != data_set->begin()) {
-			auto prev_it = std::prev(closest_it);
-			if (closest_it == data_set->end()) {
-				closest_it = prev_it;
-			}
-			else if (std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
-				closest_it = prev_it;
-			}
-		}
-		marker_value = closest_it->frequency;
-	}
 	col_width_all(WSMEDIT);
 	col_header_height(HTEXT);
 	row_height_all(HBUTTON);
@@ -180,19 +164,10 @@ void marker_table::marker_table_inner::draw_cell(TableContext context, int R, in
 		fl_line(X, Y, X, Y + H);
 		display* disp = displays_[R];
 		// Get the marker value for this column.
-		double marker_value = marker_freqs_[C];
-		// Now get the value in the dataset closest to the marker frequency.
-		sp_data_set* data_set = &dataset_->data;
-		auto closest_it = data_set->lower_bound({ marker_value, {} });
-		// Get the closer between this value and the previous value if any
-		if (closest_it != data_set->begin()) {
-			auto prev_it = std::prev(closest_it);
-			if (closest_it == data_set->end() || std::abs(prev_it->frequency - marker_value) < std::abs(closest_it->frequency - marker_value)) {
-				closest_it = prev_it;
-			}
-		}
+		auto it = markers_.begin();
+		std::advance(it, C);
 		// Get the value to display based on the display mode.
-		std::string value_str = disp->format_value(*closest_it);
+		std::string value_str = disp->format_value(*it);
 		// Draw the value in the cell.
 		fl_draw(value_str.c_str(), X +1, Y +1, W -2, H -2, FL_ALIGN_CENTER);
 		break;
@@ -223,7 +198,9 @@ void marker_table::marker_table_inner::draw_cell(TableContext context, int R, in
 		double mantissa;
 		double exponent;
 		uint32_t si_multiplier;
-		zc_graph_::normalise(marker_freqs_[C], zc_graph_::SI_PREFIX, mantissa, exponent, si_multiplier);
+		auto it = markers_.begin();
+		std::advance(it, C);
+		zc_graph_::normalise(it->frequency, zc_graph_::SI_PREFIX, mantissa, exponent, si_multiplier);
 		char si_utf8[5] = { 0 };
 		fl_utf8encode(si_multiplier, si_utf8);
 		snprintf(text, sizeof(text), "%.3f %sHz", mantissa, si_utf8);

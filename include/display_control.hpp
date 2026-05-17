@@ -16,6 +16,8 @@
 */
 #pragma once
 
+#include "sp_data.hpp"
+
 #include "zc_graph.h"
 
 #include <FL/Fl_Group.H>
@@ -89,7 +91,10 @@ public:
 	void close_displays();
 
 	//! \brief Get the set of data markers to be added to the graph for each relevant display mode.
-	std::set<double>& get_data_markers() { return data_markers_; }
+	//! 
+	//! If the dataset index is not already in the map, it means that the dataset
+	//! is new and we need to create a new set of data markers for it.
+	sp_data_set& get_data_markers(int dataset_index);
 
 	//! \brief Callback function for when a display mode selection is changed.
 	static void cb_display_mode(Fl_Widget* widget, void* data);
@@ -104,20 +109,29 @@ public:
 	//! \brief Get the display for a specific display mode.
 	display* get_display(display_mode mode);
 
+	//! \brief Return true if there are any markers.
+	bool has_markers() {
+		return !raw_data_markers_.empty();
+	}
+
 private:
 
 	//! \brief create display for mode
 	display* create_display(display_mode mode, int W, int H);
 
 	//! \brief Map of display mode to corresponding checkbox widget.
-	std::map<display_mode, Fl_Check_Button*> display_mode_checkboxes_;
+	std::map<display_mode, Fl_Check_Button*> display_mode_checkboxes_ = {};
 
 	//! \brief Map of displays by display mode.
-	std::map<display_mode, display*> displays_;
+	std::map<display_mode, display*> displays_ = {};
 
-	//! \brief Set of data markers to be added to the graph for each relevant display mode.
-	std::set<double> data_markers_;
+	//! \brief Data markers.
+	//! 
+	//! There is one for each dataset, and they are added to the graph for each display mode that supports markers.
+	std::map<int, sp_data_set> data_marker_sets_ = {};
 
+	//! \brief Raw data markers (as clicked on the graph).
+	std::set<double> raw_data_markers_ = {};
 };
 
 extern display_control* display_control_; //!< Global pointer to the display control instance.
