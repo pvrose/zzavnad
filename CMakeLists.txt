@@ -103,7 +103,7 @@ include(FetchContent)
 FetchContent_Declare(
   zzacommon
   GIT_REPOSITORY https://github.com/pvrose/zzacommon.git
-  GIT_TAG v1.1.4
+  GIT_TAG v1.1.5
   FIND_PACKAGE_ARGS NAMES zzacommon COMPONENTS zzaf zzam zzad zzab zzafb
 )
 FetchContent_MakeAvailable(zzacommon)
