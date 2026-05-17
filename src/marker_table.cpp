@@ -23,9 +23,11 @@
 #include "zc_drawing.h"
 
 #include <Fl/Enumerations.H>
+#include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Scroll.H>
 #include <FL/Fl_Table.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Window.H>
@@ -41,7 +43,13 @@
 marker_table::marker_table(int W, int H, const char* L) :
 	Fl_Double_Window(W, H, L) {
 	callback(cb_close, this);
+	
+	scroll_ = new Fl_Scroll(0, 0, W, H);
+	scroll_->box(FL_FLAT_BOX);
+	scroll_->begin();
+
 	update_tables();
+	resizable(scroll_);
 	end();
 	hide();
 }
@@ -58,12 +66,12 @@ void marker_table::cb_close(Fl_Widget* w, void* data) {
 
 // Update the contents of the marker table based on the current marker values and display modes.
 void marker_table::update_tables() {
-	clear();
-	redraw();
+	scroll_->clear();
+	scroll_->redraw();
 	tables_.clear();
 	datasets_.clear();
 	Fl_Group* current_group = Fl_Group::current();
-	begin();
+	scroll_->begin();
 	// Test each dataset in turn.
 	for (int i = 0; i < sp_data_->get_dataset_count(); i++) {
 		sp_data_entry* dataset = sp_data_->get_dataset(i);
@@ -77,15 +85,15 @@ void marker_table::update_tables() {
 		Fl_Group::current(current_group);
 		return;
 	}
-	int table_height = h() / number_tables - HTEXT;
 	int cy = HTEXT;
 	for (int i = 0; i < number_tables; i++) {
-		marker_table_inner* table = new marker_table_inner(0, cy, w(), table_height);
+		marker_table_inner* table = new marker_table_inner(0, cy, w(), 100);
 		table->init_table(datasets_[i]);
 		tables_.push_back(table);
+		int table_height = table->h();
 		cy += table_height + HTEXT;
 	}
-	end();
+	scroll_->end();
 	Fl_Group::current(current_group);
 	// Hide the window if there are no markers
 	if (!display_control_ || display_control_->get_data_markers().empty()) {
@@ -148,6 +156,11 @@ void marker_table::marker_table_inner::init_table(sp_data_entry* dataset) {
 	col_header_height(HTEXT);
 	row_height_all(HBUTTON);
 	row_header_width(WBUTTON);
+
+	// Resize the table to fit the contents.
+	int table_height = col_header_height() + rows() * row_height(0) + Fl::scrollbar_size();
+	int table_width = row_header_width() + cols() * col_width(0) + Fl::scrollbar_size();
+	resize(x(), y(), table_width, table_height);
 }
 
 // Override the draw_cell method to customize the drawing of the table cells.

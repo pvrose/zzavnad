@@ -20,6 +20,7 @@
 #include "sp_data.hpp"
 
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Scroll.H>
 #include <FL/Fl_Table.H>
 #include <FL/Fl_Widget.H>
 
@@ -81,6 +82,9 @@ public:
 
 	//! The datasets that are being reported on.
 	std::vector<sp_data_entry*> datasets_ = {};
+
+	//! Pointer to the internal Fl_Scroll widget that contains the marker tables.
+	Fl_Scroll* scroll_ = nullptr;
 
 };
 
