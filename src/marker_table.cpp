@@ -59,6 +59,7 @@ void marker_table::cb_close(Fl_Widget* w, void* data) {
 // Update the contents of the marker table based on the current marker values and display modes.
 void marker_table::update_tables() {
 	clear();
+	redraw();
 	tables_.clear();
 	datasets_.clear();
 	Fl_Group* current_group = Fl_Group::current();

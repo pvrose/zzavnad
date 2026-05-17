@@ -147,7 +147,7 @@ namespace display_modes {
 			zc_graph_::data_point_t point_angle;
 			convert_sp_point(point, point_mag, point_angle);
 			char buffer[100];
-			snprintf(buffer, sizeof(buffer), "%0.2f \xE2\x88\xA0 %.0f\xC2\xB0",
+			snprintf(buffer, sizeof(buffer), "%0.2f \xE2\x88\xA0 %.1f\xC2\xB0",
 				point_mag.second, point_angle.second);
 			return std::string(buffer);
 		}

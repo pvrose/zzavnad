@@ -205,6 +205,7 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 		// Disable and hide the display window for this mode.
 		window->hide();
 	}
+	marker_table_->update_tables();
 }
 
 // Callback from the display windows to add a frequency marker to the list
