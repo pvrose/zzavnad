@@ -117,12 +117,14 @@ void display_control::create_widgets() {
 	int NCOL = std::max(1, (w() - GAP) / WCOL);
 	// Now calculate how many rows we need to fit all the display modes.
 	int NROW = (DM_COUNT + NCOL - 1) / NCOL;
+	char text[100];
 	// Add a checkbox for each display mode.
 	for (display_mode mode = static_cast<display_mode>(0); mode < DM_COUNT; mode = static_cast<display_mode>(mode + 1)) {
 		dm_params_t& params = (displays_.at(mode))->get_params();
 		Fl_Check_Button* cb_mode = new Fl_Check_Button(cx, cy, HBUTTON, HBUTTON, params.serial_name.c_str());
 		cb_mode->callback(cb_display_mode, (void*)mode);
-		cb_mode->tooltip(("Enable display window for " + params.serial_name).c_str());
+		snprintf(text, sizeof(text), "Enable display window for %s", params.serial_name.c_str());
+		cb_mode->copy_tooltip(text);
 		cb_mode->align(FL_ALIGN_RIGHT);
 		display_mode_checkboxes_[mode] = cb_mode;
 		cx += WCOL;
