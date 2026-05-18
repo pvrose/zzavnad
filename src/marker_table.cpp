@@ -22,7 +22,7 @@
 
 #include "zc_drawing.h"
 
-#include <Fl/Enumerations.H>
+#include <FL/Enumerations.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
