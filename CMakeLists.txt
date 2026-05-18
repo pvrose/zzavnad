@@ -100,11 +100,13 @@ list(APPEND CMAKE_PREFIX_PATH
 )
 
 include(FetchContent)
+set(ZZACOMMON_REQUIRED_COMPONENTS zzaf zzam zzad zzab zzafb)
+set(ZZACOMMON_BUILD_COMPONENTS "${ZZACOMMON_REQUIRED_COMPONENTS}" CACHE STRING "Components to build when zzacommon is used via FetchContent" FORCE)
 FetchContent_Declare(
   zzacommon
   GIT_REPOSITORY https://github.com/pvrose/zzacommon.git
-  GIT_TAG v1.1.5
-  FIND_PACKAGE_ARGS NAMES zzacommon COMPONENTS zzaf zzam zzad zzab zzafb
+  GIT_TAG master
+  FIND_PACKAGE_ARGS NAMES zzacommon COMPONENTS ${ZZACOMMON_REQUIRED_COMPONENTS}
 )
 FetchContent_MakeAvailable(zzacommon)
 
