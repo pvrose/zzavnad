@@ -8,3 +8,7 @@
 /MSVC_UPDATE_FIX.md
 /CMakePresets.json.with-hardcoded-paths
 /CONSOLE_COLOR_SETUP.md
+/ZZVNAD-cache/cacheIndex.txt
+/ZZVNAD-cache/part1/disk1.cab
+/ZZVNAD-cache/part1/output-info.ini
+*.msi
