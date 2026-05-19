@@ -80,31 +80,33 @@ namespace display_modes {
 			params_.axis_params[2] = yr_axis_params;
 		}
 
-		void add_markers() override {
+		void add_post_data_markers() override {
 			zc_settings settings;
 			zc_settings markers_settings(&settings, "Markers");
 			zc_settings tdr_settings(&markers_settings, "TDR");
 			bool enabled;
 			tdr_settings.get("Enabled", enabled, false);
 			if (enabled) {
-				Fl_Color tdr_marker_colour_;
-				bool tdr_marker_type_distance_;
-				double tdr_vf_value_;
-				tdr_settings.get("Colour", tdr_marker_colour_, FL_RED);
-				tdr_settings.get("Type", tdr_marker_type_distance_, true);
-				tdr_settings.get("Velocity Factor", tdr_vf_value_, 0.66);
-				// Add a marker for the time of the maximum amplitude in the TDR response.
-				zc_line_style marker_style(tdr_marker_colour_, 1, FL_DASH);
-				graph_->add_marker(0, zc_graph_::FOREGROUND, marker_style, time_at_max_);
-				char text[32];
-				double distance_at_max = time_at_max_ * tdr_vf_value_ * 3e8; // Convert time to distance using velocity factor and speed of light
-				if (tdr_marker_type_distance_) {
-					snprintf(text, sizeof(text), "%0.2f m", distance_at_max);
+				if (time_at_max_ != 0.0) {
+					Fl_Color tdr_marker_colour_;
+					bool tdr_marker_type_distance_;
+					double tdr_vf_value_;
+					tdr_settings.get("Colour", tdr_marker_colour_, FL_RED);
+					tdr_settings.get("Type", tdr_marker_type_distance_, true);
+					tdr_settings.get("Velocity Factor", tdr_vf_value_, 0.66);
+					// Add a marker for the time of the maximum amplitude in the TDR response.
+					zc_line_style marker_style(tdr_marker_colour_, 1, FL_DASH);
+					graph_->add_marker(0, zc_graph_::FOREGROUND, marker_style, time_at_max_);
+					char text[32];
+					double distance_at_max = time_at_max_ * tdr_vf_value_ * 3e8; // Convert time to distance using velocity factor and speed of light
+					if (tdr_marker_type_distance_) {
+						snprintf(text, sizeof(text), "%0.2f m", distance_at_max);
+					}
+					else {
+						snprintf(text, sizeof(text), "%0.0f ns", time_at_max_ * 1e9);
+					}
+					graph_->add_label(0, zc_graph_::FOREGROUND, text, zc_text_style(tdr_marker_colour_, 0, graph_->textsize()), { time_at_max_, -DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
 				}
-				else {
-					snprintf(text, sizeof(text), "%0.0f ns", time_at_max_ * 1e9);
-				}
-				graph_->add_label(0, zc_graph_::FOREGROUND, text, zc_text_style(tdr_marker_colour_, 0, graph_->textsize()), { time_at_max_, -DBL_MAX }, zc_graph_::ALIGN_RIGHT | zc_graph_::ALIGN_ABOVE);
 			}
 		}
 
@@ -158,6 +160,7 @@ namespace display_modes {
 			// Create the data points for the graph from the FFT output.
 			dm_data_set_t* tdr_coords = new dm_data_set_t;
 			double max_amplitude = 0.0;
+			time_at_max_ = 0.0;
 
 			tdr_coords->style = dataset.line_style_l; // Use the line style from the dataset for the TDR response
 			coords[1] = tdr_coords; // Assuming axis 1 is for the TDR response

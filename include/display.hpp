@@ -133,6 +133,13 @@ public:
         zc_line_style style                   //!< Line style to use for plotting this data set
     );
 
+    //! \brief Add markers that are dependent on the display mode and data.
+    //! 
+	//! The base implementation does nothing, but individual display modes can override this to add markers for specific data values (e.g. SWR=3) or frequency bands (e.g. amateur radio bands).
+    //! \todo add_data_markers() should be split out from update_graph_data() and
+    //! called inside this method for frequency based displays.
+    virtual void add_post_data_markers() {};
+
     //! \brief Get the last clicked frequency on any display.
     double value() {
 		return value_;

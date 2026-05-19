@@ -137,6 +137,7 @@ void display::configure_graph() {
     }
     add_markers();
     update_graph_data();
+	add_post_data_markers();
 	redraw();
 }
 
