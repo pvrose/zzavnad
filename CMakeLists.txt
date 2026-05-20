@@ -3,7 +3,14 @@ cmake_minimum_required(VERSION 3.16)
 project(ZZAVNAD VERSION 0.4)
 
 # Add shared CMake modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../zzacmake/cmake")
+include(FetchContent)
+FetchContent_Declare(
+    zzacmake
+    GIT_REPOSITORY https://github.com/pvrose/zzacmake.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(zzacmake)
+list(APPEND CMAKE_MODULE_PATH "${zzacmake_SOURCE_DIR}/cmake")
 
 include(Gm3zzaProjectDefaults)
 include(Gm3zzaVersioning)
@@ -16,8 +23,7 @@ include(deps/fftw_helper OPTIONAL)
 set(TARGET zzavnad)
 set(APP_VENDOR "GM3ZZA")
 set(APP_NAME "ZZAVNAD")
-set(ZZAVNAD_RC_VALUE "-rc1")
-set(APP_RC_VALUE "${ZZAVNAD_RC_VALUE}")
+set(APP_RC_VALUE "-rc1")
 string(TIMESTAMP APP_TIMESTAMP UTC)
 set(APP_SOURCE_DIR ${ZZAVNAD_SOURCE_DIR})
 
