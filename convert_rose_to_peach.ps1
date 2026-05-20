@@ -24,9 +24,10 @@ $newImage = [System.Drawing.Bitmap]::new($width, $height)
 # Peach color target (adjust these values for different peach tones)
 # Peach is typically RGB(255, 218, 185) or similar
 # We'll use a warm peach: RGB(255, 204, 170)
+# Manually edited to give a pinker colour. G and B to 75% of original peach values
 $peachR = 255
-$peachG = 204
-$peachB = 170
+$peachG = 153
+$peachB = 127
 
 # Process each pixel
 $pixelsProcessed = 0
