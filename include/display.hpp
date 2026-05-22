@@ -100,7 +100,8 @@ public:
 	//! Convert sp_data into graph coordinates for plotting, based on the current display mode.
     //! \param dataset The dataset to which this point belongs, which may be needed for some display modes.
     //! \param coords The coordinates to plot for this point (e.g. SWR, or S11 magnitude and phase).
-	virtual void convert_sp_to_coords(
+	//! \param ranges The ranges of the data values for each axis, which may be needed for some display modes (e.g. to calculate SWR from S11 magnitude).
+    virtual void convert_sp_to_coords(
         const sp_data_entry& dataset,
         graph_data_map_t& coords,
         graph_data_ranges_t& ranges) = 0;
@@ -127,7 +128,10 @@ public:
     virtual void add_markers() {};
 
 	//! \brief Add the data markers to the graph for the specified axis and dataset.
-	void add_data_markers(
+	//! \param axis The axis to add the markers to.
+    //! \param data The data points to add as markers.
+    //! \param style The line style to use for the markers.
+    void add_data_markers(
 		int axis,
         std::vector<zc_graph_::data_point_t>* data,     //!< Reference to a vector of data points to be plotted
         zc_line_style style                   //!< Line style to use for plotting this data set
