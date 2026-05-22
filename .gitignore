@@ -12,3 +12,5 @@
 /ZZVNAD-cache/part1/disk1.cab
 /ZZVNAD-cache/part1/output-info.ini
 *.msi
+/ZZVNAD-cache/part2/disk1.cab
+/ZZVNAD-cache/part2/output-info.ini
