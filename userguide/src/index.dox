@@ -14,15 +14,14 @@ to filestore.
   - Scatter diagrams: Smith chart, Resistance vs Reactance.
 - Allows the plots to be easily zoomed and scrolled.
 
-\section contents contents
+\section contents Contents
 
-- \subpage installation
 - \subpage overview
 - \subpage howto
 - \subpage application
 - \subpage data
 
-\copyright Philip Rose GM3ZZA 2018-2026.
+\copyright Philip Rose GM3ZZA 2026.
 	
 ZZAVNAD is free software: you can redistribute it and/or modify it under the
 terms of the Lesser GNU General Public License as published by the Free Software
@@ -48,7 +47,7 @@ ZZAVNAD uses the following items from third parties:
 - Images:
   - None.
 
-LLMs (Large Language Models) were used in the creation of this application, 
-but only at the method coding level.
+LLMs (Large Language Models) were used in the creation of this application to 
+provide coding assistance and guidance.
 
 */
