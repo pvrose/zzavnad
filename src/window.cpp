@@ -39,8 +39,21 @@
 #include <FL/Fl_Image.H>
 #include <FL/Fl_PNG_Image.H>
 
+// Include platform-specific headers for opening files.
+#ifdef _WIN32
+#include <Windows.h>
+// Undefine min and max macros that may be defined by Windows headers to avoid conflicts with std::min and std::max.
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
+
 // Include C++ standard library headers.
 #include <algorithm>
+
 
 // Constructor for the main application window.
 main_window::main_window(int W, int H, const char* L)

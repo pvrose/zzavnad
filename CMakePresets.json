@@ -40,7 +40,9 @@
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
         "VCPKG_ROOT": "C:/Users/pvros/source/repos/vcpkg",
-        "FFTW_ROOT": "C:/Users/pvros/Downloads/fftw-3.3.5-dll64"
+        "FFTW_ROOT": "C:/Users/pvros/Downloads/fftw-3.3.5-dll64",
+        "ZZAVNAD_DOX": "ON",
+        "ZZAVNAD_PDF":  "ON"
       },
       "condition": {
         "type": "equals",
