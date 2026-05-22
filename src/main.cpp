@@ -58,14 +58,13 @@ extern zc_file_holder* file_holder_;
 extern std::string APP_NAME;
 extern std::string APP_VERSION;
 
-
-
 //! File holder customisation - control data
 const std::map < uint8_t, file_control_t > FILE_CONTROL = {
 	// ID, { filename, reference, read-only
 	{ FILE_SETTINGS, { "ZZAVNAD.json", false, false, 0 }},
 	{ FILE_STATUS, { "status.txt", false, false, 0}},
-	{ FILE_ICON_ZZA, { "rose.png", true, true, 0}}
+	{ FILE_ICON_ZZA, { "rose.png", true, true, 0}},
+	{ FILE_ICON_PDF, { "pdf.png", true, true, 0}}
 };
 
 // Main function for the application.

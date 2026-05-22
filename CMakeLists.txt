@@ -30,6 +30,7 @@ include(Gm3zzaVersioning)
 include(Gm3zzaZzacommon)
 include(Gm3zzaResources)
 include(Gm3zzaWindowsRuntime)
+include(Gm3zzaDocs)
 include(deps/fftw_helper OPTIONAL)
 
 ## Set target executable and program metadata
@@ -67,6 +68,7 @@ set(CPPFILES
 ## Data files
 set(DATAFILES
   ${ZZAVNAD_SOURCE_DIR}/rose.png 
+  ${ZZAVNAD_SOURCE_DIR}/pdf.png
 )
 
 ## Generate Windows icon and resource file
@@ -151,6 +153,31 @@ gm3zza_stage_runtime_files(TARGET ${TARGET} FILES ${DATAFILES})
 ## Copy runtime DLLs for development
 gm3zza_copy_runtime_dlls(TARGET ${TARGET})
 
+
+# Generate documents - userguide and API documentation.
+if(ZZAVNAD_DOX)
+  # Paths to the include directories used by api/Doxyfile.in
+  set(ZZAVNAD_INCLUDE_DIR          "${ZZAVNAD_SOURCE_DIR}/include")
+
+  if(ZZAVNAD_PDF)
+    set(_docs_pdf_flag PDF)
+  else()
+    set(_docs_pdf_flag "")
+  endif()
+
+  gm3zza_enable_docs(
+    TARGET        ${TARGET}
+    APP_NAME      ${APP_NAME}
+    USERGUIDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/userguide"
+    API_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/api"
+    API_FILES     ${HPPFILES}
+    ${_docs_pdf_flag}
+  )
+
+  # Copy zzacommon API docs into the api html output tree
+  zzacommon_copy_api_docs(${GM3ZZA_API_HTML_DIR}/zzacommon)
+endif()
+
 ## Install
 install(TARGETS ${TARGET} RUNTIME COMPONENT applications)
 gm3zza_install_runtime_files(FILES ${DATAFILES} COMPONENT data)
@@ -161,3 +188,30 @@ if(MSVC)
   gm3zza_install_registered_runtime_dlls()
 endif()
 
+
+# Install userguide and API documentation
+if(ZZAVNAD_DOX)
+    if(GM3ZZA_USERGUIDE_HTML_DIR)
+      gm3zza_install_runtime_files(
+        DIRECTORIES ${GM3ZZA_USERGUIDE_HTML_DIR}
+        DEST_SUBDIR userguide
+        COMPONENT documentation
+      )
+    endif()
+
+    if(ZZAVNAD_PDF AND GM3ZZA_USERGUIDE_PDF_FILE)
+      gm3zza_install_runtime_files(
+        FILES ${GM3ZZA_USERGUIDE_PDF_FILE}
+        DEST_SUBDIR userguide
+        COMPONENT documentation
+      )
+    endif()
+
+    if(GM3ZZA_API_HTML_DIR)
+      gm3zza_install_runtime_files(
+        DIRECTORIES ${GM3ZZA_API_HTML_DIR}
+        DEST_SUBDIR api
+        COMPONENT documentation
+      )
+    endif()
+endif()

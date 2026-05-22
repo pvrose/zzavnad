@@ -1,0 +1,54 @@
+/** \mainpage Userguide
+
+ZZAVNAD allows the user to view S-parameter files derived from nanoVNA.
+It provides the following functionality:
+- Connects to a nanoVNA using a serial USB port.
+- Controls the nanoVNA to obtain scan data.
+- Reads and writes captured data to filestore.
+- Runs through the calibration process and can save calibration data 
+to filestore.
+- Displays upto 8 sets of scanned data in one plot.
+- Displays the data in a number of formats:
+  - In the frequency domain: eg SWR or Resistance/Reactance.
+  - In the time domain: Time-domain reflectometry.
+  - Scatter diagrams: Smith chart, Resistance vs Reactance.
+- Allows the plots to be easily zoomed and scrolled.
+
+\section contents contents
+
+- \subpage installation
+- \subpage overview
+- \subpage howto
+- \subpage application
+- \subpage data
+
+\copyright Philip Rose GM3ZZA 2018-2026.
+	
+ZZAVNAD is free software: you can redistribute it and/or modify it under the
+terms of the Lesser GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later version.
+
+ZZAVNAD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with ZZALOG. 
+If not, see <https://www.gnu.org/licenses/>. 
+
+\page ack Acknowledgments.
+
+ZZAVNAD uses the following items from third parties:
+- Libraries:
+  - FLTK (https://www.fltk.org/doc-1.4/index.html) Graphical user interface library.
+  - JSON (https://json.nlohmann.me/nlohmann/json) JSON support library.
+  - Boost (https://www.boost.org) Miscellaneous utilities library.
+  - FFTW3 (https://www.fftw.org) Discrete Fourier Transform library.
+- Reference data:
+  - None.
+- Images:
+  - None.
+
+LLMs (Large Language Models) were used in the creation of this application, 
+but only at the method coding level.
+
+*/
