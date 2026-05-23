@@ -235,6 +235,11 @@ void display_control::cb_display_mode(Fl_Widget* widget, void* data) {
 // and trigger an update of all displays.
 void display_control::cb_update_displays(Fl_Widget* widget, void* data) {
 	display_control* control = (display_control*)data;
+	// If the display window was closed, we want to trigger the default close behavior instead of adding a marker.
+	if (Fl::callback_reason() == FL_REASON_CLOSED) {
+		Fl_Window::default_callback((Fl_Window*)widget, data);
+		return;
+	}
 	double frequency = ((display*)widget)->value();
 	control->raw_data_markers_.insert(frequency);
 	int number_datasets = sp_data_->get_dataset_count();
