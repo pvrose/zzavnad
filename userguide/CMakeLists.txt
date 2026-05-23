@@ -32,7 +32,8 @@ if(DOXYGEN_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/displays.dox
     ${CMAKE_CURRENT_SOURCE_DIR}/src/howto.dox
     ${CMAKE_CURRENT_SOURCE_DIR}/src/overview.dox
-  )
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/release_notes.dox
+)
 
   set(DOXY_UG_IMAGES 
     ${CMAKE_CURRENT_SOURCE_DIR}/images/overview.png
