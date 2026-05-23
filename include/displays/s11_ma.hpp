@@ -45,7 +45,6 @@ namespace display_modes {
 
 			axis_params_t x_axis_params;
 			x_axis_params.outer_range = { 0.0F, DBL_MAX };
-			x_axis_params.default_range = { 1e6F, 30e6F };
 			x_axis_params.unit_modifier = zc_graph_::modifier_t::SI_PREFIX;
 			x_axis_params.unit = "Hz";
 			x_axis_params.label = "Frequency";
