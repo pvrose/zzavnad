@@ -1,0 +1,193 @@
+/** \page howto How to ...
+
+\section  howto_connect ...connect to a nanoVNA?
+
+Connect the nanoVNA to a USB port, and power it on. The port should now
+show up in the "Connection" panel (indicated blue below). If it does not
+then the applicationneeds to be advised that the ports have changed.
+Click the "Refresh" button (indicated below) to do do.
+
+\image html connect_1.png Connection controls
+\image latex connect_1.png Connection controls width=8cm
+
+Then click the "Connect" button. This will now enable the "Acquire"
+button in the "Scan settings" panel and the "Calibration" panel.
+
+\image html connect_2.png Connected status
+\image latex connect_2.png Connected status width=8cm
+
+\section howto_set_scan ...setting the scan range?
+
+Before you can calibrate to define the measurement plane, you 
+require to set the scan parameters. The calibration process will
+use these scan parameters to read the S-parameters for known
+conditions.
+
+The "Scan Settings" panel has 4 fields to define the scan range,
+circled in red below:
+
+- <B>Unit:</B> This allows the user to select either Hz, kHz, MHz or GHz
+as the frequency unit to specify the other parameters.
+- <B>Start:</B> The start or lowest frequency of the scan.
+- <B>Stop:</B> The stop or highest frequency of the scan.
+- <B>Step:</B> The frequency step.
+
+In the example below, the application is set to scan from 1 MHz to 1 GHz
+(1000 MHz) sampling every 1 MHz. 
+
+\image html scan_1.png Setting the scan
+\image latex scan_1.png Setting the scan width=8cm
+
+\note The nanoVNA can only respond to a request to scan at at most 101
+frequencies. ZZAVNAD will partition the scan request into individual 
+requests of 101 samples ending with a smaller request.
+
+\section howto_calibrate ...calibrate?
+
+By default ZZAVNAD will read in the last saved calibration data as seen above.
+To run a fresh calibration, click the "Clear" button and the "Calibration"
+panel will clear.
+
+\image html calibration_1.png Ready for calibration
+\image latex calibration_1.png Ready for calibration width=8cm
+
+To start calibration click the "Start" button and a number
+of pop-ups will appear to prompt the user through the process.
+
+\image html calibration_2.png Prompt to attach "Open" standard
+\image latex calibration_2.png Prompt to attach "Open" standard width=8cm
+
+For a 1-port calibration the prompts will be for:-
+- <B><I>Open</I></B> Open circuit standard.
+- <B><I>Short</I></B> Short-circuit standard.
+- <B><I>Load</I></B> 50&nbsp;&Omega; load standard.
+
+When the last standard is measured, the three tests will be ticked off,
+but the data now needs to be processed before it can be used. 
+
+\image html calibration_3.png Calibration data read
+\image latex calibration_3.png Calibration data] read width=8cm
+
+Click
+the "Use It" button to convert the S-parameters read for each standard 
+into a set of error correction factors. Noe the "Calibration Valid" flag
+is checked and the "Use It" flag lit.
+
+\image html calibration_4.png Calibration valid
+\image latex calibration_4.png Calibration valid width=8cm
+
+\section howto_scan ...run a scan?
+
+Once the user has calibrated the device or the measuring point then
+they can click the "Acquire" button. While the scan is complete, the
+progress clock will gradually fill as data is acquired from the nanoVNA.
+Wwhen it is complete the data source is noted with its timestamp as indicated 
+below.
+
+\image html scan_2.png Scan complete
+\image latex scan_2.png Scan complete width=8cm
+
+The user can see the results of the scan by clicking on one or more
+of the displays - in the image above, "SWR" has been selected. The 
+resultant display is shown below. This scan is for a mobile whip antenna 
+without any ground-plane.
+
+\image html scan_3.png SWR display
+\image latex scan_3.png SWR display width=8cm
+
+\section howto_compare ...compare two scans?
+
+In order to compare this last scan with a new one, the user needs
+to keep the original. By clicking the indicated button showing a
+black square the scanned data is "kept". 
+
+\image html compare_1.png Keep button
+\image latex compare_1.png Keep button width=8cm
+
+as such:
+
+\image html compare_2.png Data now kept
+\image latex compare_2.png Data now kept width=8cm
+
+After running the scan we now have two sets of data.
+
+\image html compare_3.png Kept and new scans
+\image latex compare_3.png Kept and new scans width=8cm
+
+This can be seen on the SWR display below. The kept scan is shown in
+the thinner line, and the new scan in the thicker line. The 
+difference between the two scans is due to moving the antenna
+with relation to nearby objects.
+
+\image html compare_4.png Kept and new SWR displays
+\image latex compare_4.png Kept and new SWR displays width=8cm
+
+\section howto_zoom ...zoom and scroll?
+
+\image html zoom_1.png Zoomed in
+\image latex zoom_1.png Zoomed in width=8cm
+
+The above image shows the previous scan data zoomed in around the 
+two metre band. The following actions are available.
+
+- <B><I>Zoom in one direction.</I></B> Click on the axis to zoom along and 
+move the mouse wheel away to zoom in and towards to zoom out.
+- <B><I>Zoom in all directions.</I></B> Click within the graph plot area
+and move the mouse wheel away to zoom in and towards to zoom out.
+- <B><I>Scroll.</I></B> Click and hold the left mouse button. Move the 
+mouse to scroll in that direction.
+- <B><I>Restore original.</I></B> Double-click the right mouse button.
+
+\note There are limits to how far zooming and scrolling is
+enabled. For example, there is no point zooming out beyond the 
+outer ranges of measured data.
+
+\section howto_mark ...mark a point on the display?
+
+To mark a point on the display, double-click the left mouse button on 
+the point of interest. This will add a lozenge marker to the display.
+It will also copy data to a table in the "Marked points" panel.
+
+\image html marker_1.png Marked points
+\image latex marker_1.png Marked points width=8cm
+
+\image html marker_2.png Marked point data
+\image latex marker_2.png Marked point data width=8cm
+
+\section howto_files ...load files?
+
+To load a saved file with S-parameters, click on the "Load File" button,
+indicated in the image below. This image also has two files already loaded:
+in this case the 'before' and 'after' data from tuning a 5-band HF trap
+dipole. The buttons indicated in blue when clicked open up a dialog
+to change the line style, colour and thickness. The check box indicate in green
+select whether the data is displayed.
+
+\image html files_1.png Loading and selecting files
+\image latex files_1.png Loading and selecting files width=8cm
+
+These can be displayed on any display. The inage below shows the
+comparsion between SWRs in the two cases.
+
+\image html files_2.png Comparison of SWR: before and after
+\image latex files_2.png Comparison of SWR: before and after width=8cm
+
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+

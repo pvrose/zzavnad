@@ -28,19 +28,47 @@ if(DOXYGEN_FOUND)
 
   set(DOXY_UG_FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/index.dox
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/data.dox
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/displays.dox
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/howto.dox
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/overview.dox
   )
 
   set(DOXY_UG_IMAGES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/mag.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/randx.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/rvx.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/s11raw.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/smith.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/swr.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/tdr.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/tdr2.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/zpolar.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/zzavnad.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_calib.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_connect.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_disp.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_help.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_mark.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_scan.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/overview_srcs.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/calibration_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/calibration_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/calibration_3.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/calibration_4.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/compare_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/compare_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/compare_3.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/compare_4.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/connect_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/connect_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_3.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_4.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_5.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_6.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_7.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/display_8.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/files_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/files_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/marker_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/marker_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/scan_1.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/scan_2.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/scan_3.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/zoom_1.png
   )
 
 

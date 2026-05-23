@@ -18,7 +18,7 @@ to filestore.
 
 - \subpage overview
 - \subpage howto
-- \subpage application
+- \subpage displays
 - \subpage data
 
 \copyright Philip Rose GM3ZZA 2026.
@@ -45,7 +45,8 @@ ZZAVNAD uses the following items from third parties:
 - Reference data:
   - None.
 - Images:
-  - None.
+  - FlatIcon (https://www.flaticon.com)
+    - Pdf icon created by Smashicons.
 
 LLMs (Large Language Models) were used in the creation of this application to 
 provide coding assistance and guidance.

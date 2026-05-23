@@ -42,7 +42,7 @@
         "VCPKG_ROOT": "C:/Users/pvros/source/repos/vcpkg",
         "FFTW_ROOT": "C:/Users/pvros/Downloads/fftw-3.3.5-dll64",
         "ZZAVNAD_DOX": "ON",
-        "ZZAVNAD_PDF":  "ON"
+        "ZZAVNAD_PDF":  "OFF"
       },
       "condition": {
         "type": "equals",
@@ -71,7 +71,8 @@
       "inherits": "x64-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "FLTK_DIR": "C:\\Users\\pvros\\source\\repos\\fltk\\out\\install\\x64-release\\CMake"
+        "FLTK_DIR": "C:\\Users\\pvros\\source\\repos\\fltk\\out\\install\\x64-release\\CMake",
+        "ZZAVNAD_PDF": "ON"
       }
     },
     {

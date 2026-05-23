@@ -150,7 +150,7 @@ namespace display_modes {
 			char buffer[100];
 			zc_graph_::data_point_t resistance_point;
 			zc_graph_::data_point_t reactance_point;
-			// Assume Z0 = 50 ohms for formatting the S11 value.
+			// Assume Z0 = 50&nbsp;&Omega; for formatting the S11 value.
 			double Z0 = 50.0;
 			convert_sp_point(point, Z0, resistance_point, reactance_point);
 			// Ensure that negative reactance is displayed as "-jX" instead of "+j-X".

@@ -1,0 +1,127 @@
+/** \page overview Overview
+  
+ This page provides an overview of the application. The image below
+ is the main window of the application, showing the various components.
+
+ \image html overview.png "Overview of the application"
+ \image latex overview.png "Overview of the application" width=8cm
+
+ \section help Getting help
+
+ The userguide is available by clicking either of the two
+ icons in the top right of the main window, see below.
+
+ - <B><I>Rose icon</I></B> opens the userguide in a web browser.
+ - <B><I>PDF icon</I></B> opens the userguide in a PDF viewer.
+
+ \image html overview_help.png "Help icons"
+ \image latex overview_help.png "Help icons" width=8cm
+
+ \section source Data sources
+
+ The application can view data from a number of sources. 
+
+ - <B><I>The nanoVNA:</I></B> The application can connect to a nanoVNA and control it to obtain scan data.
+ - <B><I>Data files:</I></B> The application can read and write captured data to filestore. The data files are
+ in Touchstone format, see \ref data.
+ - <B><I>Calibration data:</I></B> The application can display the S-parameters obtained
+ while calibrating the nanoVNA.
+ - <B><I>Kept data:</I></B> The application can retain data previously read from
+ the nanoVNA, and save these to filestore.
+
+ Any or all of the above data sources can be displayed at the same time.
+
+ \image html overview_srcs.png "Data sources"
+ \image latex overview_srcs.png "Data sources" width=8cm
+
+ \section display Display formats
+
+ The application can present the data in a number of formats, as shown below. 
+ 
+ - <B>SWR:</B> Standing Wave Ratio. The SWR s calculated from the S11 parameter,
+ and displayed as a function of frequency.
+ - <B>S11 Raw:</B> The S11 parameter, displayed as a function of frequency. 
+ The S11 parameter is a complex number, and the raw display shows 
+ the real and imaginary parts of S11 as separate curves.
+ - <B>S11 R+jX:</B> The complex impedance, calculated from the S11 parameter, 
+ and displayed as a function of frequency with the resistance and 
+ reactance as separate curves.
+ - <B>S11 M+A:</B> The S11 parameter is converted to magnitude and angle, 
+ and displayed as a function of frequency.
+ - <B>S11 R v jX:</B> The S11 parameter is converted to resistance and reactance, and
+ displayed as a scatter diagram with resistance on the x-axis and 
+ reactance on the y-axis.
+ - <B>S11 Z Polar:</B> The S11 parameter is converted to impedance, 
+ and displayed as a polar scatter diagram with the absolute
+ value of the impedance on the radius and the angle of the impedance
+ on the angle.
+ - <B>S11 Smith:</B> The S11 parameter is displayed on a Smith chart, which 
+ is a graphical representation of complex impedance. Grid lines on the 
+ Smith chart represent constant resistance and reactance.
+ - <B>S11 TDR:</B> Time-domain reflectometry. The S11 parameter is converted 
+ to a time-domain response, and displayed as a function of time.
+ - <B>S21 Gain:</B> The S21 parameter, which represents the forward transmission, 
+ is converted to a gain (or loss) and phase, and displayed as 
+ a function of frequency.
+
+ \todo Although some 2-port features are implemented, 
+ these are not fully supported yet. 
+
+ \image html overview_disp.png "Display formats"
+ \image latex overview_disp.png "Display formats" width=8cm
+
+ \section markers Markers
+
+ The application can add background and foreground markers to the plots. 
+
+ Background markers are displayed behind the data curves, and are used to show
+ data-independent information such as the amateur radio frequency bands, or 
+ a line indicating a target SWR value.
+ Foreground markers are displayed in front of the data curves, and are used to show
+ data-dependent information such as the maximum reflection in the TDR plot.
+
+ Current supported markers include:
+
+ - <B>SWR:</B> A horizontal line indicating a target SWR value. This 
+ can be configured, but the default is 3:1.
+ - <B>Frequency:</B> Vertical shaded regions indicating the amateur radio frequency bands.
+ - <B>TDR:</B> A vertical line indicating the time of the maximum reflection in the TDR plot.
+ This can be configured either as the time taken for the reflection
+ to return or as the return distance calculated from the time and the velocity factor. 
+ The velocity factor can be configured either by seleting the dielectric material
+ of the cable or by entering a custom velocity factor.
+
+ \image html overview_mark.png "Markers"
+ \image latex overview_mark.png "Markers" width=8cm
+
+ \section scan nanoVNA scanning
+
+ The application can control the nanoVNA to obtain scan data. The scan parameters are
+ defined as start point, end point and the step size. The frequencyunit of these parameters can 
+ be selected. The application will display the progress of reading
+ the data from the nanoVNA. Typically a full scan will take only a few seconds.
+
+ \image html overview_scan.png "Scanning the nanoVNA"
+ \image latex overview_scan.png "Scanning the nanoVNA" width=8cm
+
+ The "Acquire" button is only enabled when the application is connected to a nanoVNA.
+ 
+ \section connection nanoVNA connection
+
+ The application can connect to a nanoVNA using a serial USB port. 
+ The user can select the port to use from a list of available ports. 
+
+ \image html overview_connect.png "Connecting to the nanoVNA"
+ \image latex overview_connect.png "Connecting to the nanoVNA" width=8cm
+ 
+ \section calibration nanoVNA calibration
+
+ The application can run through the calibration process and can save calibration data to filestore.
+ It can load previously stored calibration data, and apply this to the data obtained from the nanoVNA.
+
+ \image html overview_calib.png "Calibrating the nanoVNA"
+ \image latex overview_calib.png "Calibrating the nanoVNA" width=8cm
+
+ This panel is only enabled when the application is connected to a nanoVNA.
+ The calibration process is described in more detail in \ref howto.
+ */

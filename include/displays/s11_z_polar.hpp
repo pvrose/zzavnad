@@ -62,7 +62,7 @@ namespace display_modes {
 
 		// Add markers for the s11_z_polar display mode.
 		// For the polar plot, we might want to add markers for specific
-		// impedance values (e.g. 50 Ohms) or for the unit circle (|S11|=1).
+		// impedance values (e.g., 50&nbsp;&Omega;) or for the unit circle (|S11|=1).
 		void add_markers() override {
 			graph_->add_marker(0, zc_graph_::FOREGROUND, zc_line_style(FL_RED, 1, FL_DASH), 50.0F);
 			graph_->add_label(0, zc_graph_::FOREGROUND, "|Z|=50\xCE\xA9", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { 50.0F, 0 });

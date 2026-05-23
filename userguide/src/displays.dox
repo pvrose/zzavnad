@@ -1,0 +1,128 @@
+/** \page displays Displays
+
+ZZAVNAD provides a number of different ways of presenting the 
+S-parameter data obtained from the nanoVNA. See \ref data 
+for more information on the S-parameters and the 
+transformations that can be applied to them.
+
+In displays that plot against frequency, there is an option
+to display a background indicating the amateur radio frequency bands.
+The colour of this background may be configured.
+
+The plots on this page are all derived from the same scan
+of an HF multi-band trap dipole antenna.
+
+\section display_swr SWR
+
+SWR, or Standing Wave Ratio, is a traditional way of representing
+the impedance of an antenna as a function of frequency. 
+
+The SWR is plotted as a function of frequency. There is
+an option to dislay a horizontal line indicating a target SWR value.
+
+As can be seen from the plot, the antenna show good matching
+at the target frequencies of 7, 10, 14, 21 and 28 MHz.
+
+\image html display_1.png "SWR display"
+\image latex display_1.png "SWR display" width=8cm
+
+\section display_raw Raw S11 data
+
+The raw \f$S_{11}\f$ data is displayed as a function of frequency. For
+each set of data, the real and imaginery parts of the \f$S_{11}\f$ parameter
+are plotted as separate curves. The real part is plotted
+using the left-hand y-axis and is, by default, plotted with a thicker
+line. The imaginary part is plotted using the right-hand y-axis 
+and is, by default, plotted with a thinner line.
+
+\image html display_2.png "Raw S11 display"
+\image latex display_2.png "Raw S11 display" width=8cm
+
+\section display_rjx Resistance and reactance
+
+The \f$S_{11}\f$ parameter can be converted to a complex impedance, which is
+then plotted as a function of frequency. The resistance is plotted
+using the left-hand y-axis and is, by default, plotted with a thicker
+line. The reactance is plotted using the right-hand y-axis and is, 
+by default, plotted with a thinner line.
+
+\image html display_3.png "Resistance and reactance display"
+\image latex display_3.png "Resistance and reactance display" width=8cm
+
+\section display_ma Magnitude and angle
+
+The \f$S_{11}\f$ parameter can be converted to magnitude and angle, which are
+then plotted as a function of frequency. The magnitude is plotted
+usimg the left-hand y-axis and is, by default, plotted with a thicker
+line. The angle is plotted using the right-hand y-axis and is, by default,
+plotted with a thinner line.
+
+\image html display_4.png "Magnitude and angle display"
+\image latex display_4.png "Magnitude and angle display" width=8cm
+
+\section display_rvj Resistance versus reactance
+
+The \f$S_{11}\f$ parameter can be converted to resistance and reactance, which are
+then plotted as a scatter diagram with resistance on the x-axis and reactance on the y-axis.
+
+\image html display_5.png "Resistance versus reactance display"
+\image latex display_5.png "Resistance versus reactance display" width=8cm
+
+\section display_zpolar Polar plot of impedance
+
+The \f$S_{11}\f$ parameter can be converted to impedance, which is then 
+plotted as a polar diagram with the absolute value of
+the impedance on the radius and the angle of the impedance 
+on the angle.
+
+\image html display_6.png "Polar plot of impedance"
+\image latex display_6.png "Polar plot of impedance" width=8cm
+
+\section display_smith Smith chart
+
+The \f$S_{11}\f$ parameter can be displayed on a Smith chart, 
+which is a graphical representation of complex impedance. 
+The real and imaginery parts of the \f$S_{11}\f$ parameter are plotted as 
+X and Y coordinates on a scatter diagram against a background of
+grid lines representing constant resistance and reactance.
+
+The values of resistance and reactance used have been normalised 
+to the characteristic impedance, \f$Z_0\f$, so that 1 on the Smith chart
+corresponds to \f$Z_0\f$.
+
+\image html display_7.png "Smith chart display"
+\image latex display_7.png "Smith chart display" width=8cm
+
+\section display_tdr Time-domain reflectometry
+
+The set of \f$S_{11}\f$ parameters consists of a number of complex values
+measured at different frequencies. This is called the frequency-domain.
+By applying an inverse Fourier transform to the \f$S_{11}\f$ data, this
+can be converted to a time-domain response, which is then 
+plotted as a function of time.
+
+In a typical antenna system, the antenna will only be matched
+to the feeder at a few frequencies, 
+and so for most frequencies, it will reflect some of the energy back
+towards the source. The inverse Fourier transform aggregates the
+reflection coefficients over the different frequencies to produce
+a spike in the time-domain response at the time corresponding to the
+time taken for the energy to travel from the source to the antenna and
+back again.
+
+In this plot, the x-axis is time. The left-hand axis
+shows the amplitude of the aggregated reflection coefficient.
+The rigth-hand axis shows the integral of the aggregated coefficient
+as a perecentage of the total over the time range.
+
+There is an option to display a vertical line indicating the
+time of the maximum reflection in the TDR plot. It can be configured
+to display this time as a distance by applying
+a velocity factor of the feedline. A number of common velocity
+factors are provided for common feedline materials, but the user can
+also enter a custom velocity factor.
+
+\image html display_8.png "Time-domain reflectometry display"
+\image latex display_8.png "Time-domain reflectometry display" width=8cm
+
+*/

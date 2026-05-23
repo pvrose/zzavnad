@@ -73,7 +73,7 @@ struct sp_data_entry {
     int valid_ports;           //!< Number of valid ports (1 or 2)
     zc_line_style line_style_l;       //!< Line configuration for left hand data (e.g. colour, thickness)
     zc_line_style line_style_r;       //!< Line configuration for right hand data (e.g. colour, thickness)
-    double z0;                 //!< Characteristic impedance of the system for this data (e.g. 50 ohms)
+    double z0;                 //!< Characteristic impedance of the system for this data (e.g., 50&nbsp;&Omega;)
     bool enabled;              //!< Whether this dataset is enabled for display
 	std::string notes;         //!< Optional notes about the dataset (saved as comment in the file if read from a file)
 };

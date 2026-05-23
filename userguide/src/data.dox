@@ -1,0 +1,79 @@
+/** \page data Data representations
+
+\section data_s11 S-parameters
+
+S-parameters, or scattering parameters, are a way of representing
+the response of a network to stimuli at its ports. The S-parameters
+are named \f$S_{ij}\f$, where \f$i\f$ is the port at which the response is measured, 
+and \f$j\f$ is the port at which the stimulus is applied. Typically,
+S-parameters are represented as complex numbers, with the real part representing
+the in-phase response and the imaginary part representing the quadrature.
+
+In a nanoVNA,
+which has two ports, the stimulus is applied to port 1, and the 
+response is measured at both. So we have the following S-parameters:
+- <B>\f$S_{11}\f$</B>: The response at port 1 when the stimulus is applied 
+to port 1. This is also known as the reflection coefficient.
+- <B>\f$S_{21}\f$</B>: The response at port 2 when the stimulus is applied to port 1. 
+This is also known as the forward transmission coefficient.
+
+\section data_nanovna S-parameters from the nanoVNA
+
+The format of the request and response to the nanoVNA is defined
+by the nanoVNA's firmware. Currently, the application only
+supports the nanoVNA-H, but other models may be supported in the future.
+
+ZZAVNAD sends a request to the nanoVNA to perform a scan, which includes
+the start frequency, stop frequency and number of samples. It
+also states whether just \f$S_{11}\f$ is required or both \f$S_{11}\f$ and \f$S_{21}\f$. 
+The nanoVNA responds with the frequency and the real and imaginary parts
+of the S-parameters at that frequency.
+
+\section data_touchstone Touchstone files
+
+\todo Describe Touchstone files and how they are used in the application.
+
+\section data_transforms Transformations of S-parameters
+
+As is shown in \ref displays, the S-parameters can be transformed
+into a number of different representations.
+
+\subsection data_transforms_swr SWR
+
+The \f$S_{11}\f$ parameter can be converted to SWR using the following formula:
+\f[
+SWR = \frac{1 + |S_{11}|}{1 - |S_{11}|} 
+\f]
+
+where \f$|S_{11}|\f$ is the magnitude of the \f$S_{11}\f$ parameter.
+
+\subsection data_transforms_impedace Impedance
+
+The \f$S_{11}\f$ parameter can be converted to a complex impedance using the following formula:
+\f[
+Z = Z_0 \cdot \frac{1 + S_{11}}{1 - S_{11}}
+\f]
+
+where \f$Z_0\f$ is the characteristic impedance of the system, which is typically 50&nbsp;&Omega;.
+
+The complex impedance \f$Z\f$ can be represented as a complex number,
+as a pair of real numbers representing the resistance and reactance or as
+a pair of real numbers representing the magnitude and angle. The relationships 
+between these representations are as follows:
+\f[
+Z = R + jX = |Z| e^{j\theta}
+\f]
+\f[
+R = |Z| \cos(\theta)
+\f]
+\f[
+X = |Z| \sin(\theta)
+\f]
+where \f$R\f$ is the resistance, \f$X\f$ is the reactance, \f$|Z|\f$ is the magnitude
+of the impedance and \f$\theta\f$ is the angle of the impedance.
+
+In the equation above, \f$\theta\f$ is the angle in radians, however
+in the application, the angle is typically displayed in degrees.
+
+*/
+
