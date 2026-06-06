@@ -51,7 +51,7 @@
 #include <array>
 #include <string>
 
-const int WCONTROL = 6 * HBUTTON + WEDIT; //!< Width of the controls for each data source
+int WCONTROL;
 
 // Constructor for the file source control panel.
 source_control::file_source::file_source(int X, int Y, int W, int H, const char* L)
@@ -296,6 +296,8 @@ source_control::~source_control() {
 void source_control::create_widgets() {
     int cx = x() + WLABEL + WLABEL;
     int cy = y() + GAP;
+
+    WCONTROL = 6 * HBUTTON + WEDIT; //!< Width of the controls for each data source
 
     // Add the dropdown to select the data type for this session.
     choice_data_type_ = new Fl_Choice(cx, cy, WBUTTON, HBUTTON, "VNA ports");
