@@ -49,7 +49,7 @@
 struct display_mode_params_t {
     std::string label; //!< Label for the display mode.
     bool dual_axes; //!< Whether this display mode requires dual Y-axes.
-    void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph::coord& point_l, zc_graph::coord& point_r); //!< Function pointer to the routine for converting sp_points to graph coordinates for this display mode.
+    void (*convert_sp_point)(const sp_point& point, const sp_data_entry& dataset, zc_graph_::data_point_t& point_l, zc_graph_::data_point_t& point_r); //!< Function pointer to the routine for converting sp_points to graph coordinates for this display mode.
 };
 
 // Constant complex 1.0+j0.0.

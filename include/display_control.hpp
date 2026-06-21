@@ -18,8 +18,6 @@
 
 #include "sp_data.hpp"
 
-#include "zc_graph.h"
-
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Rect.H>
 #include <FL/Fl_Widget.H>
