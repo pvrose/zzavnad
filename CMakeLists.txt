@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ZZAVNAD VERSION 0.4.1.1)
+project(ZZAVNAD VERSION 0.4.1.2)
 
 # Add shared CMake modules
 # Add shared CMake modules
@@ -101,7 +101,7 @@ gm3zza_generate_app_source(
 set(ALL_CPPFILES ${GENERATED_APP_CPP} ${CPPFILES})
 
 ## Use shared zzacommon (includes zzaf, zzam, zzad, zzab, zzafb)
-gm3zza_use_zzacommon(COMPONENTS zzaf zzam zzad zzab zzafb GIT_TAG v1.2.7.1)
+gm3zza_use_zzacommon(COMPONENTS zzaf zzam zzad zzab zzafb GIT_TAG v1.2.8)
 
 
 # Define the zzavnad executable
