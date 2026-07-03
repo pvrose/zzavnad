@@ -80,16 +80,14 @@ if(DOXYGEN_FOUND)
   # Command for generating dox from config file
   message("Adding command to generate: ${CMAKE_CURRENT_BINARY_DIR}/html/index.html")
   
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-    DEPENDS ${DOXY_UG_FILES} ${DOXY_UG_OUT} ${DOXY_UG_IMAGES}
+  add_custom_target(ug_html 
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXY_UG_OUT}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "ZZAVNAD: Generating userguide"
     VERBATIM
   )
-  add_custom_target(ug_html ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+  add_dependencies(ug_html
+    ${DOXY_UG_FILES} ${DOXY_UG_OUT} ${DOXY_UG_IMAGES}
   )
   
   if(ZZAVNAD_PDF)
@@ -113,9 +111,10 @@ if(DOXYGEN_FOUND)
             VERBATIM
         )
       endif()
-      add_custom_target(ug_pdf ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+      add_custom_target(ug_pdf 
       )
+      add_dependencies(ug_pdf ug_html)
+
       # Copy from latex/refman.pdf to ZZAVNAD.pdf
       add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.pdf
@@ -127,8 +126,8 @@ if(DOXYGEN_FOUND)
         COMMENT "Copying PDF"
       )
       add_custom_target(
-        pdf ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.pdf
+        pdf 
       )
+      add_dependencies(pdf ug_pdf)
   endif()
 endif()

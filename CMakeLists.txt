@@ -121,6 +121,18 @@ if(MSVC)
   )
 endif()
 
+# Conditionally add documentation
+if (ZZAVNAD_DOX) 
+  message(STATUS "Adding documentation")
+  add_dependencies(${TARGET}
+    ug_html
+    ug_pdf
+    api_html
+    pdf
+    zzacommon_api_html
+  )
+endif()
+
 target_include_directories(${TARGET} PRIVATE 
   ${ZZAVNAD_SOURCE_DIR}/include
   ${ZZACOMMON_INCLUDE_DIR}
@@ -155,7 +167,6 @@ gm3zza_copy_runtime_dlls(TARGET ${TARGET})
 
 
 # Generate documents - userguide and API documentation.
-if(ZZAVNAD_DOX)
   # Paths to the include directories used by api/Doxyfile.in
   set(ZZAVNAD_INCLUDE_DIR          "${ZZAVNAD_SOURCE_DIR}/include")
 
@@ -176,7 +187,6 @@ if(ZZAVNAD_DOX)
 
   # Copy zzacommon API docs into the api html output tree
   zzacommon_copy_api_docs(${GM3ZZA_API_HTML_DIR}/zzacommon)
-endif()
 
 ## Install
 install(TARGETS ${TARGET} RUNTIME COMPONENT applications)
@@ -184,13 +194,12 @@ gm3zza_install_runtime_files(FILES ${DATAFILES} COMPONENT data)
 
 if(MSVC)
   gm3zza_register_fftw_dlls()
-  zzacommon_install_runtime_dlls(DESTINATION bin COMPONENT application)
+  zzacommon_install_runtime_dlls(TARGET ${TARGET} DESTINATION bin COMPONENT application)
   gm3zza_install_registered_runtime_dlls()
 endif()
 
 
 # Install userguide and API documentation
-if(ZZAVNAD_DOX)
     if(GM3ZZA_USERGUIDE_HTML_DIR)
       gm3zza_install_runtime_files(
         DIRECTORIES ${GM3ZZA_USERGUIDE_HTML_DIR}
@@ -214,4 +223,3 @@ if(ZZAVNAD_DOX)
         COMPONENT documentation
       )
     endif()
-endif()
