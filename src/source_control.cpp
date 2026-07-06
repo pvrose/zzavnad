@@ -32,6 +32,7 @@
 #include "zc_settings.h"
 #include "zc_status.h"
 #include "zc_fltk.h"
+#include "zc_icons.h"
 
 // Include FLTK headers for the widgets used in the control panel.
 #include <FL/Enumerations.H>
@@ -59,7 +60,8 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
     int cx = x();
     int cy = y();
 
-    btn_remove_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "@1+");
+    btn_remove_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
+    zc_add_icon_to_widget(btn_remove_, zc_icon_t::ICON_DELETE_ITEM);
     btn_remove_->callback(cb_file_remove, this);
     btn_remove_->tooltip("Remove this data source");
 
@@ -67,6 +69,7 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 
     box_type_ = new Fl_Box(cx, cy, HBUTTON, HBUTTON);
 	box_type_->tooltip("Shows the type of this data source");
+    box_type_->labelfont(FL_BOLD);
 
     cx += HBUTTON;
     ip_filename_ = new zc_filename_input(cx, cy, WEDIT, HBUTTON);
@@ -81,7 +84,8 @@ source_control::file_source::file_source(int X, int Y, int W, int H, const char*
 	box_nvna_->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     box_nvna_->tooltip("Shows the timestamp of the Active data source from the nanoVNA");
 
-    btn_keep_ = new Fl_Button(cx + WEDIT - HBUTTON, cy, HBUTTON, HBUTTON, "@square");
+    btn_keep_ = new Fl_Button(cx + WEDIT - HBUTTON, cy, HBUTTON, HBUTTON);
+	zc_add_icon_to_widget(btn_keep_, zc_icon_t::ICON_KEEP);
     btn_keep_->callback(cb_file_keep, this);
     btn_keep_->tooltip("Keep the current data for reference.");
 
@@ -122,9 +126,10 @@ void source_control::file_source::configure_widgets() {
     if (entry == nullptr) {
         // This is the SPARE data source. We can only use it to add a new file data source.
         btn_remove_->hide();
-		box_type_->label("@+"); // Show a plus symbol to indicate this is the spare data source.
+		box_type_->label("+"); // Show a plus symbol to indicate this is the spare data source.
+		box_type_->tooltip("Add a file: click the filename input to add a new file data source.");
         ip_filename_->show();
-        ip_filename_->button()->label("@fileopen"); // Show a file open symbol to indicate we want to select a file.
+        zc_add_icon_to_widget(ip_filename_->button(), zc_icon_t::ICON_FILE_OPEN);
 		ip_filename_->tooltip("Click to add a new file data source.");
 		ip_filename_->value("Add file...");
         switch (sp_data_->get_number_ports()) {
@@ -152,8 +157,10 @@ void source_control::file_source::configure_widgets() {
             // This is the active data source for the nanoVNA.
             // TRemove is not availabe
             btn_remove_->hide();
-            box_type_->label("@search"); // Show a search symbol to indicate this data source is from the nanoVNA.
+            box_type_->label("nV"); // Show a search symbol to indicate this data source is from the nanoVNA.
+			box_type_->tooltip("nanoVNA: This is the active data source.");
             ip_filename_->hide();
+            zc_add_icon_to_widget(ip_filename_->button(), zc_icon_t::ICON_NONE);
 			box_nvna_->show();
             box_nvna_->copy_label(("nanoVNA " + entry->timestamp).c_str());
 			btn_keep_->show();
@@ -168,10 +175,11 @@ void source_control::file_source::configure_widgets() {
         case SPDS_FILE:
             // This is a file data source.
             btn_remove_->show();
-            box_type_->label("@filenew"); // Show a file symbol to indicate this data source is from a file.
+            box_type_->label("F"); // Show a file symbol to indicate this data source is from a file.
+			box_type_->tooltip("File: This is a data source from a file.");
             ip_filename_->show();
-            ip_filename_->button()->label("@filesave"); // Indicates that we can save the data.
-			ip_filename_->tooltip("Click to change the file for this data source.");
+			zc_add_icon_to_widget(ip_filename_->button(), zc_icon_t::ICON_FILE_SAVE);
+            ip_filename_->tooltip("Click to change the file for this data source.");
             ip_filename_->value(entry->filename.c_str());
             switch (sp_data_->get_number_ports()) {
             case 1:
@@ -198,9 +206,10 @@ void source_control::file_source::configure_widgets() {
         case SPDS_KEPT:
             // This is a kept data source that was previously acquired from the nanoVNA.
             btn_remove_->show();
-            box_type_->label("@circle"); // Show a circle symbol to indicate this data source is a kept dataset.
+            box_type_->label("K"); // Show a K symbol to indicate this data source is a kept dataset.
+			box_type_->tooltip("Kept: This is a kept data source that was previously acquired from the nanoVNA.");
             ip_filename_->show();
-            ip_filename_->button()->label("@filesave"); // Indicates that we can keep the data.
+            zc_add_icon_to_widget(ip_filename_->button(), zc_icon_t::ICON_FILE_SAVE);
 			ip_filename_->tooltip("Click to save the current data for this data source.");
             ip_filename_->value(entry->filename.c_str());
             switch (sp_data_->get_number_ports()) {
@@ -231,7 +240,8 @@ void source_control::file_source::configure_widgets() {
 		case SPDS_CALIB_T:
 		case SPDS_CALIB_I:
             btn_remove_->hide();
-			box_type_->label("@<->"); // Show a double headed arrow symbol to indicate this data source is a calibration dataset.
+			box_type_->label("C"); // Show a C symbol to indicate this data source is a calibration dataset.
+			box_type_->tooltip("Calibration: This is a calibration dataset acquired from the nanoVNA.");
             ip_filename_->hide();
             box_nvna_->show();
             switch (entry->source) {

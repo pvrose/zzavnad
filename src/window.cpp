@@ -21,6 +21,7 @@
 #include "zc_drawing.h"
 #include "zc_file_holder.h"
 #include "zc_fltk.h"
+#include "zc_icons.h"
 #include "zc_utils.h"
 
 // Include the main groups.
@@ -80,18 +81,12 @@ void main_window::create_widgets() {
     Fl_Button* btn_open_html = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
     btn_open_html->callback(cb_open_html, this);
     btn_open_html->tooltip("Open the help documentation in HTML format.");
-    std::string fn_html = file_holder_->get_filename(FILE_ICON_ZZA);
-    Fl_PNG_Image* img_html = new Fl_PNG_Image(fn_html.c_str());
-    Fl_Image* icon = img_html->copy(HBUTTON, HBUTTON);
-    btn_open_html->image(icon);
+	zc_add_icon_to_widget(btn_open_html, zc_icon_t::ICON_HTML);
     cx += HBUTTON;
     Fl_Button* btn_open_pdf = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
     btn_open_pdf->callback(cb_open_pdf, this);
     btn_open_pdf->tooltip("Open the help documentation in PDF format.");
-    std::string fn_pdf = file_holder_->get_filename(FILE_ICON_PDF);
-    Fl_PNG_Image* img_pdf = new Fl_PNG_Image(fn_pdf.c_str());
-    Fl_Image* icon_pdf = img_pdf->copy(HBUTTON, HBUTTON);
-    btn_open_pdf->image(icon_pdf);
+	zc_add_icon_to_widget(btn_open_pdf, zc_icon_t::ICON_BOOK);
     help_group_->end();
     help_group_->resizable(dummy);
 

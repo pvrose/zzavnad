@@ -30,12 +30,6 @@ class source_control;
 class markers;
 // Forward declaration of FLTK widgets.
 
-// Additional file types.
-enum file_types : uint8_t {
-	FILE_ICON_PDF = file_contents_t::FILE_USER
-};
-
-
 //! \brief The main application window.
 class main_window : public Fl_Double_Window {
 public:

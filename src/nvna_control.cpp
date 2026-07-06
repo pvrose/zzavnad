@@ -28,6 +28,7 @@
 #include "zc_drawing.h"
 #include "zc_filename_input.h"
 #include "zc_fltk.h"
+#include "zc_icons.h"
 #include "zc_serial.h"
 #include "zc_settings.h"
 #include "zc_utils.h"
@@ -154,7 +155,8 @@ void nvna_control::create_widgets() {
 	// Add the rescan ports button next to the port dropdown.
     cx += WBUTTON;
 
-	btn_rescan_ports_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON, "@reload");
+    btn_rescan_ports_ = new Fl_Button(cx, cy, HBUTTON, HBUTTON);
+    zc_add_icon_to_widget(btn_rescan_ports_, zc_icon_t::ICON_REFRESH);
 	btn_rescan_ports_->callback(cb_rescan_ports, this);
 	btn_rescan_ports_->tooltip("Rescan for available nanoVNA ports");
 
