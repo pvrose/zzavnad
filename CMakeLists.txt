@@ -156,7 +156,7 @@ target_link_libraries(${TARGET} PRIVATE
   zzacommon::zzab
   zzacommon::zzafb
   ${FLTK_LIBRARIES}
-  ${FFTW3_LIBRARIES}
+  FFTW3::fftw3
 )
 
 ## Stage runtime assets for development
