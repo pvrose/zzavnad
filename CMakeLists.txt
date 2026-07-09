@@ -28,6 +28,7 @@ include(Gm3zzaVersioning)
 include(Gm3zzaZzacommon)
 include(Gm3zzaResources)
 include(Gm3zzaWindowsRuntime)
+include(Gm3zzaDocs)
 include(deps/fftw_helper OPTIONAL)
 
 gm3zza_get_git_version(MY_DYNAMIC_VERSION)
@@ -52,7 +53,7 @@ gm3zza_split_version(${PROJECT_NAME})
 set(APP_VERSION "${ZZAVNAD_VERSION}${APP_RC_VALUE}")
 
 ## Set source files (excluding app.cpp which is generated)
-set(CPPFILES 
+set(ZZAVNAD_CPPFILES 
   ${ZZAVNAD_SOURCE_DIR}/src/calib_data.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/display_control.cpp
@@ -65,6 +66,31 @@ set(CPPFILES
   ${ZZAVNAD_SOURCE_DIR}/src/source_control.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/sp_data.cpp
   ${ZZAVNAD_SOURCE_DIR}/src/window.cpp
+)
+
+## Set include files for API documentation generation
+set(ZZAVNAD_HPPFILES
+  ${ZZAVNAD_SOURCE_DIR}/include/calib_data.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/display.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/display_control.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/display_legend.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/main.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/marker_table.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/markers.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/nvna_control.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/nvna_iface.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/source_control.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/sp_data.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/window.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_ma.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_raw.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_rj.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_rx.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_smith.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_swr.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_tdr.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s11_z_polar.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/displays/s21_gain.hpp
 )
 
 ## Data files
@@ -100,7 +126,7 @@ gm3zza_generate_app_source(
   OUTPUT_VAR GENERATED_APP_CPP
 )
 
-set(ALL_CPPFILES ${GENERATED_APP_CPP} ${CPPFILES})
+set(ALL_CPPFILES ${GENERATED_APP_CPP} ${ZZAVNAD_CPPFILES})
 
 ## Use shared zzacommon (includes zzaf, zzam, zzad, zzab, zzafb)
 gm3zza_use_zzacommon(COMPONENTS zzaf zzam zzad zzab zzafb GIT_TAG v1.2.8)
