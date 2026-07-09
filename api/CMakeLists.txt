@@ -33,15 +33,28 @@ if(DOXYGEN_FOUND)
 
   # Copy Doxyfile
   configure_file(${DOXY_API_IN} ${DOXY_API_OUT} @ONLY)
- 
-  # Command for generating dox from config file
-add_custom_target(api_html
-    DEPENDS ${DOXY_API_FILES} ${DOXY_API_OUT}
+
+  # Set "real" dependency
+  set(DOXY_OUTPUT_INDEX "${CMAKE_CURRENT_BINARY_DIR}/html/index.html")
+
+  # Custom Command: This is the actual command that will run Doxygen
+  add_custom_command(
+    OUTPUT ${DOXY_OUTPUT_INDEX}
+    DEPENDS ${DOXY_API_FILES} ${DOXY_API_OUT} zzacommon_api_html
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${ZZACOMMON_API_HTML_DIR}"
+      "${CMAKE_CURRENT_BINARY_DIR}/html/zzacommon"
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXY_API_OUT}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "ZZAVNAD: Generating API documentation"
+    COMMENT "ZZAVNAD: Generating API documentation (smart tracking)"
     VERBATIM
   )
+
+  #The Custom Target: This gives you the clickable menu item in Visual Studio
+  add_custom_target(api_html
+    DEPENDS ${DOXY_OUTPUT_INDEX}
+  )
+
   # Set output directory for API HTML
   set(ZZAVNAD_API_HTML_DIR ${CMAKE_CURRENT_BINARY_DIR}/html PARENT_SCOPE)
 

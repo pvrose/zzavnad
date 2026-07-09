@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ZZAVNAD VERSION 0.4.1.2)
-
 # Add shared CMake modules
 # Add shared CMake modules
 # First look in sibling path for development, then in installed location for users
@@ -30,8 +28,12 @@ include(Gm3zzaVersioning)
 include(Gm3zzaZzacommon)
 include(Gm3zzaResources)
 include(Gm3zzaWindowsRuntime)
-include(Gm3zzaDocs)
 include(deps/fftw_helper OPTIONAL)
+
+gm3zza_get_git_version(MY_DYNAMIC_VERSION)
+
+project(ZZAVNAD VERSION ${MY_DYNAMIC_VERSION})
+message(STATUS "Project version: ${ZZALOG_VERSION}")
 
 ## Set target executable and program metadata
 set(TARGET zzavnad)
@@ -121,17 +123,15 @@ if(MSVC)
   )
 endif()
 
-# Conditionally add documentation
-if (ZZAVNAD_DOX) 
-  message(STATUS "Adding documentation")
-  add_dependencies(${TARGET}
-    ug_html
-    ug_pdf
-    api_html
-    pdf
-    zzacommon_api_html
-  )
-endif()
+
+add_subdirectory(${ZZAVNAD_SOURCE_DIR}/userguide EXCLUDE_FROM_ALL)
+add_subdirectory(${ZZAVNAD_SOURCE_DIR}/api EXCLUDE_FROM_ALL)
+
+add_custom_target(docs
+    COMMENT "Building all project documentation"
+)
+
+add_dependencies(docs ug_html pdf api_html zzacommon_api_html)
 
 target_include_directories(${TARGET} PRIVATE 
   ${ZZAVNAD_SOURCE_DIR}/include
@@ -164,29 +164,6 @@ gm3zza_stage_runtime_files(TARGET ${TARGET} FILES ${DATAFILES})
 
 ## Copy runtime DLLs for development
 gm3zza_copy_runtime_dlls(TARGET ${TARGET})
-
-
-# Generate documents - userguide and API documentation.
-  # Paths to the include directories used by api/Doxyfile.in
-  set(ZZAVNAD_INCLUDE_DIR          "${ZZAVNAD_SOURCE_DIR}/include")
-
-  if(ZZAVNAD_PDF)
-    set(_docs_pdf_flag PDF)
-  else()
-    set(_docs_pdf_flag "")
-  endif()
-
-  gm3zza_enable_docs(
-    TARGET        ${TARGET}
-    APP_NAME      ${APP_NAME}
-    USERGUIDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/userguide"
-    API_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/api"
-    API_FILES     ${HPPFILES}
-    ${_docs_pdf_flag}
-  )
-
-  # Copy zzacommon API docs into the api html output tree
-  zzacommon_copy_api_docs(${GM3ZZA_API_HTML_DIR}/zzacommon)
 
 ## Install
 install(TARGETS ${TARGET} RUNTIME COMPONENT applications)

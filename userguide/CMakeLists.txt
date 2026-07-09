@@ -77,57 +77,54 @@ if(DOXYGEN_FOUND)
   # Copy Doxyfile
   configure_file(${DOXY_UG_IN} ${DOXY_UG_OUT} @ONLY)
  
-  # Command for generating dox from config file
-  message("Adding command to generate: ${CMAKE_CURRENT_BINARY_DIR}/html/index.html")
-  
-  add_custom_target(ug_html 
+  # Define the main output file that Doxygen produces
+  set(DOXY_OUTPUT_INDEX "${CMAKE_CURRENT_BINARY_DIR}/html/index.html")
+
+  # The Custom Command: This handles the actual dependency checking
+  add_custom_command(
+    OUTPUT ${DOXY_OUTPUT_INDEX}
+    DEPENDS ${DOXY_UG_FILES} ${DOXY_UG_OUT} ${DOXY_UG_IMAGES}
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXY_UG_OUT}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "ZZAVNAD: Generating userguide"
+    COMMENT "ZZALOG: Generating Userguide documentation (smart tracking)"
     VERBATIM
   )
-  add_dependencies(ug_html
-    ${DOXY_UG_FILES} ${DOXY_UG_OUT} ${DOXY_UG_IMAGES}
+
+  # The Custom Target: This gives you the clickable menu item in Visual Studio
+  add_custom_target(ug_html
+    DEPENDS ${DOXY_OUTPUT_INDEX}
   )
-  
-  if(ZZAVNAD_PDF)
+ 
       # Command for generating PDF from userguide latex files
       if(MSVC)
         add_custom_command(
             OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-                    ug_html
             COMMAND miktex-texworks.exe  ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
-            COMMENT "ZZAVNAD: Generating PDF Userguide"
+            COMMENT "ZZALOG: Generating PDF Userguide"
             VERBATIM
         )
       else()
         add_custom_command(
             OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-                    ug_html
             COMMAND make -C ${CMAKE_CURRENT_BINARY_DIR}/latex >> /dev/null
-            COMMENT "ZZAVNAD: Generating PDF Userguide"
+            COMMENT "ZZALOG: Generating PDF Userguide"
             VERBATIM
         )
       endif()
-      add_custom_target(ug_pdf 
-      )
-      add_dependencies(ug_pdf ug_html)
 
-      # Copy from latex/refman.pdf to ZZAVNAD.pdf
+      add_custom_target(ug_pdf
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf ug_html
+      )
+      
+      # Copy from latex/refman.pdf to ZZALOG.pdf
       add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.pdf
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-                ug_pdf
         COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
         ${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.pdf
         COMMENT "Copying PDF"
       )
-      add_custom_target(
-        pdf 
+      add_custom_target(pdf
+         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.pdf ug_pdf
       )
-      add_dependencies(pdf ug_pdf)
-  endif()
 endif()
