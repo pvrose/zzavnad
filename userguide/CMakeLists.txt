@@ -69,8 +69,8 @@ if(DOXYGEN_FOUND)
 
   setup_ug_documentation(
       ZZAVNAD
-      ${DOXY_UG_FILES}
-      ${DOXY_UG_IMAGES}
+      "${DOXY_UG_FILES}"
+      "${DOXY_UG_IMAGES}"
   )
 
   set(ZZAVNAD_USERGUIDE_HTML_DIR ${CMAKE_CURRENT_BINARY_DIR}/html PARENT_SCOPE)

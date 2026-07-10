@@ -74,7 +74,6 @@ set(ZZAVNAD_HPPFILES
   ${ZZAVNAD_SOURCE_DIR}/include/display.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/display_control.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/display_legend.hpp
-  ${ZZAVNAD_SOURCE_DIR}/include/main.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/marker_table.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/markers.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/nvna_control.hpp
