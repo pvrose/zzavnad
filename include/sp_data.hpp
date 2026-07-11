@@ -113,6 +113,7 @@ public:
     int get_dataset_count() const;
 
     //! Read S-parameter data from a file and store it in the dataset.
+    //! 
     //! \param entry The dataset to store the data in.
     //! \return True if the data was successfully read and stored, false otherwise.
     bool read_data_from_file(sp_data_entry* entry);

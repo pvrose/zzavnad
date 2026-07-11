@@ -46,6 +46,8 @@ struct legend_entry_t {
 	std::string source; //!< Source for this entry.
 };
 
+//! \brief A legend for use with the display windows.
+//! Shows a list of entries, each with a line style and a source label. The legend is displayed in a scrollable area.
 class display_legend : public Fl_Group {
 public:
 	//! Constructor for the display legend.
@@ -65,13 +67,15 @@ public:
 private:
 	Fl_Scroll* scroll_; //!< Scroll widget to contain the legend entries.
 
-	// Group to contain a label and line style button for each entry.
+	//! Group to contain a label and line style button for each entry.
 	class entry_group : public Fl_Group {
 	public:
 		entry_group(int X, int Y, int W, int H, const legend_entry_t& entry);
 	};
 
+	//! Add the entry groups to the scroll widget.
 	void add_entry_groups();
 
+	//! The entries to display in the legend.
 	std::vector<legend_entry_t> entries_;
 };

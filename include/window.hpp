@@ -30,10 +30,14 @@ class source_control;
 class markers;
 // Forward declaration of FLTK widgets.
 
+//! \file window.hpp
+//! \brief Provides the main application window for the ZZAVNAD software.
+
 //! \brief The main application window.
 class main_window : public Fl_Double_Window {
 public:
-    //! Constructor for the main application window.
+    //! \brief Constructor for the main application window.
+    //! 
     //! \param W The width of the window.
     //! \param H The height of the window.
     //! \param L The label for the window.

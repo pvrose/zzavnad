@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_raw.hpp
+//! \brief Display mode for S11 raw data (real and imaginary parts).
+
 #include "display.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"	
@@ -29,15 +31,19 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for S11 raw data (real and imaginary parts).
+	//! The real part of S11 is plotted on the left Y axis, and the imaginary part of S11 is plotted on the right Y axis, both against frequency on the X axis.
 	class s11_raw : public display {
 
 	public:
 
+		//! \brief Constructor for the s11_raw display mode.
 		s11_raw(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 
+		//! \brief Configure the display mode parameters for S11 raw data.
 		void configure_dm_params() override {
 			params_.serial_name = "S11 Raw";
 			params_.title = "S11 Real and Imaginary vs frequency";
@@ -68,10 +74,13 @@ namespace display_modes {
 			params_.axis_params[2] = yr_axis_params;
 		}
 
+		//! \brief Add amateur frequency bands as background markers.
 		void add_markers() override {
 			add_frequency_bands();
 		}
 
+		//! \brief Convert the real and imaginary parts of S11 to graph coordinates.
+		//! Basically a null conversion.
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_::data_point_t& point_l,
@@ -83,6 +92,7 @@ namespace display_modes {
 			point_r.second = point.sparams.s11.imag(); // S11 imaginary part
 		}
 
+		//! \brief Convert the S11 data to graph coordinates for plotting.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -113,7 +123,7 @@ namespace display_modes {
 			}
 		}
 
-		// Callback for graph clicks to get the frequency at the clicked point.
+		//! \brief Callback for graph clicks to get the frequency at the clicked point.
 		static void cb_graph(Fl_Widget* widget, void* data) {
 			display* disp = zc::ancestor_view<display>(widget);
 			zc_graph_::data_point_t clicked_point = ((zc_graph_*)widget)->value();
@@ -126,12 +136,19 @@ namespace display_modes {
 			disp->do_callback();
 		}
 
+		//! \brief Create a Cartesian graph with two Y axes for this display mode.
+		//! \param X The X coordinate of the graph.
+		//! \param Y The Y coordinate of the graph.
+		//! \param W The width of the graph.
+		//! \param H The height of the graph.
+		//! \return A pointer to the created graph widget.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			zc_graph_* graph = new zc_graph_cartesian_2y(X, Y, W, H);
 			graph->callback(cb_graph);
 			return graph;
 		}
 
+		//! \brief Get all data ranges for the current display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -140,6 +157,9 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format the S11 value for display in a tooltip or label.
+		//! \param point The S-parameter data point to format.
+		//! \return A string representation of the S11 value.	
 		std::string format_value(sp_point point) override {
 			char buffer[100];
 			// Ensure negative imaginary values are displayed as "-jX" instead of "+j-X".

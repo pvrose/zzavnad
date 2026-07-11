@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_tdr.hpp
+//! \brief Display mode for S11 Time-domain reflectometry (TDR) analysis.
+
 #include "display.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"	
@@ -34,23 +36,31 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for S11 Time-domain reflectometry (TDR) analysis.
+	//! This is a reverse Fourier transform of the S11 data to obtain the time-domain response of the device under test (DUT).
 	class s11_tdr : public display {
 
 	private:
 		
+		//! \brief Input data array for the FFTW library.
 		fftw_complex* in_array_ = nullptr;
+		//! \brief Output data array for the FFTW library.
 		fftw_complex* out_array_ = nullptr;
+		//! \brief FFTW plan for the inverse FFT operation.
 		fftw_plan fft_plan_ = nullptr;
 
+		//! \brief Time at which the maximum amplitude occurs in the TDR response.
 		double time_at_max_ = 0.0;
 
 	public:
 
+		//! \brief Constructor for the s11_tdr display mode.
 		s11_tdr(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 			
+		//! \brief Configure the display mode parameters for S11 Time-domain reflectometry (TDR).
 		void configure_dm_params() override {
 			params_.serial_name = "S11 TDR";
 			params_.title = "S11 Time-domain reflectometry";
@@ -80,6 +90,8 @@ namespace display_modes {
 			params_.axis_params[2] = yr_axis_params;
 		}
 
+		//! \brief Add markers to the graph for the S11 TDR display mode.
+		//! These are applied after the data has been plotted, and include markers for the time of maximum amplitude in the TDR response.
 		void add_post_data_markers() override {
 			zc_settings settings;
 			zc_settings markers_settings(&settings, "Markers");
@@ -110,6 +122,8 @@ namespace display_modes {
 			}
 		}
 
+		//! \brief Transform the S11 data from the frequency domain
+		//! to the time domain for the TDR response.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -200,10 +214,12 @@ namespace display_modes {
 
 		}
 
+		//! \brief Create a new graph object for the S11 TDR display mode.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_cartesian_2y(X, Y, W, H);
 		}
 
+		//! \brief Get all data ranges for the S11 TDR display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -212,6 +228,8 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format the value of a data point for display in the S11 TDR display mode.
+		//! Null implementation, as the TDR response does not have a direct numerical representation for individual points.
 		std::string format_value(sp_point point) override {
 			return "---"; // Not applicable for TDR, so return a placeholder.
 		}

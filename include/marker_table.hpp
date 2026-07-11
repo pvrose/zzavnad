@@ -26,6 +26,9 @@
 
 #include <vector>
 
+//! \file marker_table.hpp
+//! \brief Provides a table view of the marker values for each dataset and display mode.
+
 //! \brief Mrker table class for displaying marker information in a tabular format.
 //! 
 //! This class shows for each marker in each dataset displayed in the graphs,

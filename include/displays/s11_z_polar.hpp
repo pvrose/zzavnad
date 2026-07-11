@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_z_polar.hpp
+//! \brief Display mode for S11 impedance polar plot.
+
 #include "display.hpp"
 #include "sp_data.hpp"
 
@@ -28,6 +30,10 @@
 #include <string>
 
 namespace display_modes {
+
+	//! \brief Display mode for S11 impedance polar plot.
+	//! Converts the S11 data to impedance and plots it in polar coordinates (magnitude and phase).
+	//! 
 	class s11_z_polar : public display {
 	public:
 
@@ -37,7 +43,7 @@ namespace display_modes {
 		{
 		}
 
-		// Configure the display mode parameters for the s11_z_polar display mode.
+		//! \brief Configure the display mode parameters for the s11_z_polar display mode.
 		void configure_dm_params() override {
 			params_.serial_name = "S11 Z Polar";
 			params_.title = "S11 Impedance Polar Plot";
@@ -60,15 +66,15 @@ namespace display_modes {
 			params_.axis_params[1] = theta_axis_params;
 		}
 
-		// Add markers for the s11_z_polar display mode.
-		// For the polar plot, we might want to add markers for specific
-		// impedance values (e.g., 50&nbsp;&Omega;) or for the unit circle (|S11|=1).
+		//! \brief Add markers for the s11_z_polar display mode.
+		//! For the polar plot, we might want to add markers for specific
+		//! impedance values (e.g., 50&nbsp;&Omega;) or for the unit circle (|S11|=1).
 		void add_markers() override {
 			graph_->add_marker(0, zc_graph_::FOREGROUND, zc_line_style(FL_RED, 1, FL_DASH), 50.0F);
 			graph_->add_label(0, zc_graph_::FOREGROUND, "|Z|=50\xCE\xA9", zc_text_style(FL_RED, 0, FL_NORMAL_SIZE - 2), { 50.0F, 0 });
 		}
 
-		// Convert a sp_point to coordinates for the polar plot.
+		//! Convert a sp_point to coordinates for the polar plot.
 		void convert_sp_point(
 			const sp_point& point,
 			double Z0,
@@ -83,7 +89,7 @@ namespace display_modes {
 			point_r_theta.second = std::arg(z) * 180.0 / zc::PI; // Phase of impedance
 		}
 
-		// Convert sp_data to coordinates for the polar plot.
+		//! Convert sp_data to coordinates for the polar plot.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -106,16 +112,19 @@ namespace display_modes {
 			}
 		}
 
+		//! \brief Create a new zc_graph_polar object for the polar plot.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_polar(X, Y, W, H);
 		}
 
+		//! \brief Get all data ranges for the s11_z_polar display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
 			return ranges;
 		}
 
+		//! \brief Format a sp_point for display in the polar plot.
 		std::string format_value(sp_point point) override {
 			zc_graph_::data_point_t point_r_theta;
 			convert_sp_point(point, 50.0, point_r_theta);

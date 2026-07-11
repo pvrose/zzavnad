@@ -21,11 +21,6 @@
 //! \brief Interface for the nanoVNA device.
 //! This interface helps in connecting the nanoVNA to the software and acquiring data from it.
 
-//! Currently only NanoVNA-H is supported.
-
-//! \note The nanoVNA-H uses the same USB serial interface as the original NanoVNA, but with a different protocol for data acquisition.
-
-//! \todo Impelemnt calibration. For now assume that the NanoVNA-H is calibrated.
 
 // Include S-parameter data structures.
 #include "sp_data.hpp"
@@ -33,11 +28,16 @@
 // Forward declarations.
 class zc_serial;
 
+//! \brief Interface for the nanoVNA device.
+//! Currently only NanoVNA-H is supported.
+
+//! \note The nanoVNA-H uses the same USB serial interface as the original NanoVNA, but with a different protocol for data acquisition.
 class nvna_iface {
 
 public:
 
 	//! Constructor for the nanoVNA interface. 
+	//! 
 	//! It initialises the connection to the nanoVNA on \p port with \p baud_rate.
 	nvna_iface(const std::string& port, int baud_rate);
 
@@ -58,6 +58,7 @@ public:
 private:
 
 	//! Acquire one batch of S-parameter data from the nanoVNA.
+	//! 
 	//! \param data The set of data entries in which to store the acquired data.
 	//! \param start The start frequency for the acquisition in Hz.
 	//! \param step The frequency step for the acquisition in Hz.

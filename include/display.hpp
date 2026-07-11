@@ -54,7 +54,7 @@ struct dm_data_set_t {
 	std::vector<zc_graph_::data_point_t>* data; //!< Pointer to a vector of data points to be plotted for this axis.
 	zc_line_style style; //!< Line style to use for plotting this data set.
 
-	// Default constructor initializes to an empty data set with a solid black line style.
+	//! \brief Default constructor initializes to an empty data set with a solid black line style.
 	dm_data_set_t() : data(
         new std::vector<zc_graph_::data_point_t>()), 
         style({ FL_SOLID, 1, FL_BLACK }) {}
@@ -106,6 +106,7 @@ public:
         graph_data_map_t& coords,
         graph_data_ranges_t& ranges) = 0;
 
+	//! \brief Get the parameters for this display mode.
 	dm_params_t& get_params() { return params_; }
 
     //! The create method to be run after construction.

@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+//! \file display_control.hpp
 //! \brief Header file for the display control class.
 //! This manages the displaying of the various views of the S-parameter data.
 //! It comprises a single checkbox for each of the display modes (display_mode), which
@@ -56,6 +57,7 @@ class display;
 class Fl_Check_Button;
 struct dm_params_t;
 
+//! \brief The display control provides a set of checkboxes for each display mode, allowing the user to select which display modes to show.
 class display_control : public Fl_Group {
 
 public:

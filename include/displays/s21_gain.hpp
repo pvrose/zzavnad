@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s21_gain.hpp
+//! \brief Display mode for S21 gain (magnitude and phase) vs frequency.
+
 #include "display.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"	
@@ -29,15 +31,19 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for S21 gain (magnitude and phase) vs frequency.
+	//! Converts the S21 data to magnitude (dB) and phase (degrees) and plots them against frequency.
 	class s21_gain : public display {
 
 	public:
 
+		//! Constructor for the s21_gain display mode.
 		s21_gain(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 
+		//! Configure the display mode parameters for S21 gain (magnitude and phase) vs frequency.
 		void configure_dm_params() override {
 			params_.serial_name = "S21 Gain";
 			params_.title = "S21 Gain (dB magnitude and phase) vs frequency";
@@ -70,11 +76,13 @@ namespace display_modes {
 
 		};
 
+		//! Add markers to the graph for the S21 gain display mode.
+		//! Show amateur bands as a background for the graph.
 		void add_markers() override {
 			add_frequency_bands();
 		}
 
-
+		//! Convert an S-parameter point to graph coordinates for S21 gain (magnitude and phase).
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_::data_point_t& point_l,
@@ -87,6 +95,7 @@ namespace display_modes {
 			point_r.second = ::std::arg(s21) * zc::RADIAN_DEGREE; // S21 phase in degrees
 		}
 
+		//! Convert S-parameter data to graph coordinates for S21 gain (magnitude and phase) vs frequency.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -118,10 +127,12 @@ namespace display_modes {
 			}
 		}
 
+		//! Create a new graph object for the S21 gain display mode.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_cartesian_2y(X, Y, W, H);
 		}
 
+		//! Get all data ranges for the S21 gain display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -130,6 +141,7 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format a data point for display in the S21 gain display mode.
 		std::string format_value(sp_point point) override {
 			zc_graph_::data_point_t point_gain;
 			zc_graph_::data_point_t point_angle;

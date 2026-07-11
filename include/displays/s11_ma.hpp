@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_ma.hpp
+//! \brief Display mode for S11 Magnitude and Angle vs Frequency.
+
 #include "display.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"	
@@ -30,15 +32,21 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for S11 Magnitude and Angle vs Frequency.
+	//! 
+	//! Configures the display to show S11 magnitude on the left Y axis and S11 angle on the right Y axis, both plotted against frequency on the X axis.
+	//! 
 	class s11_ma : public display {
 
 	public:
 
+		//! \brief Constructor for the s11_ma display mode.
 		s11_ma(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 
+		//! \brief Configure the display mode parameters.
 		void configure_dm_params() override {
 			params_.serial_name = "S11 M+A";
 			params_.title = "S11 Magnitude and angle vs frequency";
@@ -67,10 +75,12 @@ namespace display_modes {
 			params_.axis_params[2] = yr_axis_params;
 		}
 
+		//! \brief Add markers showing the amamteur frequency bands.
 		void add_markers() override {
 			add_frequency_bands();
 		}
 
+		//! \brief Convert the real and imaginary parts of S11 to magnitude and angle for plotting.
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_::data_point_t& point_l,
@@ -83,6 +93,7 @@ namespace display_modes {
 			point_r.second = ::std::arg(s11) * zc::RADIAN_DEGREE; // S11 phase in degrees
 		}
 
+		//! \brief Convert the S-parameter data to graph coordinates for plotting.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -114,7 +125,7 @@ namespace display_modes {
 			}
 		}
 
-		// Callback for graph clicks to get the frequency at the clicked point.
+		//! \brief Callback for graph clicks to get the frequency at the clicked point.
 		static void cb_graph(Fl_Widget* widget, void* data) {
 			display* disp = zc::ancestor_view<display>(widget);
 			zc_graph_::data_point_t clicked_point = ((zc_graph_*)widget)->value();
@@ -127,12 +138,14 @@ namespace display_modes {
 			disp->do_callback();
 		}
 
+		//! \brief Create a new graph widget for this display mode.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			zc_graph_* graph = new zc_graph_cartesian_2y(X, Y, W, H);
 			graph->callback(cb_graph);
 			return graph;
 		}
 
+		//! \brief Get all data ranges for the current display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -141,11 +154,14 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format the S-parameter data point for display in a tooltip or label.
+		//! \param point The S-parameter data point to format.
+		//! \return A string representation of the S-parameter data point.
 		std::string format_value(sp_point point) override {
 			zc_graph_::data_point_t point_mag;
 			zc_graph_::data_point_t point_angle;
 			convert_sp_point(point, point_mag, point_angle);
-			char buffer[100];
+			char buffer[100]; 
 			snprintf(buffer, sizeof(buffer), "%0.2f \xE2\x88\xA0 %.1f\xC2\xB0",
 				point_mag.second, point_angle.second);
 			return std::string(buffer);

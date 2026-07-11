@@ -45,7 +45,8 @@ class nvna_iface;
 //! This class provides the control panel for interacting with a nanoVNA device.
 class nvna_control : public Fl_Group {
 public:
-    //! Constructor for the nanoVNA control panel.
+    //! \brief Constructor for the nanoVNA control panel.
+    //! 
     //! \param X The x-coordinate of the control panel.
     //! \param Y The y-coordinate of the control panel.
     //! \param W The width of the control panel.
@@ -53,67 +54,67 @@ public:
     //! \param L The label for the control panel.
     nvna_control(int X, int Y, int W, int H, const char* L = nullptr);
 
-    //! Destructor for the nanoVNA control panel.
+    //! \brief Destructor for the nanoVNA control panel.
     ~nvna_control();
 
-    //! Enable the nanoVNA for data acquisition.
+    //! \brief Enable the nanoVNA for data acquisition.
     void enable_nvna() { nvna_enabled_ = true; }
 
-    //! Disable the nanoVNA for data acquisition.
+    //! \brief Disable the nanoVNA for data acquisition.
     void disable_nvna() { nvna_enabled_ = false; }
 
-	//! Acquire S-parameter data from the nanoVNA and store it in the provided data entry.
+	//! \brief Acquire S-parameter data from the nanoVNA and store it in the provided data entry.
 	void acquire_data_from_nvna(sp_data_set* data);
 
-	//! Check if the nanoVNA is currently enabled for data acquisition.
+	//! \brief Check if the nanoVNA is currently enabled for data acquisition.
 	bool is_nvna_enabled() const { return nvna_enabled_; }
 
-	//! Update acquisition progress on the progress dial.
+	//! \brief Update acquisition progress on the progress dial.
     void update_progress(double progress);
 
 protected:
-    //! Callback function for the "Acquire Data" button.
+    //! \brief Callback function for the "Acquire Data" button.
     static void cb_acquire(Fl_Widget* widget, void* data);
-    //! Callback function for the frequency unit radio buttons.
+    //! \brief Callback function for the frequency unit radio buttons.
     static void cb_freq_unit(Fl_Widget* widget, void* data);
-    //! Callback function that copies frequency input to variables when the input fields are changed.
+    //! \brief Callback function that copies frequency input to variables when the input fields are changed.
     static void cb_freq_input(Fl_Widget* widget, void* data);
-    //! Callback function for the nanoVNA port selection dropdown.
+    //! \brief Callback function for the nanoVNA port selection dropdown.
     static void cb_nvna_port(Fl_Widget* widget, void* data);
-    //! Callback function for the nanoVNA speed selection dropdown.
+    //! \brief Callback function for the nanoVNA speed selection dropdown.
     static void cb_nvna_speed(Fl_Widget* widget, void* data);
-    //! Callback function for the nanoVNA connect button.
+    //! \brief Callback function for the nanoVNA connect button.
     static void cb_nvna_connect(Fl_Widget* widget, void* data);
-	//! Callback function for the nanoVNA rescan ports button.
+	//! \brief Callback function for the nanoVNA rescan ports button.
 	static void cb_rescan_ports(Fl_Widget* widget, void* data);
-	//! Callback function for the calibration start button.
+	//! \brief Callback function for the calibration start button.
 	static void cb_calib_start(Fl_Widget* widget, void* data);
-	//! Callback function for the calibration clear button.
+	//! \brief Callback function for the calibration clear button.
 	static void cb_calib_clear(Fl_Widget* widget, void* data);
-	//! Callback function for the calibration save button.
+	//! \brief Callback function for the calibration save button.
 	static void cb_calib_save(Fl_Widget* widget, void* data);
-	//! Callback function for the calibration read button.
+	//! \brief Callback function for the calibration read button.
 	static void cb_calib_read(Fl_Widget* widget, void* data);
-    //! Callback to ignore clicks on status check buttons.
+    //! \brief Callback to ignore clicks on status check buttons.
 	static void cb_calib_status_ignore(Fl_Widget* widget, void* data);
-	//! Callback function for the calibration use button.
+	//! \brief Callback function for the calibration use button.
 	static void cb_calib_use(Fl_Widget* widget, void* data);
 
     private:
 
-    //! Create the widgets for the control panel.
+    //! \brief Create the widgets for the control panel.
     void create_widgets();
-    //! Load the default frequency settings into the input fields.
+    //! \brief Load the default frequency settings into the input fields.
     void load_default_settings();
-    //! Save the current frequency settings.
+    //! \brief Save the current frequency settings.
     void save_current_settings() const;
-    //! Configure the widgets based on the current scenario.
+    //! \brief Configure the widgets based on the current scenario.
     void configure_widgets();
 
-    //! Populate the nanoVNA port and speed dropdowns with available options.
+    //! \brief Populate the nanoVNA port and speed dropdowns with available options.
     void populate_nvna_options();
 
-	//! Run the calibration process with the nanoVNA.
+	//! \brief Run the calibration process with the nanoVNA.
 	void run_calibration();
      
     Fl_Float_Input* ip_start_freq_; //!< Input for the start frequency.

@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_smith.hpp
+//! \brief Display mode for S11 Smith Chart.
+
 #include "display.hpp"
 #include "sp_data.hpp"
 
@@ -27,6 +29,12 @@
 #include <string>
 
 namespace display_modes {
+
+	//! \brief The s11_smith display mode class.
+	//! This displays the S11 parameter on a Smith chart.
+	//! This is basically real and imaginary components of S11 plotted on a polar plot
+	//! against a background of circles representing constant resistance 
+	//! and reactance.
 	class s11_smith : public display {
 	public:
 
@@ -36,7 +44,7 @@ namespace display_modes {
 		{
 		}
 
-		// Configure the display mode parameters for the s11_smith display mode.
+		//! Configure the display mode parameters for the s11_smith display mode.
 		void configure_dm_params() override {
 			params_.serial_name = "S11 Smith";
 			params_.title = "S11 Smith Chart";
@@ -59,13 +67,15 @@ namespace display_modes {
 			params_.axis_params[1] = x_axis_params;
 		}
 
-		// Add markers for the s11_smith display mode.
-		// For the polar plot, we might want to add markers for specific
-		// impedance values (e.g. 50 Ohms) or for the unit circle (|S11|=1).
+		//! \brief Add markers for the s11_smith display mode.
+		//! There are no specific markers for the Smith chart.
 		void add_markers() override {
 		}
 
-		// Convert a sp_point to coordinates for Smith char (null conversion).
+		//! \brief Convert a sp_point to coordinates for Smith chart (null conversion).
+		//! \param point The S-parameter data point to convert.
+		//! \param Z0 The characteristic impedance.
+		//! \param point_s11 The output data point for the Smith chart.
 		void convert_sp_point(
 			const sp_point& point,
 			double Z0,
@@ -75,7 +85,7 @@ namespace display_modes {
 			point_s11.second = point.sparams.s11.imag(); //Imaginary component of S11.
 		}
 
-		// Convert sp_data to coordinates for the polar plot.
+		//! Convert sp_data to coordinates for the polar plot.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -98,16 +108,21 @@ namespace display_modes {
 			ranges[0] = { -1.0, 1.0 }; // S11 real and imaginary components are always between -1 and 1.
 		}
 
+		//! \brief Create a new zc_graph_smith object for the s11_smith display mode.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			return new zc_graph_smith(X, Y, W, H);
 		}
 
+		//! \brief Get all data ranges for the s11_smith display mode.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
 			return ranges;
 		}
 
+		//! \brief Null implementation for formatting values for the Smith chart, as it does not have a direct numerical representation.
+		//! \param point The S-parameter data point to format.
+		//! \return A placeholder string, as the Smith chart does not have a direct numerical representation.
 		std::string format_value(sp_point point) override {
 			return "---"; // Not applicable for Smith chart, so return a placeholder.
 		}

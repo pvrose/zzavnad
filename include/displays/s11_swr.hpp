@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_swr.hpp
+//! \brief Display mode for plotting SWR vs frequency.
+
 #include "display.hpp"
 #include "display_control.hpp"
 #include "sp_data.hpp"	
@@ -35,15 +37,18 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for plotting SWR vs frequency.
 	class s11_swr : public display {
 
 	public:
 
+		//! Constructor for the s11_swr display mode.
 		s11_swr(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 
+		//! Configure the display mode parameters for SWR vs frequency.
 		void configure_dm_params() override {
 			params_.serial_name = "SWR";
 			params_.title = "SWR vs frequency";
@@ -65,6 +70,7 @@ namespace display_modes {
 			params_.axis_params[1] = y_axis_params;
 		}
 
+		//! Add markers to the graph for SWR=3 and frequency bands.
 		void add_markers() override {
 			add_frequency_bands();
 			// Add marker for SWR=3 (a common threshold for acceptable SWR).
@@ -81,6 +87,9 @@ namespace display_modes {
 			}
 		}
 
+		//! \brief Convert an sp_point to a data_point_t for plotting SWR.
+		//! \param point The S-parameter data point to convert.
+		//! \param point_l The output data point for the SWR plot.
 		void convert_sp_point(
 			const sp_point& point,
 			zc_graph_::data_point_t& point_l) const
@@ -90,6 +99,7 @@ namespace display_modes {
 			point_l.second = (1 + s11_mag) / (1 - s11_mag); // SWR calculation from S11 magnitude.
 		}
 
+		//! \brief Convert S-parameter data to graph coordinates for plotting SWR vs frequency.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -114,7 +124,9 @@ namespace display_modes {
 			}
 		}
 
-		// Callback for graph clicks to get the frequency at the clicked point.
+		//! \brief Callback for graph clicks to get the frequency at the clicked point.
+		//! \param widget The graph widget that was clicked.
+		//! \param data User data passed to the callback.
 		static void cb_graph(Fl_Widget* widget, void* data) {
 			display* disp = zc::ancestor_view<display>(widget);
 			zc_graph_::data_point_t clicked_point = ((zc_graph_*)widget)->value();
@@ -127,12 +139,14 @@ namespace display_modes {
 			disp->do_callback();
 		}
 
+		//! \brief Create a new zc_graph_cartesian instance for this display mode.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			zc_graph_* graph = new zc_graph_cartesian(X, Y, W, H);
 			graph->callback(cb_graph);
 			return graph;
 		}
 
+		//! \brief Get all data ranges for the current display mode (SWR vs frequency).
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -140,6 +154,9 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format the value of a data point for display in the graph tooltip.
+		//! \param point The S-parameter data point to format.
+		//! \return A string representing the SWR value.
 		std::string format_value(sp_point point) override {
 			zc_graph_::data_point_t point_swr;
 			convert_sp_point(point, point_swr);

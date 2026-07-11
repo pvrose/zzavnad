@@ -59,6 +59,7 @@ const int NUM_FILE_SOURCES = 5; //!< Maximum number of file data sources that ca
 class source_control : public Fl_Group {
 public:
     //! Constructor for the source control panel.
+    //! 
     //! \param X The x-coordinate of the control panel.
     //! \param Y The y-coordinate of the control panel.
     //! \param W The width of the control panel.

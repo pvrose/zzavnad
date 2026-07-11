@@ -74,6 +74,7 @@ set(ZZAVNAD_HPPFILES
   ${ZZAVNAD_SOURCE_DIR}/include/display.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/display_control.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/display_legend.hpp
+  ${ZZAVNAD_SOURCE_DIR}/include/main.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/marker_table.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/markers.hpp
   ${ZZAVNAD_SOURCE_DIR}/include/nvna_control.hpp
@@ -156,7 +157,12 @@ add_custom_target(docs
     COMMENT "Building all project documentation"
 )
 
-add_dependencies(docs ug_html pdf api_html zzacommon_api_html)
+add_dependencies(docs 
+  ZZAVNAD_ug_html 
+  ZZAVNAD_pdf 
+  ZZAVNAD_api_html 
+  zzacommon_api_html
+)
 
 target_include_directories(${TARGET} PRIVATE 
   ${ZZAVNAD_SOURCE_DIR}/include

@@ -27,6 +27,9 @@ class Fl_Check_Button;
 class Fl_Choice;
 class Fl_Input;	
 
+//! \file markers.hpp
+//! \brief Provides the control panel for adding markers to the display.
+
 //! \brief This class defines the markers to add to appropriate display modes. 
 //! 
 //! 

@@ -15,7 +15,9 @@
 	If not, see <https://www.gnu.org/licenses/>.
 */
 
-//! Include the base class header file
+//! \file s11_rj.hpp
+//! \brief Display mode for S11 Resistance vs Reactance.
+
 #include "display.hpp"
 #include "sp_data.hpp"	
 
@@ -31,15 +33,19 @@
 
 namespace display_modes {
 
+	//! \brief Display mode for S11 Resistance vs Reactance.
+	//! The resistance (R) is plotted on the X axis, and the reactance (jX) is plotted on the Y axis.
 	class s11_rj : public display {
 
 	public:
 
+		//! Constructor for the s11_rj display mode.
 		s11_rj(int W, int H, const char* L = nullptr) :
 			display(W, H, L)
 		{
 		}
 
+		//! Configure the display mode parameters for S11 Resistance vs Reactance.
 		void configure_dm_params() override {
 			params_.serial_name = "S11 R v jX";
 			params_.title = "S11 Resistance vs Reactance";
@@ -64,6 +70,12 @@ namespace display_modes {
 
 		}
 
+		//! Convert an S11 point to resistance and reactance coordinates for plotting.
+		//! The S11 parameter is converted to impedance using the formula Z = Z0 * (1 + S11) / (1 - S11), where Z0 is the characteristic impedance (typically 50 ohms).
+		//! The real part of the impedance is the resistance (R), and the imaginary part is the reactance (jX).
+		//! \param point The S-parameter data point to convert.
+		//! \param Z0 The characteristic impedance.
+		//! \param pixel The output data point in resistance and reactance coordinates.
 		void convert_sp_point(
 			const sp_point& point,
 			double Z0,
@@ -78,6 +90,7 @@ namespace display_modes {
 			pixel.second = z.imag(); // Reactance
 		}
 
+		//! Convert the S-parameter dataset to coordinates for plotting in the S11 Resistance vs Reactance display mode.
 		void convert_sp_to_coords(
 			const sp_data_entry& dataset,
 			graph_data_map_t& coords,
@@ -100,7 +113,7 @@ namespace display_modes {
 			}
 		}
 
-		// Callback for graph clicks to get the frequency at the clicked point.
+		//! \brief Callback for graph clicks to get the frequency at the clicked point.
 		static void cb_graph(Fl_Widget* widget, void* data) {
 			display* disp = zc::ancestor_view<display>(widget);
 			zc_graph_::data_point_t clicked_point = ((zc_graph_*)widget)->value();
@@ -113,12 +126,20 @@ namespace display_modes {
 			disp->do_callback();
 		}
 
+		//! \brief Create a new graph widget for the S11 Resistance vs Reactance display mode.
+		//! \param X The X coordinate of the graph.
+		//! \param Y The Y coordinate of the graph.
+		//! \param W The width of the graph.
+		//! \param H The height of the graph.
+		//! \return A pointer to the created graph widget.
 		zc_graph_* create_graph(int X, int Y, int W, int H) override {
 			zc_graph_* graph = new zc_graph_cart_overlay(X, Y, W, H);
 			graph->callback(cb_graph);
 			return graph;
 		}
 
+		//! \brief Get the data ranges for both axes in the S11 Resistance vs Reactance display mode.
+		//! \return A structure containing the ranges for the X and Y axes.
 		graph_data_ranges_t get_all_data_ranges() override {
 			graph_data_ranges_t ranges;
 			ranges[0] = get_range(0);
@@ -126,6 +147,9 @@ namespace display_modes {
 			return ranges;
 		}
 
+		//! \brief Format the S11 value for display in a tooltip or label.
+		//! \param point The S-parameter data point to format.
+		//! \return A string representation of the S11 value in terms of resistance and reactance.
 		std::string format_value(sp_point point) override {
 			char buffer[100];
 			// Assume Z0 = 50 ohms for formatting the S11 value.

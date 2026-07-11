@@ -25,6 +25,9 @@
 #include <set>
 #include <string>
 
+//! \file calib_data.hpp
+//! \brief Provides the calibration data management for the nanoVNA.
+
 //! \brief Calibration data and management.
 //! 
 //! This class manages the calibration data for the nanoVNA, including the
@@ -34,6 +37,7 @@
 //! acquired directly from the nanoVNA. The class converts these
 //! calibration measurements into the format needed for calibration correction.
 //! 
+//! \todo Add support for 2-port calibration (through and isolation) in addition to the existing 1-port calibration (open, short, load).
 class calib_data {
 
 public:
