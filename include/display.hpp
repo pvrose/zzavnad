@@ -22,6 +22,7 @@
 
 #include "sp_data.hpp"
 
+#include "zc_range.h"
 #include "zc_graph_.h"
 
 #include <FL/Fl_Double_Window.H>
@@ -44,9 +45,9 @@ struct axis_params_t {
     zc_graph_::modifier_t unit_modifier = zc_graph_::NO_MODIFIER; //!< Modifier for axis units (e.g. SI prefix or power of 10).
     std::string unit = "";              //!< Unit to display on the axis (e.g. "Hz").
     std::string label = "";             //!< Base label for the axis (e.g. "Frequency").
-    zc_graph_::range_t outer_range;       //!< Range of data values for this axis.
-    zc_graph_::range_t inner_range;       //!< Range of data values currently displayed for this axis (may be zoomed or scrolled).
-    zc_graph_::range_t default_range;     //!< Default range for this axis in the absence of data.
+    zc_range<double> outer_range;       //!< Range of data values for this axis.
+    zc_range<double> inner_range;       //!< Range of data values currently displayed for this axis (may be zoomed or scrolled).
+    zc_range<double> default_range;     //!< Default range for this axis in the absence of data.
 };
 
 //! \brief The data and how it is to be displayed for each axis.
@@ -95,7 +96,7 @@ public:
     typedef std::map<int, dm_data_set_t*> graph_data_map_t;
 
     //! \brief data ranges for each data type,
-	typedef std::map<int, zc_graph_::range_t> graph_data_ranges_t;
+	typedef std::map<int, zc_range<double>> graph_data_ranges_t;
 
 	//! Convert sp_data into graph coordinates for plotting, based on the current display mode.
     //! \param dataset The dataset to which this point belongs, which may be needed for some display modes.
@@ -115,7 +116,7 @@ public:
     void create();
 
     //! \brief Get the range of data supported by the axis for the data.
-    zc_graph_::range_t  get_range(
+    zc_range<double> get_range(
         int axis
     ) {
         return graph_->get_axis_range(axis);
